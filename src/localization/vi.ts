@@ -63,7 +63,7 @@ export const vi: Translations = {
   },
 
   queueFullMessage: (queueType: string, mentions: string) =>
-    `🎉 **Hàng Đợi ${queueType} Đã Đầy!**\n\n${mentions}\n\nĐội của bạn đã sẵn sàng! Chúc may mắn và chơi vui vẻ!`,
+    `🎉 **Tổ Đội ${queueType} Đã Đầy!**\n\n${mentions}\n\nĐội của bạn đã sẵn sàng! Lụm Boss nào!`,
 
   commands: {
     setup: {
