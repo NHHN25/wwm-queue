@@ -3,10 +3,9 @@ import type { QueueState } from '../types/index.js';
 import {
   QUEUE_CONFIGS,
   EMOJIS,
-  EMBED_FOOTERS,
   getQueueEmoji,
-  getQueueDisplayName,
 } from './constants.js';
+import { getGuildTranslations } from '../localization/index.js';
 
 /**
  * Create queue embed
@@ -14,16 +13,24 @@ import {
  */
 export function createQueueEmbed(
   state: QueueState,
-  guildName?: string
+  guildName?: string,
+  guildId?: string
 ): EmbedBuilder {
   const { queue, players } = state;
   const config = QUEUE_CONFIGS[queue.queueType];
   const playerCount = players.length;
   const isFull = playerCount >= queue.capacity;
 
+  // Get translations for this guild
+  const t = guildId ? getGuildTranslations(guildId) : getGuildTranslations('');
+
+  // Get queue type display name
+  const displayName = queue.queueType === 'sword_trial' 
+    ? t.queueTypes.swordTrial 
+    : t.queueTypes.heroRealm;
+
   // Build title with status indicator
   const emoji = getQueueEmoji(queue.queueType);
-  const displayName = getQueueDisplayName(queue.queueType);
   const statusEmoji = isFull ? '✅' : playerCount > 0 ? '⏳' : '🔵';
   const title = `${statusEmoji} ${emoji} ${displayName}`;
 
@@ -36,24 +43,24 @@ export function createQueueEmbed(
   // Add guild name with icon
   if (guildName) {
     embed.setAuthor({
-      name: `${guildName} • Party Finder`,
+      name: `${guildName} • ${t.embeds.partyFinder}`,
     });
   }
 
   // Build description
-  const description = buildQueueDescription(state);
+  const description = buildQueueDescription(state, t);
   embed.setDescription(description);
 
   // Add progress bar field
-  const progressBar = createProgressBar(playerCount, queue.capacity);
+  const progressBar = createProgressBar(playerCount, queue.capacity, t);
   embed.addFields({
-    name: '📊 Queue Progress',
+    name: t.embeds.queueProgress,
     value: progressBar,
     inline: false,
   });
 
   // Add footer based on queue state
-  const footer = getFooterText(state);
+  const footer = getFooterText(state, t);
   const footerIcon = isFull ? '✅' : '👥';
   embed.setFooter({ text: `${footerIcon} ${footer}` });
 
@@ -63,7 +70,7 @@ export function createQueueEmbed(
 /**
  * Build queue description with player slots
  */
-function buildQueueDescription(state: QueueState): string {
+function buildQueueDescription(state: QueueState, t: any): string {
   const { queue, players } = state;
   const playerCount = players.length;
   const capacity = queue.capacity;
@@ -74,30 +81,30 @@ function buildQueueDescription(state: QueueState): string {
   if (playerCount === 0) {
     lines.push('```');
     lines.push('╔═══════════════════════════════╗');
-    lines.push('║     🎮 WAITING FOR PLAYERS    ║');
+    lines.push(`║     🎮 ${t.embeds.queueEmpty}    ║`);
     lines.push('╚═══════════════════════════════╝');
     lines.push('```');
     lines.push('');
-    lines.push('> 💡 **Be the first to join!**');
-    lines.push('> Click a role button below to start the queue');
+    lines.push(`> ${t.embeds.beTheFirst}`);
+    lines.push(`> ${t.embeds.clickRole}`);
     return lines.join('\n');
   }
 
   // Header with visual separator
   lines.push('```');
-  lines.push('═══════════ PARTY ROSTER ═══════════');
+  lines.push(`═══════════ ${t.embeds.partyRoster} ═══════════`);
   lines.push('```');
   lines.push('');
 
-  // Show all slots with enhanced formatting
+  // Show all slots with enhanced formatting (keep role names in English)
   for (let i = 0; i < capacity; i++) {
     const player = players[i] || null;
     if (player) {
       const roleEmoji = getRoleEmoji(player.role);
-      const roleName = getRoleDisplayName(player.role).toUpperCase();
+      const roleName = getRoleDisplayName(player.role).toUpperCase(); // Keep in English
       lines.push(`**${i + 1}.** ${roleEmoji} \`${roleName}\` • <@${player.userId}>`);
     } else {
-      lines.push(`**${i + 1}.** ${EMOJIS.EMPTY_SLOT} \`OPEN SLOT\``);
+      lines.push(`**${i + 1}.** ${EMOJIS.EMPTY_SLOT} \`${t.embeds.openSlot}\``);
     }
   }
 
@@ -105,7 +112,7 @@ function buildQueueDescription(state: QueueState): string {
   if (playerCount >= capacity) {
     lines.push('');
     lines.push('```diff');
-    lines.push('+ QUEUE COMPLETE! READY TO START! +');
+    lines.push(`+ ${t.embeds.queueComplete} +`);
     lines.push('```');
   }
 
@@ -115,7 +122,7 @@ function buildQueueDescription(state: QueueState): string {
 /**
  * Create a visual progress bar
  */
-function createProgressBar(current: number, total: number): string {
+function createProgressBar(current: number, total: number, t: any): string {
   const percentage = Math.round((current / total) * 100);
   const filledBlocks = Math.round((current / total) * 10);
   const emptyBlocks = 10 - filledBlocks;
@@ -125,10 +132,10 @@ function createProgressBar(current: number, total: number): string {
 
   const statusText =
     current === 0
-      ? 'Empty'
+      ? t.embeds.empty
       : current === total
-      ? 'FULL!'
-      : `${current}/${total} Players`;
+      ? t.embeds.full
+      : `${current}/${total} ${t.embeds.players}`;
 
   return `\`${filled}${empty}\` **${percentage}%** • ${statusText}`;
 }
@@ -160,18 +167,18 @@ function getRoleDisplayName(role: 'tank' | 'healer' | 'dps'): string {
 /**
  * Get footer text based on queue state
  */
-function getFooterText(state: QueueState): string {
+function getFooterText(state: QueueState, t: any): string {
   const { players, queue } = state;
 
   if (players.length === 0) {
-    return EMBED_FOOTERS.QUEUE_EMPTY;
+    return t.footers.queueEmpty;
   }
 
   if (players.length >= queue.capacity) {
-    return EMBED_FOOTERS.QUEUE_FULL;
+    return t.footers.queueFull;
   }
 
-  return EMBED_FOOTERS.QUEUE_ACTIVE;
+  return t.footers.queueActive;
 }
 
 /**

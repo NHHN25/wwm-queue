@@ -5,13 +5,13 @@ import type { Translations } from './types.js';
  */
 export const vi: Translations = {
   embeds: {
-    queueEmpty: 'ĐANG CHỜ NGƯỜI CHƠI',
-    beTheFirst: '💡 **Hãy là người đầu tiên tham gia!**',
-    clickRole: 'Nhấp vào nút vai trò bên dưới để bắt đầu hàng đợi',
-    partyRoster: 'DANH SÁCH ĐỘI',
+    queueEmpty: 'ĐANG CHỜ LẬP ĐỘI',
+    beTheFirst: '💡 **Tham gia để lập tổ đội chinh phạt boss!**',
+    clickRole: 'Nhấp vào nút vai trò bên dưới để bắt đầu thành lập tổ đội',
+    partyRoster: 'DANH SÁCH TỔ ĐỘI',
     openSlot: 'VỊ TRÍ TRỐNG',
     queueComplete: 'HÀNG ĐỢI ĐẦY! SẴN SÀNG BẮT ĐẦU!',
-    queueProgress: '📊 Tiến Độ Hàng Đợi',
+    queueProgress: '📊 Tiến Độ Lập Đội',
     empty: 'Trống',
     full: 'ĐẦY!',
     players: 'Người Chơi',
@@ -25,7 +25,7 @@ export const vi: Translations = {
   },
 
   buttons: {
-    leave: '❌ Rời Đi',
+    leave: '❌ Rời Tổ Đội',
   },
 
   success: {
@@ -47,17 +47,17 @@ export const vi: Translations = {
     genericError:
       '❌ Đã xảy ra lỗi. Vui lòng thử lại hoặc liên hệ quản trị viên.',
     queueNotFound:
-      '❌ Không tìm thấy hàng đợi. Nó có thể đã bị xóa hoặc không tồn tại.',
-    queueFull: '❌ Hàng đợi đã đầy! Vui lòng chờ vòng tiếp theo.',
+      '❌ Không tìm thấy tổ đội. Nó có thể đã bị xóa hoặc không tồn tại.',
+    queueFull: '❌ Tổ đội đã đầy! Vui lòng chờ vòng tiếp theo.',
     queueAlreadyExists:
-      '❌ Hàng đợi loại này đã tồn tại trong máy chủ này. Sử dụng `/reset` để xóa hoặc `/close` để xóa hẳn.',
+      '❌ Tổ đội loại này đã tồn tại trong máy chủ này. Sử dụng `/reset` để xóa hoặc `/close` để xóa hẳn.',
     playerAlreadyInQueue:
-      '❌ Bạn đã ở trong hàng đợi này! Nhấp vào vai trò khác để chuyển đổi, hoặc nhấp ❌ Rời Đi để thoát.',
+      '❌ Bạn đã ở trong tổ đội này! Nhấp vào vai trò khác để chuyển đổi, hoặc nhấp ❌ Rời Tổ Đội để thoát.',
     playerInAnotherQueue:
-      '❌ Bạn đã ở trong hàng đợi khác trong máy chủ này. Vui lòng rời khỏi hàng đợi đó trước.',
+      '❌ Bạn đã ở trong tổ đội khác trong máy chủ này. Vui lòng rời khỏi tổ đội đó trước.',
     playerNotInQueue:
-      '❌ Bạn không ở trong hàng đợi. Nhấp vào nút vai trò để tham gia!',
-    invalidChannel: '❌ Kênh không hợp lệ. Vui lòng chọn kênh văn bản.',
+      '❌ Bạn không ở trong tổ đội. Nhấp vào nút vai trò để tham gia!',
+    invalidChannel: '❌ Kênh không hợp lệ. Vui lòng chọn kênh text.',
     missingPermissions: (permissions: string[]) =>
       `❌ Tôi thiếu các quyền sau:\n${permissions.map((p) => `• ${p}`).join('\n')}\n\nVui lòng cấp các quyền này và thử lại.`,
   },
@@ -67,18 +67,18 @@ export const vi: Translations = {
 
   commands: {
     setup: {
-      description: 'Tạo hàng đợi cho các hoạt động Where Winds Meet',
-      swordTrial: 'Tạo hàng đợi Thử Thách Kiếm (5 người chơi)',
-      heroRealm: 'Tạo hàng đợi Cõi Anh Hùng (10 người chơi)',
-      channelOption: 'Kênh cho hàng đợi (mặc định: kênh hiện tại)',
+      description: 'Tạo tổ đội cho các hoạt động Where Winds Meet',
+      swordTrial: 'Tạo tổ đội Sword Trial (5 người chơi)',
+      heroRealm: 'Tạo tổ đội Hero Realm (10 người chơi)',
+      channelOption: 'Kênh cho tổ đội (mặc định: kênh hiện tại)',
     },
     reset: {
-      description: 'Xóa tất cả người chơi khỏi hàng đợi',
-      queueTypeOption: 'Hàng đợi nào cần xóa',
+      description: 'Xóa tất cả người chơi khỏi tổ đội',
+      queueTypeOption: 'Tổ đội nào cần xóa',
     },
     close: {
-      description: 'Xóa hoàn toàn hàng đợi',
-      queueTypeOption: 'Hàng đợi nào cần đóng',
+      description: 'Xóa hoàn toàn tổ đội',
+      queueTypeOption: 'Tổ đội nào cần đóng',
     },
     language: {
       description: 'Thay đổi ngôn ngữ bot',
@@ -87,7 +87,7 @@ export const vi: Translations = {
   },
 
   queueTypes: {
-    swordTrial: 'Thử Thách Kiếm',
-    heroRealm: 'Cõi Anh Hùng',
+    swordTrial: 'Sword Trial',
+    heroRealm: 'Hero Realm',
   },
 };

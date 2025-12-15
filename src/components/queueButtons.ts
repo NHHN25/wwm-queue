@@ -15,6 +15,7 @@ import {
   ROLE_CONFIGS,
 } from '../utils/constants.js';
 import { formatPlayerMentions } from '../models/QueuePlayer.js';
+import { getGuildTranslations } from '../localization/index.js';
 
 // ============================================================================
 // Button Builders
@@ -23,26 +24,30 @@ import { formatPlayerMentions } from '../models/QueuePlayer.js';
 /**
  * Create all queue buttons (Tank, Healer, DPS, Leave)
  * All buttons shown together for easy access
+ * Tank/Healer/DPS stay in English, only Leave button is localized
  */
-export function createJoinButtons(): ActionRowBuilder<ButtonBuilder> {
+export function createJoinButtons(guildId?: string): ActionRowBuilder<ButtonBuilder> {
+  // Get translations for Leave button only
+  const t = guildId ? getGuildTranslations(guildId) : getGuildTranslations('');
+
   const tankButton = new ButtonBuilder()
     .setCustomId(BUTTON_IDS.JOIN_TANK)
-    .setLabel(`${ROLE_CONFIGS.tank.emoji} ${ROLE_CONFIGS.tank.displayName}`)
+    .setLabel(`${ROLE_CONFIGS.tank.emoji} ${ROLE_CONFIGS.tank.displayName}`) // Keep in English
     .setStyle(ButtonStyle.Danger); // Orange/Red
 
   const healerButton = new ButtonBuilder()
     .setCustomId(BUTTON_IDS.JOIN_HEALER)
-    .setLabel(`${ROLE_CONFIGS.healer.emoji} ${ROLE_CONFIGS.healer.displayName}`)
+    .setLabel(`${ROLE_CONFIGS.healer.emoji} ${ROLE_CONFIGS.healer.displayName}`) // Keep in English
     .setStyle(ButtonStyle.Success); // Green
 
   const dpsButton = new ButtonBuilder()
     .setCustomId(BUTTON_IDS.JOIN_DPS)
-    .setLabel(`${ROLE_CONFIGS.dps.emoji} ${ROLE_CONFIGS.dps.displayName}`)
+    .setLabel(`${ROLE_CONFIGS.dps.emoji} ${ROLE_CONFIGS.dps.displayName}`) // Keep in English
     .setStyle(ButtonStyle.Primary); // Blue
 
   const leaveButton = new ButtonBuilder()
     .setCustomId(BUTTON_IDS.LEAVE)
-    .setLabel('❌ Leave')
+    .setLabel(t.buttons.leave) // Localized
     .setStyle(ButtonStyle.Secondary);
 
   return new ActionRowBuilder<ButtonBuilder>().addComponents(
@@ -56,10 +61,12 @@ export function createJoinButtons(): ActionRowBuilder<ButtonBuilder> {
 /**
  * Create leave button (legacy - now unused but kept for compatibility)
  */
-export function createLeaveButton(): ActionRowBuilder<ButtonBuilder> {
+export function createLeaveButton(guildId?: string): ActionRowBuilder<ButtonBuilder> {
+  const t = guildId ? getGuildTranslations(guildId) : getGuildTranslations('');
+
   const leaveButton = new ButtonBuilder()
     .setCustomId(BUTTON_IDS.LEAVE)
-    .setLabel('Leave Queue')
+    .setLabel(t.buttons.leave) // Localized
     .setStyle(ButtonStyle.Secondary);
 
   return new ActionRowBuilder<ButtonBuilder>().addComponents(leaveButton);
@@ -135,11 +142,12 @@ async function handleJoinButton(
         // Update the queue embed
         const state = queue.getState();
         const guildName = interaction.guild?.name;
-        const embed = createQueueEmbed(state, guildName);
+        const guildId = interaction.guildId || undefined;
+        const embed = createQueueEmbed(state, guildName, guildId);
 
         await interaction.update({
           embeds: [embed],
-          components: [createJoinButtons()],
+          components: [createJoinButtons(guildId)],
         });
 
         // Send ephemeral confirmation
@@ -191,11 +199,12 @@ async function handleJoinButton(
     // Update the queue embed for everyone
     const state = queue.getState();
     const guildName = interaction.guild?.name;
-    const embed = createQueueEmbed(state, guildName);
+    const guildId = interaction.guildId || undefined;
+    const embed = createQueueEmbed(state, guildName, guildId);
 
     await interaction.update({
       embeds: [embed],
-      components: [createJoinButtons()],
+      components: [createJoinButtons(guildId)],
     });
 
     // Send ephemeral confirmation to the user
@@ -269,11 +278,12 @@ async function handleLeaveButton(
     // Update the queue embed
     const state = queue.getState();
     const guildName = interaction.guild?.name;
-    const embed = createQueueEmbed(state, guildName);
+    const guildId = interaction.guildId || undefined;
+    const embed = createQueueEmbed(state, guildName, guildId);
 
     await interaction.update({
       embeds: [embed],
-      components: [createJoinButtons()],
+      components: [createJoinButtons(guildId)],
     });
 
     // Send ephemeral confirmation

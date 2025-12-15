@@ -21,7 +21,6 @@ import {
   setGuildLanguage,
   getLanguageDisplayName,
   isValidLanguage,
-  type Language,
 } from '../localization/index.js';
 
 // ============================================================================
@@ -104,7 +103,7 @@ export function buildCommands() {
         .setRequired(true)
         .addChoices(
           { name: 'English', value: 'en' },
-          { name: 'Tiếng Việt', value: 'vi' }
+          { name: 'Vietnamese', value: 'vi' }
         )
     )
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
@@ -129,7 +128,7 @@ export async function registerCommands(client: Client): Promise<void> {
   const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN!);
 
   try {
-    console.log('[Commands] Registering slash commands...');
+    console.log('[Commands] Registering slash commands globally...');
 
     await rest.put(Routes.applicationCommands(client.user.id), {
       body: commands.map((cmd) => cmd.toJSON()),
@@ -161,6 +160,8 @@ export async function handleCommandInteraction(
       await handleResetCommand(interaction);
     } else if (commandName === 'close') {
       await handleCloseCommand(interaction);
+    } else if (commandName === 'language') {
+      await handleLanguageCommand(interaction);
     }
   } catch (error) {
     console.error(`[Commands] Error handling /${commandName}:`, error);
@@ -280,8 +281,8 @@ async function handleSetupCommand(
       players: [],
     };
 
-    const embed = createQueueEmbed(initialState, guildName);
-    const buttons = createJoinButtons();
+    const embed = createQueueEmbed(initialState, guildName, interaction.guildId);
+    const buttons = createJoinButtons(interaction.guildId);
 
     // 5. Send queue message
     const message = await targetChannel.send({
@@ -351,14 +352,14 @@ async function handleResetCommand(
     // 4. Update message
     const state = queue.getState();
     const guildName = interaction.guild?.name;
-    const embed = createQueueEmbed(state, guildName);
+    const embed = createQueueEmbed(state, guildName, interaction.guildId);
 
     const channel = await interaction.client.channels.fetch(queue.getChannelId());
     if (channel?.isTextBased()) {
       const message = await channel.messages.fetch(queue.getMessageId());
       await message.edit({
         embeds: [embed],
-        components: [createJoinButtons()],
+        components: [createJoinButtons(interaction.guildId)],
       });
     }
 
@@ -432,5 +433,100 @@ async function handleCloseCommand(
     await interaction.editReply({
       content: ERROR_MESSAGES.GENERIC_ERROR,
     });
+  }
+}
+
+/**
+ * Handle /language command
+ */
+async function handleLanguageCommand(
+  interaction: CommandInteraction
+): Promise<void> {
+  if (!interaction.guildId || !interaction.guild) {
+    await interaction.reply({
+      content: ERROR_MESSAGES.GENERIC_ERROR,
+      ephemeral: true,
+    });
+    return;
+  }
+
+  const languageOption = (interaction as any).options.get('language')?.value as string;
+
+  // Validate language
+  if (!isValidLanguage(languageOption)) {
+    await interaction.reply({
+      content: `❌ Invalid language. Please select a valid language.`,
+      ephemeral: true,
+    });
+    return;
+  }
+
+  try {
+    // Defer reply (updating queues might take a moment)
+    await interaction.deferReply({ ephemeral: true });
+
+    // Set guild language
+    const success = setGuildLanguage(interaction.guildId, languageOption);
+
+    if (!success) {
+      await interaction.editReply({
+        content: ERROR_MESSAGES.GENERIC_ERROR,
+      });
+      return;
+    }
+
+    // Update all queue embeds for this guild with new language
+    const queues = Queue.loadAllForGuild(interaction.guildId);
+    let updatedCount = 0;
+
+    for (const queue of queues) {
+      try {
+        // Fetch channel and message
+        const channel = await interaction.client.channels.fetch(queue.getChannelId());
+        if (!channel?.isTextBased()) continue;
+
+        const message = await channel.messages.fetch(queue.getMessageId());
+        
+        // Update embed with new language
+        const state = queue.getState();
+        const guildName = interaction.guild.name;
+        const embed = createQueueEmbed(state, guildName, interaction.guildId);
+
+        await message.edit({
+          embeds: [embed],
+          components: [createJoinButtons(interaction.guildId)],
+        });
+
+        updatedCount++;
+      } catch (error) {
+        console.warn(`[Language] Failed to update queue ${queue.getMessageId()}:`, error);
+      }
+    }
+
+    // Get display name for the selected language
+    const languageName = getLanguageDisplayName(languageOption);
+
+    // Confirm success
+    const response = updatedCount > 0
+      ? `✅ Language changed to **${languageName}**\n\nUpdated ${updatedCount} queue${updatedCount === 1 ? '' : 's'}.`
+      : `✅ Language changed to **${languageName}**`;
+
+    await interaction.editReply({
+      content: response,
+    });
+
+    console.log(
+      `[Language] Changed language to ${languageOption} for guild ${interaction.guildId}, updated ${updatedCount} queues`
+    );
+  } catch (error) {
+    console.error('[Language] Error changing language:', error);
+
+    try {
+      await interaction.editReply({
+        content: ERROR_MESSAGES.GENERIC_ERROR,
+      });
+    } catch (replyError) {
+      console.error('[Language] Failed to send error message:', replyError);
+    }
   }
 }

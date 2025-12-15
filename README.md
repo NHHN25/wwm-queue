@@ -112,6 +112,17 @@ Completely removes the queue embed and deletes it from the database.
 /close hero-realm
 ```
 
+#### Change Language
+```
+/language [language]
+```
+Change the bot's language for your server. Supports English and Vietnamese.
+
+**Example:**
+```
+/language Vietnamese
+```
+
 ### Player Interaction
 
 Once a queue is created, players can interact with it using buttons:
@@ -235,7 +246,7 @@ When the bot restarts, it automatically:
 ### Bot Not Responding to Commands
 
 - Verify the bot is online and connected
-- Check that slash commands are registered (may take up to 1 hour)
+- Check that slash commands are registered (may take up to 1 hour to propagate)
 - Ensure the bot has required permissions
 - Check console logs for errors
 
@@ -301,6 +312,12 @@ For bugs, feature requests, or questions:
 Built for the **Where Winds Meet** gaming community.
 
 ## Changelog
+
+### v1.1.0 (Current)
+- ✨ New: `/language` command for multilingual support (English/Vietnamese)
+- ✨ New: Guild-specific command registration for instant updates during development
+- 🌐 Added language preference system
+- 📝 Updated documentation
 
 ### v1.0.0 (Initial Release)
 - Sword Trial queue (5 players)

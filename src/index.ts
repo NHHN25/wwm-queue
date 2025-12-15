@@ -150,14 +150,15 @@ async function restoreQueueState(client: Client): Promise<void> {
       // Get guild name for embed
       const guild = await client.guilds.fetch(queue.getGuildId());
       const guildName = guild?.name;
+      const guildId = queue.getGuildId();
 
       // Update message to ensure consistency
       const state = queue.getState();
-      const embed = createQueueEmbed(state, guildName);
+      const embed = createQueueEmbed(state, guildName, guildId);
 
       await message.edit({
         embeds: [embed],
-        components: [createJoinButtons()],
+        components: [createJoinButtons(guildId)],
       });
 
       restored++;

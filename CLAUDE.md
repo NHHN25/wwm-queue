@@ -20,12 +20,17 @@ wwm-queue/
 ├── src/
 │   ├── index.ts                    # Main bot entry point, event routing
 │   ├── commands/
-│   │   └── setup.ts                # Slash commands (/setup, /reset, /close)
+│   │   └── setup.ts                # Slash commands (/setup, /reset, /close, /language)
 │   ├── components/
 │   │   └── queueButtons.ts         # Button interaction handlers
 │   ├── database/
 │   │   ├── database.ts             # SQLite operations (CRUD)
 │   │   └── schema.sql              # Database schema
+│   ├── localization/
+│   │   ├── index.ts                # Language management functions
+│   │   ├── types.ts                # Translation type definitions
+│   │   ├── en.ts                   # English translations
+│   │   └── vi.ts                   # Vietnamese translations
 │   ├── models/
 │   │   ├── Queue.ts                # Queue business logic
 │   │   └── QueuePlayer.ts          # Player utilities
@@ -94,6 +99,7 @@ async function handleJoinButton(interaction, role) {
 - **`/setup [sword-trial|hero-realm] [channel]`**: Create persistent queue embed
 - **`/reset [queue-type]`**: Clear all players (keep embed)
 - **`/close [queue-type]`**: Delete embed and database entry
+- **`/language [language]`**: Change bot language for the server (English/Vietnamese)
 - **Permissions**: Administrator role required
 
 ## Database Schema
@@ -130,6 +136,16 @@ CREATE TABLE queue_players (
 
 CREATE INDEX idx_queue_players_message ON queue_players(message_id);
 CREATE INDEX idx_queue_players_user ON queue_players(user_id);
+```
+
+**guild_settings**
+```sql
+CREATE TABLE guild_settings (
+  guild_id TEXT PRIMARY KEY,         -- Discord guild (server) ID
+  language TEXT NOT NULL DEFAULT 'en' -- Preferred language: 'en' or 'vi'
+    CHECK(language IN ('en', 'vi')),
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
 ```
 
 ### Why Synchronous SQLite?
@@ -353,6 +369,20 @@ new SlashCommandBuilder()
     .addChoices(
       { name: 'Sword Trial', value: 'sword_trial' },
       { name: 'Hero Realm', value: 'hero_realm' }
+    ))
+  .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+
+// /language
+new SlashCommandBuilder()
+  .setName('language')
+  .setDescription('Change the bot language')
+  .addStringOption(opt => opt
+    .setName('language')
+    .setDescription('Select a language')
+    .setRequired(true)
+    .addChoices(
+      { name: 'English', value: 'en' },
+      { name: 'Tiếng Việt', value: 'vi' }
     ))
   .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
 ```
@@ -724,7 +754,53 @@ console.error(`[${new Date().toISOString()}] [ERROR] ${message}`, error);
 - Custom queue types via configuration
 - Webhook integration for external tools
 - Statistics dashboard (web interface)
-- Multi-language support
+
+### 5. Localization System
+**Directory**: [src/localization/](src/localization/)
+
+**Supported Languages**:
+- English (`en`) - Default
+- Vietnamese (`vi`)
+
+**Language Management**:
+```typescript
+// Get guild's language preference (defaults to 'en')
+getGuildLanguage(guildId: string): Language
+
+// Set guild's language preference
+setGuildLanguage(guildId: string, language: Language): boolean
+
+// Get translations for a guild
+getGuildTranslations(guildId: string): Translations
+
+// Validate language code
+isValidLanguage(language: string): boolean
+
+// Get display name for language
+getLanguageDisplayName(language: Language): string
+```
+
+**Translation Structure**:
+```typescript
+interface Translations {
+  commands: {
+    setup: { description: string; ... };
+    reset: { description: string; ... };
+    // ... other commands
+  };
+  errors: {
+    generic: string;
+    queueFull: string;
+    // ... other errors
+  };
+  // ... other translation keys
+}
+```
+
+**Database Storage**:
+- Language preferences stored in `guild_settings` table
+- Per-guild configuration (each server can choose their language)
+- Changes persist across bot restarts
 
 ## Resources
 
@@ -749,5 +825,14 @@ For issues, questions, or contributions, please refer to the project repository.
 ---
 
 **Last Updated**: 2025-12-15
-**Version**: 1.0.0
+**Version**: 1.1.0
 **Status**: In Development
+
+**Recent Changes**:
+- ✅ **Full localization system implemented**
+  - `/language` command changes server language instantly
+  - All queue embeds update in real-time when language changes
+  - Leave button label localized (Tank/Healer/DPS stay in English)
+  - English and Vietnamese translations complete
+  - Guild settings system for language preferences
+  - Translations persist across bot restarts
