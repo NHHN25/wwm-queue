@@ -212,7 +212,7 @@ async function handleSetupCommand(
 
     if (!permissions) {
       await interaction.reply({
-        content: ERROR_MESSAGES.MISSING_PERMISSIONS,
+        content: `❌ I cannot access ${targetChannel}. Please check that I have "View Channel" permission.`,
         ephemeral: true,
       });
       return;
@@ -220,6 +220,9 @@ async function handleSetupCommand(
 
     const missingPermissions: string[] = [];
 
+    if (!permissions.has(PermissionsBitField.Flags.ViewChannel)) {
+      missingPermissions.push('View Channel');
+    }
     if (!permissions.has(PermissionsBitField.Flags.SendMessages)) {
       missingPermissions.push('Send Messages');
     }
@@ -232,7 +235,7 @@ async function handleSetupCommand(
 
     if (missingPermissions.length > 0) {
       await interaction.reply({
-        content: `❌ I'm missing these permissions in ${targetChannel}: ${missingPermissions.join(', ')}`,
+        content: `❌ I'm missing these permissions in ${targetChannel}:\n${missingPermissions.map(p => `• ${p}`).join('\n')}\n\nPlease grant these permissions and try again.`,
         ephemeral: true,
       });
       return;
