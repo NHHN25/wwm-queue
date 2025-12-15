@@ -1,0 +1,36 @@
+{
+  "name": "wwm-queue-bot",
+  "version": "1.0.0",
+  "description": "Discord bot for managing Where Winds Meet game queue systems (Sword Trial & Hero Realm)",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "discord",
+    "bot",
+    "queue",
+    "where-winds-meet",
+    "gaming"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "discord.js": "^14.14.1",
+    "better-sqlite3": "^9.2.2",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.8",
+    "@types/node": "^20.10.6",
+    "typescript": "^5.3.3",
+    "tsx": "^4.7.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
