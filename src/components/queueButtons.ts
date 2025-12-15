@@ -120,7 +120,31 @@ async function handleJoinButton(
       return;
     }
 
-    // 2. Check if queue is full
+    // 2. Check if user is already in THIS queue - if so, remove them (toggle behavior)
+    if (queue.hasPlayer(userId)) {
+      const removed = queue.removePlayer(userId);
+
+      if (removed) {
+        // Update the queue embed
+        const state = queue.getState();
+        const guildName = interaction.guild?.name;
+        const embed = createQueueEmbed(state, guildName);
+
+        await interaction.update({
+          embeds: [embed],
+          components: [createJoinButtons()],
+        });
+
+        // Send ephemeral confirmation
+        await interaction.followUp({
+          content: `✅ You left the queue.`,
+          ephemeral: true,
+        });
+      }
+      return;
+    }
+
+    // 3. Check if queue is full
     if (queue.isFull()) {
       await interaction.reply({
         content: ERROR_MESSAGES.QUEUE_FULL,
@@ -129,7 +153,7 @@ async function handleJoinButton(
       return;
     }
 
-    // 3. Check if user is in another queue
+    // 4. Check if user is in another queue
     const otherQueueMessageId = queue.getUserOtherQueue(userId);
     if (otherQueueMessageId) {
       await interaction.reply({
@@ -139,7 +163,7 @@ async function handleJoinButton(
       return;
     }
 
-    // 4. Add player to queue
+    // 5. Add player to queue
     const added = queue.addPlayer(userId, username, role);
 
     if (!added) {
@@ -152,24 +176,25 @@ async function handleJoinButton(
     }
 
     // ========================================================================
-    // TWO-UPDATE PATTERN: This is the key to per-user button states
+    // Update queue display and notify user
     // ========================================================================
 
-    // UPDATE #1: User-specific (show Leave button to this user)
-    // This updates ONLY what the user who clicked sees
-    await interaction.update({
-      components: [createLeaveButton()],
-    });
-
-    // UPDATE #2: Global (update embed for all viewers)
-    // This updates the embed that everyone sees
+    // Update the queue embed for everyone
     const state = queue.getState();
     const guildName = interaction.guild?.name;
     const embed = createQueueEmbed(state, guildName);
 
-    await interaction.message.edit({
+    await interaction.update({
       embeds: [embed],
-      components: [createJoinButtons()], // Default view for other users
+      components: [createJoinButtons()],
+    });
+
+    // Send ephemeral confirmation to the user
+    const roleEmoji = ROLE_CONFIGS[role].emoji;
+    const roleName = ROLE_CONFIGS[role].displayName;
+    await interaction.followUp({
+      content: `✅ You joined the queue as ${roleEmoji} **${roleName}**!\n\n💡 *To leave the queue, click any role button again.*`,
+      ephemeral: true,
     });
 
     // 5. If queue is now full, send notification
