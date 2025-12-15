@@ -10,7 +10,7 @@ export const vi: Translations = {
     clickRole: 'Nhấp vào nút vai trò bên dưới để bắt đầu thành lập tổ đội',
     partyRoster: 'DANH SÁCH TỔ ĐỘI',
     openSlot: 'VỊ TRÍ TRỐNG',
-    queueComplete: 'HÀNG ĐỢI ĐẦY! SẴN SÀNG BẮT ĐẦU!',
+    queueComplete: 'LẬP ĐỘI THÀNH CÔNG! SẴN SÀNG BẮT ĐẦU!',
     queueProgress: '📊 Tiến Độ Lập Đội',
     empty: 'Trống',
     full: 'ĐẦY!',
@@ -20,8 +20,8 @@ export const vi: Translations = {
 
   footers: {
     queueEmpty: 'Nhấp vào nút vai trò để tham gia hàng đợi',
-    queueActive: 'Hàng đợi đang được lấp đầy! Tham gia ngay',
-    queueFull: 'Hàng đợi đã sẵn sàng! Chúc may mắn!',
+    queueActive: 'Tổ đội đang được lấp đầy! Tham gia ngay',
+    queueFull: 'Tổ đội đã sẵn sàng! Lụm Boss nào!',
   },
 
   buttons: {

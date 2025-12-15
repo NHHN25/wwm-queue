@@ -10,7 +10,6 @@ import { createQueueEmbed } from '../utils/embeds.js';
 import {
   BUTTON_IDS,
   ERROR_MESSAGES,
-  QUEUE_FULL_MESSAGE,
   parseButtonId,
   ROLE_CONFIGS,
 } from '../utils/constants.js';
@@ -329,8 +328,17 @@ async function sendQueueFullNotification(
     const playerIds = state.players.map((p) => p.userId);
     const playerMentions = formatPlayerMentions(playerIds);
     const queueType = queue.getQueueType();
+    
+    // Get translations for this guild
+    const guildId = interaction.guildId || undefined;
+    const t = guildId ? getGuildTranslations(guildId) : getGuildTranslations('');
+    
+    // Get localized queue type name
+    const queueTypeName = queueType === 'sword_trial' 
+      ? t.queueTypes.swordTrial 
+      : t.queueTypes.heroRealm;
 
-    const message = QUEUE_FULL_MESSAGE(queueType, playerMentions);
+    const message = t.queueFullMessage(queueTypeName, playerMentions);
 
     await interaction.followUp({
       content: message,
