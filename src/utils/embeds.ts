@@ -1,6 +1,5 @@
 import { EmbedBuilder } from 'discord.js';
 import type { QueueState } from '../types/index.js';
-import { formatPlayerSlot } from '../models/QueuePlayer.js';
 import {
   QUEUE_CONFIGS,
   EMOJIS,
@@ -17,32 +16,46 @@ export function createQueueEmbed(
   state: QueueState,
   guildName?: string
 ): EmbedBuilder {
-  const { queue } = state;
+  const { queue, players } = state;
   const config = QUEUE_CONFIGS[queue.queueType];
+  const playerCount = players.length;
+  const isFull = playerCount >= queue.capacity;
 
-  // Build title
+  // Build title with status indicator
   const emoji = getQueueEmoji(queue.queueType);
   const displayName = getQueueDisplayName(queue.queueType);
-  const title = `${emoji} ${displayName} Queue`;
+  const statusEmoji = isFull ? '✅' : playerCount > 0 ? '⏳' : '🔵';
+  const title = `${statusEmoji} ${emoji} ${displayName}`;
 
-  // Build embed
+  // Build embed with enhanced styling
   const embed = new EmbedBuilder()
     .setTitle(title)
-    .setColor(config.color)
+    .setColor(isFull ? 0x57f287 : config.color) // Green when full
     .setTimestamp(new Date());
 
-  // Add guild name if provided
+  // Add guild name with icon
   if (guildName) {
-    embed.setAuthor({ name: guildName });
+    embed.setAuthor({
+      name: `${guildName} • Party Finder`,
+    });
   }
 
   // Build description
   const description = buildQueueDescription(state);
   embed.setDescription(description);
 
+  // Add progress bar field
+  const progressBar = createProgressBar(playerCount, queue.capacity);
+  embed.addFields({
+    name: '📊 Queue Progress',
+    value: progressBar,
+    inline: false,
+  });
+
   // Add footer based on queue state
   const footer = getFooterText(state);
-  embed.setFooter({ text: footer });
+  const footerIcon = isFull ? '✅' : '👥';
+  embed.setFooter({ text: `${footerIcon} ${footer}` });
 
   return embed;
 }
@@ -57,31 +70,91 @@ function buildQueueDescription(state: QueueState): string {
 
   const lines: string[] = [];
 
-  // Player count header
-  lines.push(`**Players: ${playerCount}/${capacity}**`);
-  lines.push('');
-
-  // If queue is empty, show message
+  // If queue is empty, show welcoming message
   if (playerCount === 0) {
-    lines.push('*No players in queue yet.*');
-    lines.push('*Click a role button below to join!*');
+    lines.push('```');
+    lines.push('╔═══════════════════════════════╗');
+    lines.push('║     🎮 WAITING FOR PLAYERS    ║');
+    lines.push('╚═══════════════════════════════╝');
+    lines.push('```');
+    lines.push('');
+    lines.push('> 💡 **Be the first to join!**');
+    lines.push('> Click a role button below to start the queue');
     return lines.join('\n');
   }
 
-  // Show all slots (filled + empty)
+  // Header with visual separator
+  lines.push('```');
+  lines.push('═══════════ PARTY ROSTER ═══════════');
+  lines.push('```');
+  lines.push('');
+
+  // Show all slots with enhanced formatting
   for (let i = 0; i < capacity; i++) {
     const player = players[i] || null;
-    const slotText = formatPlayerSlot(player, i + 1);
-    lines.push(slotText);
+    if (player) {
+      const roleEmoji = getRoleEmoji(player.role);
+      const roleName = getRoleDisplayName(player.role).toUpperCase();
+      lines.push(`**${i + 1}.** ${roleEmoji} \`${roleName}\` • <@${player.userId}>`);
+    } else {
+      lines.push(`**${i + 1}.** ${EMOJIS.EMPTY_SLOT} \`OPEN SLOT\``);
+    }
   }
 
   // If queue is full, add celebration message
   if (playerCount >= capacity) {
     lines.push('');
-    lines.push(`${EMOJIS.FULL_QUEUE} **Queue is full!**`);
+    lines.push('```diff');
+    lines.push('+ QUEUE COMPLETE! READY TO START! +');
+    lines.push('```');
   }
 
   return lines.join('\n');
+}
+
+/**
+ * Create a visual progress bar
+ */
+function createProgressBar(current: number, total: number): string {
+  const percentage = Math.round((current / total) * 100);
+  const filledBlocks = Math.round((current / total) * 10);
+  const emptyBlocks = 10 - filledBlocks;
+
+  const filled = '█'.repeat(filledBlocks);
+  const empty = '░'.repeat(emptyBlocks);
+
+  const statusText =
+    current === 0
+      ? 'Empty'
+      : current === total
+      ? 'FULL!'
+      : `${current}/${total} Players`;
+
+  return `\`${filled}${empty}\` **${percentage}%** • ${statusText}`;
+}
+
+/**
+ * Get role emoji helper
+ */
+function getRoleEmoji(role: 'tank' | 'healer' | 'dps'): string {
+  const emojis = {
+    tank: '🛡️',
+    healer: '💚',
+    dps: '⚔️',
+  };
+  return emojis[role];
+}
+
+/**
+ * Get role display name helper
+ */
+function getRoleDisplayName(role: 'tank' | 'healer' | 'dps'): string {
+  const names = {
+    tank: 'Tank',
+    healer: 'Healer',
+    dps: 'DPS',
+  };
+  return names[role];
 }
 
 /**
