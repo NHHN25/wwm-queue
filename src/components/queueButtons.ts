@@ -21,8 +21,8 @@ import { formatPlayerMentions } from '../models/QueuePlayer.js';
 // ============================================================================
 
 /**
- * Create join buttons (Tank, Healer, DPS)
- * This is the default view shown to all users
+ * Create all queue buttons (Tank, Healer, DPS, Leave)
+ * All buttons shown together for easy access
  */
 export function createJoinButtons(): ActionRowBuilder<ButtonBuilder> {
   const tankButton = new ButtonBuilder()
@@ -40,16 +40,21 @@ export function createJoinButtons(): ActionRowBuilder<ButtonBuilder> {
     .setLabel(`${ROLE_CONFIGS.dps.emoji} ${ROLE_CONFIGS.dps.displayName}`)
     .setStyle(ButtonStyle.Danger);
 
+  const leaveButton = new ButtonBuilder()
+    .setCustomId(BUTTON_IDS.LEAVE)
+    .setLabel('❌ Leave')
+    .setStyle(ButtonStyle.Secondary);
+
   return new ActionRowBuilder<ButtonBuilder>().addComponents(
     tankButton,
     healerButton,
-    dpsButton
+    dpsButton,
+    leaveButton
   );
 }
 
 /**
- * Create leave button
- * Shown to users who are currently in the queue
+ * Create leave button (legacy - now unused but kept for compatibility)
  */
 export function createLeaveButton(): ActionRowBuilder<ButtonBuilder> {
   const leaveButton = new ButtonBuilder()
@@ -120,11 +125,13 @@ async function handleJoinButton(
       return;
     }
 
-    // 2. Check if user is already in THIS queue - if so, remove them (toggle behavior)
+    // 2. Check if user is already in THIS queue - if so, switch their role
     if (queue.hasPlayer(userId)) {
-      const removed = queue.removePlayer(userId);
+      // Remove from current role and add with new role
+      queue.removePlayer(userId);
+      const switched = queue.addPlayer(userId, username, role);
 
-      if (removed) {
+      if (switched) {
         // Update the queue embed
         const state = queue.getState();
         const guildName = interaction.guild?.name;
@@ -136,8 +143,10 @@ async function handleJoinButton(
         });
 
         // Send ephemeral confirmation
+        const roleEmoji = ROLE_CONFIGS[role].emoji;
+        const roleName = ROLE_CONFIGS[role].displayName;
         await interaction.followUp({
-          content: `✅ You left the queue.`,
+          content: `🔄 You switched to ${roleEmoji} **${roleName}**!`,
           ephemeral: true,
         });
       }
@@ -193,7 +202,7 @@ async function handleJoinButton(
     const roleEmoji = ROLE_CONFIGS[role].emoji;
     const roleName = ROLE_CONFIGS[role].displayName;
     await interaction.followUp({
-      content: `✅ You joined the queue as ${roleEmoji} **${roleName}**!\n\n💡 *To leave the queue, click any role button again.*`,
+      content: `✅ You joined the queue as ${roleEmoji} **${roleName}**!\n\n💡 *Click a different role to switch, or click ❌ Leave to exit the queue.*`,
       ephemeral: true,
     });
 
@@ -257,23 +266,20 @@ async function handleLeaveButton(
       return;
     }
 
-    // ========================================================================
-    // TWO-UPDATE PATTERN
-    // ========================================================================
-
-    // UPDATE #1: User-specific (show role buttons to this user)
-    await interaction.update({
-      components: [createJoinButtons()],
-    });
-
-    // UPDATE #2: Global (update embed for all viewers)
+    // Update the queue embed
     const state = queue.getState();
     const guildName = interaction.guild?.name;
     const embed = createQueueEmbed(state, guildName);
 
-    await interaction.message.edit({
+    await interaction.update({
       embeds: [embed],
       components: [createJoinButtons()],
+    });
+
+    // Send ephemeral confirmation
+    await interaction.followUp({
+      content: `✅ You left the queue.`,
+      ephemeral: true,
     });
   } catch (error) {
     console.error('[Button Handler] Error handling leave button:', error);
