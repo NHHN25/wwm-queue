@@ -230,7 +230,7 @@ export function createCompositionSummary(players: QueuePlayerData[]): string {
  */
 export function isBalancedComposition(
   players: QueuePlayerData[],
-  capacity: number
+  _capacity: number
 ): {
   balanced: boolean;
   suggestions: string[];

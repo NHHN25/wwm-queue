@@ -16,7 +16,6 @@ import {
   ERROR_MESSAGES,
   SUCCESS_MESSAGES,
   QUEUE_CONFIGS,
-  REQUIRED_PERMISSIONS,
 } from '../utils/constants.js';
 
 // ============================================================================
@@ -176,7 +175,7 @@ async function handleSetupCommand(
   }
 
   // Get subcommand (sword-trial or hero-realm)
-  const subcommand = interaction.options.data[0]?.name as
+  const subcommand = (interaction as any).options.data[0]?.name as
     | 'sword-trial'
     | 'hero-realm';
 
@@ -185,7 +184,7 @@ async function handleSetupCommand(
 
   // Get target channel (or default to current)
   const targetChannel =
-    (interaction.options.get('channel')?.channel ?? interaction.channel);
+    ((interaction as any).options.get('channel')?.channel ?? interaction.channel);
 
   if (!targetChannel || !targetChannel.isTextBased()) {
     await interaction.reply({
@@ -304,7 +303,7 @@ async function handleResetCommand(
     return;
   }
 
-  const queueType = interaction.options.get('queue-type')?.value as QueueType;
+  const queueType = (interaction as any).options.get('queue-type')?.value as QueueType;
 
   try {
     // 1. Find queue
@@ -366,7 +365,7 @@ async function handleCloseCommand(
     return;
   }
 
-  const queueType = interaction.options.get('queue-type')?.value as QueueType;
+  const queueType = (interaction as any).options.get('queue-type')?.value as QueueType;
 
   try {
     // 1. Find queue

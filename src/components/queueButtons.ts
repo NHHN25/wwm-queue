@@ -6,14 +6,13 @@ import {
 } from 'discord.js';
 import type { PlayerRole } from '../types/index.js';
 import { Queue } from '../models/Queue.js';
-import { createQueueEmbed, createErrorEmbed } from '../utils/embeds.js';
+import { createQueueEmbed } from '../utils/embeds.js';
 import {
   BUTTON_IDS,
   ERROR_MESSAGES,
   QUEUE_FULL_MESSAGE,
   parseButtonId,
   ROLE_CONFIGS,
-  QUEUE_CONFIGS,
 } from '../utils/constants.js';
 import { formatPlayerMentions } from '../models/QueuePlayer.js';
 
@@ -305,14 +304,15 @@ async function sendQueueFullNotification(
 
 /**
  * Log button interaction (development only)
+ * Currently unused but kept for future debugging
  */
-function logButtonInteraction(
-  action: 'join' | 'leave',
-  userId: string,
-  role?: PlayerRole
-): void {
-  if (process.env.NODE_ENV === 'development') {
-    const roleText = role ? ` as ${role}` : '';
-    console.log(`[Button] User ${userId} ${action}${roleText}`);
-  }
-}
+// function logButtonInteraction(
+//   action: 'join' | 'leave',
+//   userId: string,
+//   role?: PlayerRole
+// ): void {
+//   if (process.env.NODE_ENV === 'development') {
+//     const roleText = role ? ` as ${role}` : '';
+//     console.log(`[Button] User ${userId} ${action}${roleText}`);
+//   }
+// }

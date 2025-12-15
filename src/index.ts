@@ -79,10 +79,12 @@ client.on(Events.InteractionCreate, async (interaction) => {
         ephemeral: true,
       };
 
-      if (interaction.replied || interaction.deferred) {
-        await interaction.followUp(reply);
-      } else if (interaction.isRepliable()) {
-        await interaction.reply(reply);
+      if ('replied' in interaction && 'deferred' in interaction) {
+        if (interaction.replied || interaction.deferred) {
+          await (interaction as any).followUp(reply);
+        } else if ('reply' in interaction) {
+          await (interaction as any).reply(reply);
+        }
       }
     } catch (replyError) {
       console.error('[Interaction] Failed to send error message:', replyError);

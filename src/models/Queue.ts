@@ -1,4 +1,4 @@
-import type { QueueType, PlayerRole, QueueData, QueuePlayerData, QueueState } from '../types/index.js';
+import type { QueueType, PlayerRole, QueuePlayerData, QueueState } from '../types/index.js';
 import * as db from '../database/database.js';
 import { QUEUE_CONFIGS } from '../utils/constants.js';
 

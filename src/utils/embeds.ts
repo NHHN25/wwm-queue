@@ -17,7 +17,7 @@ export function createQueueEmbed(
   state: QueueState,
   guildName?: string
 ): EmbedBuilder {
-  const { queue, players } = state;
+  const { queue } = state;
   const config = QUEUE_CONFIGS[queue.queueType];
 
   // Build title
