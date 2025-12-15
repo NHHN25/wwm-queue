@@ -45,3 +45,12 @@ CREATE INDEX IF NOT EXISTS idx_queues_guild
 
 CREATE INDEX IF NOT EXISTS idx_queues_type
   ON queues(guild_id, queue_type);
+
+-- Guild settings table
+-- Stores per-guild configuration like language preference
+CREATE TABLE IF NOT EXISTS guild_settings (
+  guild_id TEXT PRIMARY KEY,         -- Discord guild (server) ID
+  language TEXT NOT NULL DEFAULT 'en' -- Preferred language: 'en' or 'vi'
+    CHECK(language IN ('en', 'vi')),
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);

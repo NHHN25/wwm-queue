@@ -309,3 +309,43 @@ export function getUserQueueStats(userId: string): {
 
   return stats;
 }
+
+// ============================================================================
+// Guild Settings Operations
+// ============================================================================
+
+/**
+ * Get guild's preferred language
+ * Returns null if no preference is set (defaults to 'en' in the application layer)
+ */
+export function getGuildLanguage(guildId: string): 'en' | 'vi' | null {
+  const db = getDatabase();
+  const stmt = db.prepare(`
+    SELECT language FROM guild_settings
+    WHERE guild_id = ?
+  `);
+
+  const result = stmt.get(guildId) as { language: 'en' | 'vi' } | undefined;
+  return result?.language || null;
+}
+
+/**
+ * Set guild's preferred language
+ * Creates or updates the guild settings
+ */
+export function setGuildLanguage(
+  guildId: string,
+  language: 'en' | 'vi'
+): boolean {
+  const db = getDatabase();
+  const stmt = db.prepare(`
+    INSERT INTO guild_settings (guild_id, language, updated_at)
+    VALUES (?, ?, CURRENT_TIMESTAMP)
+    ON CONFLICT(guild_id) DO UPDATE SET
+      language = excluded.language,
+      updated_at = CURRENT_TIMESTAMP
+  `);
+
+  const result = stmt.run(guildId, language);
+  return result.changes > 0;
+}

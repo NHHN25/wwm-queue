@@ -17,6 +17,12 @@ import {
   SUCCESS_MESSAGES,
   QUEUE_CONFIGS,
 } from '../utils/constants.js';
+import {
+  setGuildLanguage,
+  getLanguageDisplayName,
+  isValidLanguage,
+  type Language,
+} from '../localization/index.js';
 
 // ============================================================================
 // Command Definitions
@@ -88,7 +94,23 @@ export function buildCommands() {
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
     .setDMPermission(false);
 
-  return [setupCommand, resetCommand, closeCommand];
+  const languageCommand = new SlashCommandBuilder()
+    .setName('language')
+    .setDescription('Change the bot language')
+    .addStringOption((opt) =>
+      opt
+        .setName('language')
+        .setDescription('Select a language')
+        .setRequired(true)
+        .addChoices(
+          { name: 'English', value: 'en' },
+          { name: 'Tiếng Việt', value: 'vi' }
+        )
+    )
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+    .setDMPermission(false);
+
+  return [setupCommand, resetCommand, closeCommand, languageCommand];
 }
 
 // ============================================================================

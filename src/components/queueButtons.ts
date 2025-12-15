@@ -28,17 +28,17 @@ export function createJoinButtons(): ActionRowBuilder<ButtonBuilder> {
   const tankButton = new ButtonBuilder()
     .setCustomId(BUTTON_IDS.JOIN_TANK)
     .setLabel(`${ROLE_CONFIGS.tank.emoji} ${ROLE_CONFIGS.tank.displayName}`)
-    .setStyle(ButtonStyle.Primary);
+    .setStyle(ButtonStyle.Danger); // Orange/Red
 
   const healerButton = new ButtonBuilder()
     .setCustomId(BUTTON_IDS.JOIN_HEALER)
     .setLabel(`${ROLE_CONFIGS.healer.emoji} ${ROLE_CONFIGS.healer.displayName}`)
-    .setStyle(ButtonStyle.Success);
+    .setStyle(ButtonStyle.Success); // Green
 
   const dpsButton = new ButtonBuilder()
     .setCustomId(BUTTON_IDS.JOIN_DPS)
     .setLabel(`${ROLE_CONFIGS.dps.emoji} ${ROLE_CONFIGS.dps.displayName}`)
-    .setStyle(ButtonStyle.Danger);
+    .setStyle(ButtonStyle.Primary); // Blue
 
   const leaveButton = new ButtonBuilder()
     .setCustomId(BUTTON_IDS.LEAVE)
