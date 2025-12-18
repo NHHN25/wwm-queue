@@ -14,6 +14,7 @@ import {
   handleWeaponSelectMenu,
   handleRegistrationSubmitButton,
 } from './components/registrationSelectMenus.js';
+import { handleApprovalButtonInteraction } from './components/verificationButtons.js';
 
 // Load environment variables
 config();
@@ -73,6 +74,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
       // Check if it's a registration submit button
       if (interaction.customId.startsWith('registration_submit_')) {
         await handleRegistrationSubmitButton(interaction);
+      } else if (interaction.customId.startsWith('approval_')) {
+        // Verification approval buttons
+        await handleApprovalButtonInteraction(interaction);
       } else {
         // Queue buttons
         await handleButtonInteraction(interaction);

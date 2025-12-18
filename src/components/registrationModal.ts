@@ -99,14 +99,63 @@ export async function handleRegistrationModalSubmit(
       return;
     }
 
-    const message = wasRegistered
-      ? t.registration.registrationUpdated
-      : t.registration.registrationSuccess;
+    // Check if verification is enabled and this is a first-time registration
+    const {
+      getVerificationSettings,
+      getPlayerRegistration,
+    } = await import('../database/database.js');
+    const { postPendingRegistrationForReview } = await import(
+      '../utils/verificationHelpers.js'
+    );
 
-    await interaction.reply({
-      content: message,
-      ephemeral: true,
-    });
+    const verificationSettings = getVerificationSettings(interaction.guildId);
+    const registration = getPlayerRegistration(
+      interaction.guildId,
+      interaction.user.id
+    );
+
+    const isFirstTime =
+      !wasRegistered ||
+      !registration ||
+      registration.approval_status !== 'approved';
+
+    if (verificationSettings?.enabled && isFirstTime && registration) {
+      // Post to review channel for approval
+      const member = await interaction.guild!.members.fetch(
+        interaction.user.id
+      );
+      const reviewMessageId = await postPendingRegistrationForReview(
+        interaction.guild!,
+        member,
+        registration,
+        verificationSettings
+      );
+
+      if (reviewMessageId) {
+        await interaction.reply({
+          content: t.verification.pendingReview,
+          ephemeral: true,
+        });
+      } else {
+        // Failed to post to review channel, complete registration immediately
+        await interaction.reply({
+          content: wasRegistered
+            ? t.registration.registrationUpdated
+            : t.registration.registrationSuccess,
+          ephemeral: true,
+        });
+      }
+    } else {
+      // No verification or already approved - complete immediately
+      const message = wasRegistered
+        ? t.registration.registrationUpdated
+        : t.registration.registrationSuccess;
+
+      await interaction.reply({
+        content: message,
+        ephemeral: true,
+      });
+    }
   } catch (error) {
     console.error('[Registration Modal] Error handling submission:', error);
     await interaction.reply({

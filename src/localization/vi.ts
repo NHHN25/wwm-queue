@@ -145,4 +145,40 @@ export const vi: Translations = {
     dualBlades: 'Song Đao',
     other: 'Khác',
   },
+
+  verification: {
+    setupVerification: {
+      description: 'Thiết lập hệ thống xác minh thành viên',
+      reviewChannelOption: 'Kênh nơi đơn đăng ký chờ duyệt được đăng',
+      pendingRoleOption: 'Vai trò sẽ bị xóa sau khi duyệt (tùy chọn)',
+      approvedRoleOption: 'Vai trò sẽ được thêm sau khi duyệt (tùy chọn)',
+    },
+    disableVerification: {
+      description: 'Tắt hệ thống xác minh thành viên',
+    },
+    verificationEnabled: (channel: string) =>
+      `✅ Đã bật hệ thống xác minh!\n\nĐơn đăng ký chờ duyệt sẽ được đăng tại ${channel} để quản trị viên xem xét.`,
+    verificationDisabled:
+      '✅ Đã tắt hệ thống xác minh. Đăng ký sẽ hoàn tất ngay lập tức.',
+    pendingReview:
+      '✅ Đơn đăng ký đã được gửi để xem xét!\n\nQuản trị viên sẽ duyệt đơn của bạn sớm nhất.',
+    pendingCardTitle: '🔍 Đơn Đăng Ký Thành Viên Đang Chờ',
+    pendingCardFooter: 'Chờ quản trị viên duyệt',
+    approveButton: '✅ Chấp Nhận',
+    rejectButton: '❌ Từ Chối',
+    approved: '✅ Đã duyệt đơn đăng ký thành công!',
+    rejected: '❌ Đơn đăng ký đã bị từ chối.',
+    approvedCardTitle: '✅ Đơn Đăng Ký Đã Được Duyệt',
+    rejectedCardTitle: '❌ Đơn Đăng Ký Bị Từ Chối',
+    approvedBy: (username: string) => `Được duyệt bởi @${username}`,
+    rejectedBy: (username: string) => `Bị từ chối bởi @${username}`,
+    errorNotAdmin:
+      '❌ Chỉ quản trị viên mới có thể duyệt đơn đăng ký.',
+    errorAlreadyProcessed: '❌ Đơn đăng ký này đã được xử lý rồi.',
+    errorMemberLeft: '❌ Thành viên này đã rời khỏi máy chủ.',
+    errorMissingPermissions: (errors: string[]) =>
+      `⚠️ Đã duyệt nhưng gặp lỗi quyền hạn:\n${errors.map((e) => `• ${e}`).join('\n')}\n\nVui lòng sửa quyền thủ công.`,
+    errorPartialSuccess: (errors: string[]) =>
+      `⚠️ Hoàn thành một phần với lỗi:\n${errors.map((e) => `• ${e}`).join('\n')}`,
+  },
 };

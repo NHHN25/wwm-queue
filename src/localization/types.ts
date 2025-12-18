@@ -141,4 +141,40 @@ export interface Translations {
     dualBlades: string;
     other: string;
   };
+
+  // Verification system
+  verification: {
+    // Command descriptions
+    setupVerification: {
+      description: string;
+      reviewChannelOption: string;
+      pendingRoleOption: string;
+      approvedRoleOption: string;
+    };
+    disableVerification: {
+      description: string;
+    };
+    // Success messages
+    verificationEnabled: (channel: string) => string;
+    verificationDisabled: string;
+    // Pending registration
+    pendingReview: string;
+    pendingCardTitle: string;
+    pendingCardFooter: string;
+    // Approval
+    approveButton: string;
+    rejectButton: string;
+    approved: string;
+    rejected: string;
+    approvedCardTitle: string;
+    rejectedCardTitle: string;
+    approvedBy: (username: string) => string;
+    rejectedBy: (username: string) => string;
+    // Errors
+    errorNotAdmin: string;
+    errorAlreadyProcessed: string;
+    errorMemberLeft: string;
+    errorMissingPermissions: (errors: string[]) => string;
+    errorPartialSuccess: (errors: string[]) => string;
+  };
 }

@@ -499,3 +499,185 @@ export function deleteRegistrationChannel(guildId: string): boolean {
   const result = stmt.run(guildId);
   return result.changes > 0;
 }
+
+// ============================================================================
+// Verification Settings Operations
+// ============================================================================
+
+/**
+ * Set verification settings for a guild (UPSERT)
+ * Returns true if successful
+ */
+export function setVerificationSettings(
+  guildId: string,
+  reviewChannelId: string,
+  pendingRoleId: string | null,
+  approvedRoleId: string | null
+): boolean {
+  const db = getDatabase();
+  const stmt = db.prepare(`
+    INSERT INTO verification_settings
+      (guild_id, review_channel_id, pending_role_id, approved_role_id, enabled, updated_at)
+    VALUES (?, ?, ?, ?, 1, CURRENT_TIMESTAMP)
+    ON CONFLICT(guild_id) DO UPDATE SET
+      review_channel_id = excluded.review_channel_id,
+      pending_role_id = excluded.pending_role_id,
+      approved_role_id = excluded.approved_role_id,
+      enabled = 1,
+      updated_at = CURRENT_TIMESTAMP
+  `);
+
+  const result = stmt.run(guildId, reviewChannelId, pendingRoleId, approvedRoleId);
+  return result.changes > 0;
+}
+
+/**
+ * Get verification settings for a guild
+ * Returns null if not configured
+ */
+export function getVerificationSettings(
+  guildId: string
+): import('../types/index.js').VerificationSettingsRow | null {
+  const db = getDatabase();
+  const stmt = db.prepare(`
+    SELECT * FROM verification_settings
+    WHERE guild_id = ?
+  `);
+
+  return (
+    (stmt.get(guildId) as
+      | import('../types/index.js').VerificationSettingsRow
+      | undefined) || null
+  );
+}
+
+/**
+ * Disable verification for a guild
+ * Returns true if successful
+ */
+export function disableVerificationSettings(guildId: string): boolean {
+  const db = getDatabase();
+  const stmt = db.prepare(`
+    UPDATE verification_settings
+    SET enabled = 0, updated_at = CURRENT_TIMESTAMP
+    WHERE guild_id = ?
+  `);
+
+  const result = stmt.run(guildId);
+  return result.changes > 0;
+}
+
+// ============================================================================
+// Pending Registration Operations
+// ============================================================================
+
+/**
+ * Create a pending registration entry
+ * Returns true if successful, false if duplicate
+ */
+export function createPendingRegistration(
+  guildId: string,
+  userId: string,
+  reviewMessageId: string,
+  registrationId: number
+): boolean {
+  const db = getDatabase();
+
+  try {
+    const stmt = db.prepare(`
+      INSERT INTO pending_registrations
+        (guild_id, user_id, review_message_id, registration_id, status)
+      VALUES (?, ?, ?, ?, 'pending')
+    `);
+
+    stmt.run(guildId, userId, reviewMessageId, registrationId);
+    return true;
+  } catch (error: any) {
+    // UNIQUE constraint violation (user already has pending registration)
+    if (error.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+      return false;
+    }
+    throw error;
+  }
+}
+
+/**
+ * Get pending registration by guild and user
+ * Returns null if not found
+ */
+export function getPendingRegistration(
+  guildId: string,
+  userId: string
+): import('../types/index.js').PendingRegistrationRow | null {
+  const db = getDatabase();
+  const stmt = db.prepare(`
+    SELECT * FROM pending_registrations
+    WHERE guild_id = ? AND user_id = ?
+  `);
+
+  return (
+    (stmt.get(guildId, userId) as
+      | import('../types/index.js').PendingRegistrationRow
+      | undefined) || null
+  );
+}
+
+/**
+ * Update pending registration status
+ * Returns true if successful
+ */
+export function updatePendingRegistrationStatus(
+  id: number,
+  status: 'pending' | 'approved' | 'rejected',
+  approvedBy: string
+): boolean {
+  const db = getDatabase();
+  const stmt = db.prepare(`
+    UPDATE pending_registrations
+    SET status = ?, approved_by = ?, approved_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+  `);
+
+  const result = stmt.run(status, approvedBy, id);
+  return result.changes > 0;
+}
+
+/**
+ * Get player registration by ID
+ * Returns null if not found
+ */
+export function getPlayerRegistrationById(
+  id: number
+): import('../types/index.js').PlayerRegistrationRow | null {
+  const db = getDatabase();
+  const stmt = db.prepare(`
+    SELECT * FROM player_registrations
+    WHERE id = ?
+  `);
+
+  return (
+    (stmt.get(id) as
+      | import('../types/index.js').PlayerRegistrationRow
+      | undefined) || null
+  );
+}
+
+/**
+ * Update player registration approval status
+ * Returns true if successful
+ */
+export function updatePlayerRegistrationApproval(
+  id: number,
+  approvalStatus: 'pending' | 'approved' | 'rejected',
+  approvedBy: string
+): boolean {
+  const db = getDatabase();
+  const stmt = db.prepare(`
+    UPDATE player_registrations
+    SET approval_status = ?, approved_by = ?, approved_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+  `);
+
+  const result = stmt.run(approvalStatus, approvedBy, id);
+  return result.changes > 0;
+}

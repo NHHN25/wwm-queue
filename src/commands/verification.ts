@@ -1,0 +1,207 @@
+import {
+  SlashCommandBuilder,
+  ChatInputCommandInteraction,
+  PermissionFlagsBits,
+  ChannelType,
+} from 'discord.js';
+import {
+  setVerificationSettings,
+  disableVerificationSettings,
+} from '../database/database.js';
+import {
+  validateVerificationPermissions,
+  validateRoleHierarchy,
+} from '../utils/verificationHelpers.js';
+import { getGuildTranslations } from '../localization/index.js';
+
+/**
+ * /setup-verification command
+ * Configure the verification system for first-time member registrations
+ */
+export const setupVerificationCommand = new SlashCommandBuilder()
+  .setName('setup-verification')
+  .setDescription('Set up member verification system')
+  .addChannelOption((option) =>
+    option
+      .setName('review-channel')
+      .setDescription('Channel where pending registrations are posted')
+      .addChannelTypes(ChannelType.GuildText)
+      .setRequired(true)
+  )
+  .addRoleOption((option) =>
+    option
+      .setName('pending-role')
+      .setDescription('Role to remove after approval (optional)')
+      .setRequired(false)
+  )
+  .addRoleOption((option) =>
+    option
+      .setName('approved-role')
+      .setDescription('Role to add after approval (optional)')
+      .setRequired(false)
+  )
+  .setDefaultMemberPermissions(PermissionFlagsBits.Administrator);
+
+/**
+ * /disable-verification command
+ * Disable the verification system (registrations complete immediately)
+ */
+export const disableVerificationCommand = new SlashCommandBuilder()
+  .setName('disable-verification')
+  .setDescription('Disable member verification system')
+  .setDefaultMemberPermissions(PermissionFlagsBits.Administrator);
+
+/**
+ * Handle /setup-verification command
+ */
+export async function handleSetupVerification(
+  interaction: ChatInputCommandInteraction
+): Promise<void> {
+  if (!interaction.guildId || !interaction.guild) {
+    await interaction.reply({
+      content: '❌ This command can only be used in a server.',
+      ephemeral: true,
+    });
+    return;
+  }
+
+  const t = getGuildTranslations(interaction.guildId);
+
+  try {
+    // Get command options
+    const reviewChannel = interaction.options.getChannel('review-channel', true);
+    const pendingRole = interaction.options.getRole('pending-role', false);
+    const approvedRole = interaction.options.getRole('approved-role', false);
+
+    // Validate channel type
+    if (reviewChannel.type !== ChannelType.GuildText) {
+      await interaction.reply({
+        content: '❌ Review channel must be a text channel.',
+        ephemeral: true,
+      });
+      return;
+    }
+
+    // Validate bot permissions
+    const missingPerms = validateVerificationPermissions(
+      interaction.guild,
+      reviewChannel.id
+    );
+
+    if (missingPerms.length > 0) {
+      await interaction.reply({
+        content: `❌ I'm missing these permissions:\n${missingPerms.map((p) => `• ${p}`).join('\n')}\n\nPlease grant these permissions and try again.`,
+        ephemeral: true,
+      });
+      return;
+    }
+
+    // Validate role hierarchy
+    const roleErrors = validateRoleHierarchy(
+      interaction.guild,
+      pendingRole?.id || null,
+      approvedRole?.id || null
+    );
+
+    if (roleErrors.length > 0) {
+      await interaction.reply({
+        content: `❌ Role configuration error:\n${roleErrors.map((e) => `• ${e}`).join('\n')}`,
+        ephemeral: true,
+      });
+      return;
+    }
+
+    // Save settings to database
+    const success = setVerificationSettings(
+      interaction.guildId,
+      reviewChannel.id,
+      pendingRole?.id || null,
+      approvedRole?.id || null
+    );
+
+    if (!success) {
+      await interaction.reply({
+        content: '❌ Failed to save verification settings. Please try again.',
+        ephemeral: true,
+      });
+      return;
+    }
+
+    // Build configuration summary
+    let summary = `**Review Channel:** ${reviewChannel}\n`;
+    if (pendingRole) {
+      summary += `**Pending Role:** ${pendingRole} (will be removed on approval)\n`;
+    }
+    if (approvedRole) {
+      summary += `**Approved Role:** ${approvedRole} (will be added on approval)\n`;
+    }
+
+    await interaction.reply({
+      content:
+        t.verification.verificationEnabled(reviewChannel.toString()) +
+        '\n\n' +
+        summary,
+      ephemeral: false,
+    });
+
+    console.log(
+      `[Verification] Setup completed for guild ${interaction.guildId} by ${interaction.user.id}`
+    );
+  } catch (error) {
+    console.error('[Verification] Error in setup-verification command:', error);
+    await interaction.reply({
+      content:
+        '❌ An error occurred while setting up verification. Please try again.',
+      ephemeral: true,
+    });
+  }
+}
+
+/**
+ * Handle /disable-verification command
+ */
+export async function handleDisableVerification(
+  interaction: ChatInputCommandInteraction
+): Promise<void> {
+  if (!interaction.guildId) {
+    await interaction.reply({
+      content: '❌ This command can only be used in a server.',
+      ephemeral: true,
+    });
+    return;
+  }
+
+  const t = getGuildTranslations(interaction.guildId);
+
+  try {
+    const success = disableVerificationSettings(interaction.guildId);
+
+    if (!success) {
+      await interaction.reply({
+        content:
+          '❌ Verification is not enabled in this server, or an error occurred.',
+        ephemeral: true,
+      });
+      return;
+    }
+
+    await interaction.reply({
+      content: t.verification.verificationDisabled,
+      ephemeral: false,
+    });
+
+    console.log(
+      `[Verification] Disabled for guild ${interaction.guildId} by ${interaction.user.id}`
+    );
+  } catch (error) {
+    console.error(
+      '[Verification] Error in disable-verification command:',
+      error
+    );
+    await interaction.reply({
+      content:
+        '❌ An error occurred while disabling verification. Please try again.',
+      ephemeral: true,
+    });
+  }
+}

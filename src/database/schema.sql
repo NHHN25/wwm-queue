@@ -66,6 +66,10 @@ CREATE TABLE IF NOT EXISTS player_registrations (
   gear_score INTEGER NOT NULL,         -- Combat power / "lực chiến"
   primary_weapon TEXT NOT NULL,        -- Primary weapon name (e.g., 'strategic_sword', 'nameless_spear')
   secondary_weapon TEXT NOT NULL,      -- Secondary weapon name
+  approval_status TEXT DEFAULT 'pending' -- Approval status: 'pending', 'approved', 'rejected'
+    CHECK(approval_status IN ('pending', 'approved', 'rejected')),
+  approved_by TEXT,                    -- Discord user ID of approver
+  approved_at DATETIME,                -- Timestamp of approval
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 
@@ -80,6 +84,9 @@ CREATE INDEX IF NOT EXISTS idx_player_registrations_guild
 CREATE INDEX IF NOT EXISTS idx_player_registrations_user
   ON player_registrations(guild_id, user_id);
 
+CREATE INDEX IF NOT EXISTS idx_player_registrations_approval
+  ON player_registrations(guild_id, approval_status);
+
 -- Registration channel settings per guild
 -- Only one registration channel per guild
 CREATE TABLE IF NOT EXISTS registration_channels (
@@ -88,3 +95,52 @@ CREATE TABLE IF NOT EXISTS registration_channels (
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Verification settings per guild
+-- Stores configuration for member approval system
+CREATE TABLE IF NOT EXISTS verification_settings (
+  guild_id TEXT PRIMARY KEY,           -- Discord guild ID
+  pending_role_id TEXT,                -- Role auto-assigned to new members (to be removed after approval)
+  approved_role_id TEXT,               -- Role assigned after approval
+  review_channel_id TEXT NOT NULL,     -- Channel where pending registrations are posted for review
+  enabled BOOLEAN DEFAULT 1,           -- Feature toggle (1 = enabled, 0 = disabled)
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_verification_settings_guild
+  ON verification_settings(guild_id);
+
+-- Pending registrations awaiting admin approval
+-- Tracks registration review messages and their status
+CREATE TABLE IF NOT EXISTS pending_registrations (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  guild_id TEXT NOT NULL,              -- Discord guild ID
+  user_id TEXT NOT NULL,               -- Discord user ID
+  review_message_id TEXT NOT NULL,     -- Message ID in review channel
+  registration_id INTEGER NOT NULL,    -- Foreign key to player_registrations.id
+  status TEXT NOT NULL DEFAULT 'pending' -- 'pending', 'approved', 'rejected'
+    CHECK(status IN ('pending', 'approved', 'rejected')),
+  approved_by TEXT,                    -- Discord user ID of approver
+  approved_at DATETIME,                -- Timestamp of approval/rejection
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+  -- Foreign key constraint with cascade delete
+  FOREIGN KEY (registration_id) REFERENCES player_registrations(id)
+    ON DELETE CASCADE,
+
+  -- One pending registration per user per guild
+  UNIQUE(guild_id, user_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_pending_registrations_guild
+  ON pending_registrations(guild_id);
+
+CREATE INDEX IF NOT EXISTS idx_pending_registrations_user
+  ON pending_registrations(guild_id, user_id);
+
+CREATE INDEX IF NOT EXISTS idx_pending_registrations_message
+  ON pending_registrations(review_message_id);
+
+CREATE INDEX IF NOT EXISTS idx_pending_registrations_status
+  ON pending_registrations(guild_id, status);

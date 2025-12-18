@@ -26,6 +26,12 @@ import {
   buildRegistrationCommands,
   handleRegistrationCommand,
 } from './registration.js';
+import {
+  setupVerificationCommand,
+  disableVerificationCommand,
+  handleSetupVerification,
+  handleDisableVerification,
+} from './verification.js';
 
 // ============================================================================
 // Command Definitions
@@ -115,8 +121,12 @@ export function buildCommands() {
 
   const queueCommands = [setupCommand, resetCommand, closeCommand, languageCommand];
   const registrationCommands = buildRegistrationCommands();
+  const verificationCommands = [
+    setupVerificationCommand,
+    disableVerificationCommand,
+  ];
 
-  return [...queueCommands, ...registrationCommands];
+  return [...queueCommands, ...registrationCommands, ...verificationCommands];
 }
 
 // ============================================================================
@@ -175,6 +185,10 @@ export async function handleCommandInteraction(
       )
     ) {
       await handleRegistrationCommand(interaction);
+    } else if (commandName === 'setup-verification') {
+      await handleSetupVerification(interaction as any);
+    } else if (commandName === 'disable-verification') {
+      await handleDisableVerification(interaction as any);
     }
   } catch (error) {
     console.error(`[Commands] Error handling /${commandName}:`, error);

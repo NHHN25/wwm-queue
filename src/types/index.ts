@@ -167,7 +167,7 @@ export interface GuildConfig {
 /**
  * Weapon types available in Where Winds Meet
  */
-export type WeaponType = 'sword' | 'spear' | 'dual_blades' | 'fans' | 'umbrella' | 'rope_dart';
+export type WeaponType = 'sword' | 'spear' | 'dual_blades' | 'mo_dao' | 'fans' | 'umbrella' | 'rope_dart';
 
 /**
  * Specific weapon names in Where Winds Meet
@@ -178,9 +178,12 @@ export type WeaponName =
   | 'nameless_sword'
   // Spears
   | 'stormbreaker_spear'
+  | 'heavenquaker_spear'
   | 'nameless_spear'
   // Dual Blades / Twinblades
   | 'infernal_twinblades'
+  // Mo Dao
+  | 'mo_dao'
   // Fans
   | 'panacea_fan'
   | 'inkwell_fan'
@@ -189,6 +192,11 @@ export type WeaponName =
   | 'vernal_umbrella'
   // Rope Darts
   | 'mortal_rope_dart';
+
+/**
+ * Approval status for registrations
+ */
+export type ApprovalStatus = 'pending' | 'approved' | 'rejected';
 
 /**
  * Database row for player_registrations table
@@ -202,6 +210,9 @@ export interface PlayerRegistrationRow {
   gear_score: number;
   primary_weapon: WeaponName;
   secondary_weapon: WeaponName;
+  approval_status: ApprovalStatus;
+  approved_by: string | null;
+  approved_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -225,4 +236,36 @@ export interface WeaponConfig {
   emoji: string;
   displayNameEn: string;
   displayNameVi: string;
+}
+
+// ============================================================================
+// Verification System Types
+// ============================================================================
+
+/**
+ * Database row for verification_settings table
+ */
+export interface VerificationSettingsRow {
+  guild_id: string;
+  pending_role_id: string | null;
+  approved_role_id: string | null;
+  review_channel_id: string;
+  enabled: number; // SQLite boolean (0 or 1)
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * Database row for pending_registrations table
+ */
+export interface PendingRegistrationRow {
+  id: number;
+  guild_id: string;
+  user_id: string;
+  review_message_id: string;
+  registration_id: number;
+  status: ApprovalStatus;
+  approved_by: string | null;
+  approved_at: string | null;
+  created_at: string;
 }

@@ -28,6 +28,13 @@ export const WEAPON_CONFIGS: Record<WeaponName, WeaponConfig> = {
     displayNameEn: 'Stormbreaker Spear',
     displayNameVi: 'Stormbreaker Spear',
   },
+  heavenquaker_spear: {
+    name: 'heavenquaker_spear',
+    type: 'spear',
+    emoji: '🔱',
+    displayNameEn: 'Heavenquaker Spear',
+    displayNameVi: 'Heavenquaker Spear',
+  },
   nameless_spear: {
     name: 'nameless_spear',
     type: 'spear',
@@ -43,6 +50,15 @@ export const WEAPON_CONFIGS: Record<WeaponName, WeaponConfig> = {
     emoji: '🗡️',
     displayNameEn: 'Infernal Twinblades',
     displayNameVi: 'Infernal Twinblades',
+  },
+
+  // Mo Dao
+  mo_dao: {
+    name: 'mo_dao',
+    type: 'mo_dao',
+    emoji: '⚔️',
+    displayNameEn: 'Mo Dao',
+    displayNameVi: 'Mo Dao',
   },
 
   // Fans
@@ -118,8 +134,10 @@ export function isValidWeaponName(name: string): name is WeaponName {
     'strategic_sword',
     'nameless_sword',
     'stormbreaker_spear',
+    'heavenquaker_spear',
     'nameless_spear',
     'infernal_twinblades',
+    'mo_dao',
     'panacea_fan',
     'inkwell_fan',
     'soulshade_umbrella',
@@ -136,6 +154,7 @@ export function getWeaponsByType(): Record<WeaponType, WeaponConfig[]> {
     sword: [],
     spear: [],
     dual_blades: [],
+    mo_dao: [],
     fans: [],
     umbrella: [],
     rope_dart: [],

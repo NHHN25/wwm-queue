@@ -146,4 +146,39 @@ export const en: Translations = {
     dualBlades: 'Dual Blades',
     other: 'Other',
   },
+
+  verification: {
+    setupVerification: {
+      description: 'Set up member verification system',
+      reviewChannelOption: 'Channel where pending registrations are posted',
+      pendingRoleOption: 'Role to remove after approval (optional)',
+      approvedRoleOption: 'Role to add after approval (optional)',
+    },
+    disableVerification: {
+      description: 'Disable member verification system',
+    },
+    verificationEnabled: (channel: string) =>
+      `✅ Verification system enabled!\n\nPending registrations will be posted to ${channel} for admin review.`,
+    verificationDisabled:
+      '✅ Verification system disabled. Registrations will complete immediately.',
+    pendingReview:
+      '✅ Registration submitted for review!\n\nAn admin will approve your registration soon.',
+    pendingCardTitle: '🔍 Pending Member Registration',
+    pendingCardFooter: 'Waiting for admin approval',
+    approveButton: '✅ Approve',
+    rejectButton: '❌ Reject',
+    approved: '✅ Registration approved successfully!',
+    rejected: '❌ Registration rejected.',
+    approvedCardTitle: '✅ Registration Approved',
+    rejectedCardTitle: '❌ Registration Rejected',
+    approvedBy: (username: string) => `Approved by @${username}`,
+    rejectedBy: (username: string) => `Rejected by @${username}`,
+    errorNotAdmin: '❌ Only administrators can approve registrations.',
+    errorAlreadyProcessed: '❌ This registration has already been processed.',
+    errorMemberLeft: '❌ This member has left the server.',
+    errorMissingPermissions: (errors: string[]) =>
+      `⚠️ Approved but encountered permission errors:\n${errors.map((e) => `• ${e}`).join('\n')}\n\nPlease fix permissions manually.`,
+    errorPartialSuccess: (errors: string[]) =>
+      `⚠️ Partially completed with errors:\n${errors.map((e) => `• ${e}`).join('\n')}`,
+  },
 };
