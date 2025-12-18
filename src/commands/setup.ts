@@ -22,6 +22,10 @@ import {
   getLanguageDisplayName,
   isValidLanguage,
 } from '../localization/index.js';
+import {
+  buildRegistrationCommands,
+  handleRegistrationCommand,
+} from './registration.js';
 
 // ============================================================================
 // Command Definitions
@@ -109,7 +113,10 @@ export function buildCommands() {
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
     .setDMPermission(false);
 
-  return [setupCommand, resetCommand, closeCommand, languageCommand];
+  const queueCommands = [setupCommand, resetCommand, closeCommand, languageCommand];
+  const registrationCommands = buildRegistrationCommands();
+
+  return [...queueCommands, ...registrationCommands];
 }
 
 // ============================================================================
@@ -162,6 +169,12 @@ export async function handleCommandInteraction(
       await handleCloseCommand(interaction);
     } else if (commandName === 'language') {
       await handleLanguageCommand(interaction);
+    } else if (
+      ['register', 'baodanh', 'info', 'setup-registration'].includes(
+        commandName
+      )
+    ) {
+      await handleRegistrationCommand(interaction);
     }
   } catch (error) {
     console.error(`[Commands] Error handling /${commandName}:`, error);

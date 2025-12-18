@@ -81,11 +81,64 @@ export interface Translations {
       description: string;
       languageOption: string;
     };
+    register: {
+      description: string;
+    };
+    baodanh: {
+      description: string;
+    };
+    info: {
+      description: string;
+      userOption: string;
+    };
+    setupRegistration: {
+      description: string;
+      channelOption: string;
+    };
   };
 
   // Queue type names
   queueTypes: {
     swordTrial: string;
     heroRealm: string;
+  };
+
+  // Player registration
+  registration: {
+    modalTitle: string;
+    modalIngameName: string;
+    modalIngameUid: string;
+    modalGearScore: string;
+    modalPrimaryWeapon: string;
+    modalSecondaryWeapon: string;
+    placeholderIngameName: string;
+    placeholderIngameUid: string;
+    placeholderGearScore: string;
+    selectWeapons: string;
+    registrationSuccess: string;
+    registrationUpdated: string;
+    profileTitle: string;
+    profileNotFound: string;
+    profileFieldIngameName: string;
+    profileFieldUid: string;
+    profileFieldGearScore: string;
+    profileFieldWeapons: string;
+    profileFieldPrimaryWeapon: string;
+    profileFieldSecondaryWeapon: string;
+    profileFieldRegistered: string;
+    channelSetSuccess: (channel: string) => string;
+    errorWrongChannel: (channel: string) => string;
+    errorNoChannel: string;
+    errorInvalidGearScore: string;
+  };
+
+  // Weapon names
+  weapons: {
+    sword: string;
+    spear: string;
+    bow: string;
+    staff: string;
+    dualBlades: string;
+    other: string;
   };
 }

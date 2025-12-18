@@ -349,3 +349,153 @@ export function setGuildLanguage(
   const result = stmt.run(guildId, language);
   return result.changes > 0;
 }
+
+// ============================================================================
+// Player Registration Operations
+// ============================================================================
+
+/**
+ * Create or update player registration (UPSERT)
+ * Returns true if successful, false otherwise
+ */
+export function upsertPlayerRegistration(
+  guildId: string,
+  userId: string,
+  ingameName: string,
+  ingameUid: string,
+  gearScore: number,
+  primaryWeapon: string,
+  secondaryWeapon: string
+): boolean {
+  const db = getDatabase();
+  const stmt = db.prepare(`
+    INSERT INTO player_registrations
+      (guild_id, user_id, ingame_name, ingame_uid, gear_score, primary_weapon, secondary_weapon, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+    ON CONFLICT(guild_id, user_id) DO UPDATE SET
+      ingame_name = excluded.ingame_name,
+      ingame_uid = excluded.ingame_uid,
+      gear_score = excluded.gear_score,
+      primary_weapon = excluded.primary_weapon,
+      secondary_weapon = excluded.secondary_weapon,
+      updated_at = CURRENT_TIMESTAMP
+  `);
+
+  const result = stmt.run(
+    guildId,
+    userId,
+    ingameName,
+    ingameUid,
+    gearScore,
+    primaryWeapon,
+    secondaryWeapon
+  );
+  return result.changes > 0;
+}
+
+/**
+ * Get player registration by user ID
+ * Returns null if not found
+ */
+export function getPlayerRegistration(
+  guildId: string,
+  userId: string
+): import('../types/index.js').PlayerRegistrationRow | null {
+  const db = getDatabase();
+  const stmt = db.prepare(`
+    SELECT * FROM player_registrations
+    WHERE guild_id = ? AND user_id = ?
+  `);
+
+  return (
+    (stmt.get(guildId, userId) as
+      | import('../types/index.js').PlayerRegistrationRow
+      | undefined) || null
+  );
+}
+
+/**
+ * Check if player is registered
+ */
+export function isPlayerRegistered(guildId: string, userId: string): boolean {
+  const db = getDatabase();
+  const stmt = db.prepare(`
+    SELECT 1 FROM player_registrations
+    WHERE guild_id = ? AND user_id = ?
+  `);
+
+  return stmt.get(guildId, userId) !== undefined;
+}
+
+/**
+ * Delete player registration
+ * Returns true if deleted, false if not found
+ */
+export function deletePlayerRegistration(
+  guildId: string,
+  userId: string
+): boolean {
+  const db = getDatabase();
+  const stmt = db.prepare(`
+    DELETE FROM player_registrations
+    WHERE guild_id = ? AND user_id = ?
+  `);
+
+  const result = stmt.run(guildId, userId);
+  return result.changes > 0;
+}
+
+// ============================================================================
+// Registration Channel Operations
+// ============================================================================
+
+/**
+ * Set registration channel for a guild (UPSERT)
+ * Returns true if successful
+ */
+export function setRegistrationChannel(
+  guildId: string,
+  channelId: string
+): boolean {
+  const db = getDatabase();
+  const stmt = db.prepare(`
+    INSERT INTO registration_channels (guild_id, channel_id, updated_at)
+    VALUES (?, ?, CURRENT_TIMESTAMP)
+    ON CONFLICT(guild_id) DO UPDATE SET
+      channel_id = excluded.channel_id,
+      updated_at = CURRENT_TIMESTAMP
+  `);
+
+  const result = stmt.run(guildId, channelId);
+  return result.changes > 0;
+}
+
+/**
+ * Get registration channel for a guild
+ * Returns null if not set
+ */
+export function getRegistrationChannel(guildId: string): string | null {
+  const db = getDatabase();
+  const stmt = db.prepare(`
+    SELECT channel_id FROM registration_channels
+    WHERE guild_id = ?
+  `);
+
+  const result = stmt.get(guildId) as { channel_id: string } | undefined;
+  return result?.channel_id || null;
+}
+
+/**
+ * Delete registration channel setting
+ * Returns true if deleted
+ */
+export function deleteRegistrationChannel(guildId: string): boolean {
+  const db = getDatabase();
+  const stmt = db.prepare(`
+    DELETE FROM registration_channels
+    WHERE guild_id = ?
+  `);
+
+  const result = stmt.run(guildId);
+  return result.changes > 0;
+}

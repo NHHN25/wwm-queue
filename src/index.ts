@@ -9,6 +9,11 @@ import {
 import { Queue } from './models/Queue.js';
 import { createQueueEmbed } from './utils/embeds.js';
 import { createJoinButtons } from './components/queueButtons.js';
+import { handleRegistrationModalSubmit } from './components/registrationModal.js';
+import {
+  handleWeaponSelectMenu,
+  handleRegistrationSubmitButton,
+} from './components/registrationSelectMenus.js';
 
 // Load environment variables
 config();
@@ -65,9 +70,23 @@ client.once(Events.ClientReady, async (c) => {
 client.on(Events.InteractionCreate, async (interaction) => {
   try {
     if (interaction.isButton()) {
-      await handleButtonInteraction(interaction);
+      // Check if it's a registration submit button
+      if (interaction.customId.startsWith('registration_submit_')) {
+        await handleRegistrationSubmitButton(interaction);
+      } else {
+        // Queue buttons
+        await handleButtonInteraction(interaction);
+      }
     } else if (interaction.isChatInputCommand()) {
       await handleCommandInteraction(interaction);
+    } else if (interaction.isStringSelectMenu()) {
+      if (interaction.customId.startsWith('registration_')) {
+        await handleWeaponSelectMenu(interaction);
+      }
+    } else if (interaction.isModalSubmit()) {
+      if (interaction.customId.startsWith('registration_modal')) {
+        await handleRegistrationModalSubmit(interaction);
+      }
     }
   } catch (error) {
     console.error('[Interaction] Unexpected error:', error);

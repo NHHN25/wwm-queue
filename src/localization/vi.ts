@@ -84,10 +84,65 @@ export const vi: Translations = {
       description: 'Thay đổi ngôn ngữ bot',
       languageOption: 'Chọn ngôn ngữ',
     },
+    register: {
+      description: 'Đăng ký hồ sơ trong game của bạn',
+    },
+    baodanh: {
+      description: 'Đăng ký hồ sơ người chơi',
+    },
+    info: {
+      description: 'Xem hồ sơ người chơi',
+      userOption: 'Người chơi cần xem (để trống để xem hồ sơ của bạn)',
+    },
+    setupRegistration: {
+      description: 'Thiết lập kênh đăng ký',
+      channelOption: 'Kênh mà người chơi có thể đăng ký',
+    },
   },
 
   queueTypes: {
     swordTrial: 'Sword Trial',
     heroRealm: 'Hero Realm',
+  },
+
+  registration: {
+    modalTitle: 'Đăng Ký Người Chơi',
+    modalIngameName: 'Tên Trong Game',
+    modalIngameUid: 'UID Trong Game',
+    modalGearScore: 'Lực Chiến',
+    modalPrimaryWeapon: 'Vũ Khí Chính',
+    modalSecondaryWeapon: 'Vũ Khí Phụ',
+    placeholderIngameName: 'Tên nhân vật của bạn',
+    placeholderIngameUid: 'ID duy nhất của bạn',
+    placeholderGearScore: 'vd: 1.628 hoặc 16280',
+    selectWeapons: '🗡️ Vui lòng chọn vũ khí của bạn:',
+    registrationSuccess: '✅ Đăng ký thành công! Hồ sơ của bạn đã được tạo.',
+    registrationUpdated: '✅ Đã cập nhật! Hồ sơ của bạn đã được làm mới.',
+    profileTitle: 'Hồ Sơ Người Chơi',
+    profileNotFound: 'Người chơi này chưa đăng ký.',
+    profileFieldIngameName: '🎮 Tên Trong Game',
+    profileFieldUid: '🆔 UID',
+    profileFieldGearScore: '⚔️ Lực Chiến',
+    profileFieldWeapons: '🗡️ Vũ Khí',
+    profileFieldPrimaryWeapon: 'Vũ Khí Chính',
+    profileFieldSecondaryWeapon: 'Vũ Khí Phụ',
+    profileFieldRegistered: '📅 Ngày Đăng Ký',
+    channelSetSuccess: (channel: string) =>
+      `✅ Đã đặt kênh đăng ký thành ${channel}!\n\nNgười chơi có thể sử dụng \`/register\` hoặc \`/baodanh\` trong kênh đó.`,
+    errorWrongChannel: (channel: string) =>
+      `❌ Đăng ký chỉ được phép trong ${channel}!\n\nVui lòng sử dụng lệnh ở đó.`,
+    errorNoChannel:
+      '❌ Đăng ký chưa được bật trong máy chủ này. Liên hệ quản trị viên.',
+    errorInvalidGearScore:
+      '❌ Lực chiến phải là một số hợp lệ (vd: 15000).',
+  },
+
+  weapons: {
+    sword: 'Kiếm',
+    spear: 'Thương',
+    bow: 'Cung',
+    staff: 'Trượng',
+    dualBlades: 'Song Đao',
+    other: 'Khác',
   },
 };

@@ -159,3 +159,70 @@ export interface GuildConfig {
     afkCheckEnabled: boolean;
   };
 }
+
+// ============================================================================
+// Player Registration Types
+// ============================================================================
+
+/**
+ * Weapon types available in Where Winds Meet
+ */
+export type WeaponType = 'sword' | 'spear' | 'dual_blades' | 'fans' | 'umbrella' | 'rope_dart';
+
+/**
+ * Specific weapon names in Where Winds Meet
+ */
+export type WeaponName =
+  // Swords
+  | 'strategic_sword'
+  | 'nameless_sword'
+  // Spears
+  | 'stormbreaker_spear'
+  | 'nameless_spear'
+  // Dual Blades / Twinblades
+  | 'infernal_twinblades'
+  // Fans
+  | 'panacea_fan'
+  | 'inkwell_fan'
+  // Umbrellas
+  | 'soulshade_umbrella'
+  | 'vernal_umbrella'
+  // Rope Darts
+  | 'mortal_rope_dart';
+
+/**
+ * Database row for player_registrations table
+ */
+export interface PlayerRegistrationRow {
+  id: number;
+  guild_id: string;
+  user_id: string;
+  ingame_name: string;
+  ingame_uid: string;
+  gear_score: number;
+  primary_weapon: WeaponName;
+  secondary_weapon: WeaponName;
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * Registration channel data
+ */
+export interface RegistrationChannelRow {
+  guild_id: string;
+  channel_id: string;
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * Weapon display configuration
+ */
+export interface WeaponConfig {
+  name: WeaponName;
+  type: WeaponType;
+  emoji: string;
+  displayNameEn: string;
+  displayNameVi: string;
+}
