@@ -40,7 +40,8 @@ export const setupVerificationCommand = new SlashCommandBuilder()
       .setDescription('Role to add after approval (optional)')
       .setRequired(false)
   )
-  .setDefaultMemberPermissions(PermissionFlagsBits.Administrator);
+  .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+  .setDMPermission(false);
 
 /**
  * /disableverification command
@@ -49,7 +50,8 @@ export const setupVerificationCommand = new SlashCommandBuilder()
 export const disableVerificationCommand = new SlashCommandBuilder()
   .setName('disableverification')
   .setDescription('Disable member verification system')
-  .setDefaultMemberPermissions(PermissionFlagsBits.Administrator);
+  .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+  .setDMPermission(false);
 
 /**
  * Handle /setup-verification command
