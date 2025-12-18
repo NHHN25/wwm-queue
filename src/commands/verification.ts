@@ -15,39 +15,39 @@ import {
 import { getGuildTranslations } from '../localization/index.js';
 
 /**
- * /setup-verification command
+ * /setupverification command
  * Configure the verification system for first-time member registrations
  */
 export const setupVerificationCommand = new SlashCommandBuilder()
-  .setName('setup-verification')
+  .setName('setupverification')
   .setDescription('Set up member verification system')
   .addChannelOption((option) =>
     option
-      .setName('review-channel')
+      .setName('reviewchannel')
       .setDescription('Channel where pending registrations are posted')
       .addChannelTypes(ChannelType.GuildText)
       .setRequired(true)
   )
   .addRoleOption((option) =>
     option
-      .setName('pending-role')
+      .setName('pendingrole')
       .setDescription('Role to remove after approval (optional)')
       .setRequired(false)
   )
   .addRoleOption((option) =>
     option
-      .setName('approved-role')
+      .setName('approvedrole')
       .setDescription('Role to add after approval (optional)')
       .setRequired(false)
   )
   .setDefaultMemberPermissions(PermissionFlagsBits.Administrator);
 
 /**
- * /disable-verification command
+ * /disableverification command
  * Disable the verification system (registrations complete immediately)
  */
 export const disableVerificationCommand = new SlashCommandBuilder()
-  .setName('disable-verification')
+  .setName('disableverification')
   .setDescription('Disable member verification system')
   .setDefaultMemberPermissions(PermissionFlagsBits.Administrator);
 
@@ -69,9 +69,9 @@ export async function handleSetupVerification(
 
   try {
     // Get command options
-    const reviewChannel = interaction.options.getChannel('review-channel', true);
-    const pendingRole = interaction.options.getRole('pending-role', false);
-    const approvedRole = interaction.options.getRole('approved-role', false);
+    const reviewChannel = interaction.options.getChannel('reviewchannel', true);
+    const pendingRole = interaction.options.getRole('pendingrole', false);
+    const approvedRole = interaction.options.getRole('approvedrole', false);
 
     // Validate channel type
     if (reviewChannel.type !== ChannelType.GuildText) {

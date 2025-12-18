@@ -185,9 +185,9 @@ export async function handleCommandInteraction(
       )
     ) {
       await handleRegistrationCommand(interaction);
-    } else if (commandName === 'setup-verification') {
+    } else if (commandName === 'setupverification') {
       await handleSetupVerification(interaction as any);
-    } else if (commandName === 'disable-verification') {
+    } else if (commandName === 'disableverification') {
       await handleDisableVerification(interaction as any);
     }
   } catch (error) {
