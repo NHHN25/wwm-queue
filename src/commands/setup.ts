@@ -146,6 +146,8 @@ export async function registerCommands(client: Client): Promise<void> {
 
   try {
     console.log('[Commands] Registering slash commands globally...');
+    console.log(`[Commands] Total commands to register: ${commands.length}`);
+    console.log('[Commands] Command names:', commands.map(cmd => cmd.name).join(', '));
 
     await rest.put(Routes.applicationCommands(client.user.id), {
       body: commands.map((cmd) => cmd.toJSON()),

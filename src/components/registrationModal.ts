@@ -99,7 +99,7 @@ export async function handleRegistrationModalSubmit(
       return;
     }
 
-    // Check if verification is enabled and this is a first-time registration
+    // Check if verification is enabled and user needs approval
     const {
       getVerificationSettings,
       getPlayerRegistration,
@@ -114,16 +114,26 @@ export async function handleRegistrationModalSubmit(
       interaction.user.id
     );
 
-    const isFirstTime =
-      !wasRegistered ||
-      !registration ||
-      registration.approval_status !== 'approved';
+    // Fetch member to check their roles
+    const member = await interaction.guild!.members.fetch(
+      interaction.user.id
+    );
 
-    if (verificationSettings?.enabled && isFirstTime && registration) {
+    // User needs verification if:
+    // 1. Verification is enabled
+    // 2. They have the pending role (configured in verification settings)
+    // 3. They're not already approved
+    const hasPendingRole =
+      verificationSettings?.pending_role_id &&
+      member.roles.cache.has(verificationSettings.pending_role_id);
+
+    const needsVerification =
+      verificationSettings?.enabled &&
+      hasPendingRole &&
+      registration?.approval_status !== 'approved';
+
+    if (needsVerification && registration) {
       // Post to review channel for approval
-      const member = await interaction.guild!.members.fetch(
-        interaction.user.id
-      );
       const reviewMessageId = await postPendingRegistrationForReview(
         interaction.guild!,
         member,
@@ -146,7 +156,7 @@ export async function handleRegistrationModalSubmit(
         });
       }
     } else {
-      // No verification or already approved - complete immediately
+      // No verification needed (no pending role or already approved) - complete immediately
       const message = wasRegistered
         ? t.registration.registrationUpdated
         : t.registration.registrationSuccess;
