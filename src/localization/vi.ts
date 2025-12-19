@@ -157,6 +157,7 @@ export const vi: Translations = {
       reviewChannelOption: 'Kênh nơi đơn đăng ký chờ duyệt được đăng',
       pendingRoleOption: 'Vai trò sẽ bị xóa sau khi duyệt (tùy chọn)',
       approvedRoleOption: 'Vai trò sẽ được thêm sau khi duyệt (tùy chọn)',
+      approvedChannelOption: 'Kênh nơi thông báo duyệt được gửi (tùy chọn)',
     },
     disableVerification: {
       description: 'Tắt hệ thống xác minh thành viên',

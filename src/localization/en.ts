@@ -158,6 +158,7 @@ export const en: Translations = {
       reviewChannelOption: 'Channel where pending registrations are posted',
       pendingRoleOption: 'Role to remove after approval (optional)',
       approvedRoleOption: 'Role to add after approval (optional)',
+      approvedChannelOption: 'Channel where approval notifications are sent (optional)',
     },
     disableVerification: {
       description: 'Disable member verification system',

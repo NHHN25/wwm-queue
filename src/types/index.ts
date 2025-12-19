@@ -251,6 +251,7 @@ export interface VerificationSettingsRow {
   pending_role_id: string | null;
   approved_role_id: string | null;
   review_channel_id: string;
+  approved_channel_id: string | null;
   enabled: number; // SQLite boolean (0 or 1)
   created_at: string;
   updated_at: string;

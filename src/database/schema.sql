@@ -104,6 +104,7 @@ CREATE TABLE IF NOT EXISTS verification_settings (
   pending_role_id TEXT,                -- Role auto-assigned to new members (to be removed after approval)
   approved_role_id TEXT,               -- Role assigned after approval
   review_channel_id TEXT NOT NULL,     -- Channel where pending registrations are posted for review
+  approved_channel_id TEXT,            -- Channel where approval notifications are sent (optional, defaults to review channel)
   enabled BOOLEAN DEFAULT 1,           -- Feature toggle (1 = enabled, 0 = disabled)
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP

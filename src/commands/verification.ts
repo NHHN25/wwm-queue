@@ -40,6 +40,13 @@ export const setupVerificationCommand = new SlashCommandBuilder()
       .setDescription('Role to add after approval (optional)')
       .setRequired(false)
   )
+  .addChannelOption((option) =>
+    option
+      .setName('approvedchannel')
+      .setDescription('Channel where approval notifications are sent (optional)')
+      .addChannelTypes(ChannelType.GuildText)
+      .setRequired(false)
+  )
   .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
   .setDMPermission(false);
 
@@ -74,11 +81,21 @@ export async function handleSetupVerification(
     const reviewChannel = interaction.options.getChannel('reviewchannel', true);
     const pendingRole = interaction.options.getRole('pendingrole', false);
     const approvedRole = interaction.options.getRole('approvedrole', false);
+    const approvedChannel = interaction.options.getChannel('approvedchannel', false);
 
     // Validate channel type
     if (reviewChannel.type !== ChannelType.GuildText) {
       await interaction.reply({
         content: '❌ Review channel must be a text channel.',
+        ephemeral: true,
+      });
+      return;
+    }
+
+    // Validate approved channel type if provided
+    if (approvedChannel && approvedChannel.type !== ChannelType.GuildText) {
+      await interaction.reply({
+        content: '❌ Approved channel must be a text channel.',
         ephemeral: true,
       });
       return;
@@ -118,7 +135,8 @@ export async function handleSetupVerification(
       interaction.guildId,
       reviewChannel.id,
       pendingRole?.id || null,
-      approvedRole?.id || null
+      approvedRole?.id || null,
+      approvedChannel?.id || null
     );
 
     if (!success) {
@@ -136,6 +154,11 @@ export async function handleSetupVerification(
     }
     if (approvedRole) {
       summary += `**Approved Role:** ${approvedRole} (will be added on approval)\n`;
+    }
+    if (approvedChannel) {
+      summary += `**Approval Notification Channel:** ${approvedChannel}\n`;
+    } else {
+      summary += `**Approval Notification Channel:** Same as review channel\n`;
     }
 
     await interaction.reply({

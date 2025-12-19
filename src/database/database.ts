@@ -46,7 +46,36 @@ export function initializeDatabase(): void {
   // Execute schema (creates tables and indexes if they don't exist)
   db.exec(schema);
 
+  // Run migrations for existing databases
+  runMigrations();
+
   console.log('[Database] Schema initialized successfully');
+}
+
+/**
+ * Run database migrations for schema updates
+ */
+function runMigrations(): void {
+  const db = getDatabase();
+
+  try {
+    // Migration: Add approved_channel_id to verification_settings (if not exists)
+    const hasApprovedChannelColumn = db
+      .prepare(
+        `SELECT COUNT(*) as count FROM pragma_table_info('verification_settings') WHERE name='approved_channel_id'`
+      )
+      .get() as { count: number };
+
+    if (hasApprovedChannelColumn.count === 0) {
+      db.exec(`
+        ALTER TABLE verification_settings
+        ADD COLUMN approved_channel_id TEXT;
+      `);
+      console.log('[Database] Migration: Added approved_channel_id column to verification_settings');
+    }
+  } catch (error) {
+    console.error('[Database] Migration error:', error);
+  }
 }
 
 /**
@@ -536,22 +565,24 @@ export function setVerificationSettings(
   guildId: string,
   reviewChannelId: string,
   pendingRoleId: string | null,
-  approvedRoleId: string | null
+  approvedRoleId: string | null,
+  approvedChannelId: string | null = null
 ): boolean {
   const db = getDatabase();
   const stmt = db.prepare(`
     INSERT INTO verification_settings
-      (guild_id, review_channel_id, pending_role_id, approved_role_id, enabled, updated_at)
-    VALUES (?, ?, ?, ?, 1, CURRENT_TIMESTAMP)
+      (guild_id, review_channel_id, pending_role_id, approved_role_id, approved_channel_id, enabled, updated_at)
+    VALUES (?, ?, ?, ?, ?, 1, CURRENT_TIMESTAMP)
     ON CONFLICT(guild_id) DO UPDATE SET
       review_channel_id = excluded.review_channel_id,
       pending_role_id = excluded.pending_role_id,
       approved_role_id = excluded.approved_role_id,
+      approved_channel_id = excluded.approved_channel_id,
       enabled = 1,
       updated_at = CURRENT_TIMESTAMP
   `);
 
-  const result = stmt.run(guildId, reviewChannelId, pendingRoleId, approvedRoleId);
+  const result = stmt.run(guildId, reviewChannelId, pendingRoleId, approvedRoleId, approvedChannelId);
   return result.changes > 0;
 }
 

@@ -184,10 +184,22 @@ export async function handleApprovalButtonInteraction(
       // Ping the player to notify them of approval
       try {
         const guildName = interaction.guild.name;
-        await interaction.followUp({
-          content: `<@${userId}> ${t.verification.approvalNotification(guildName)}`,
-          ephemeral: false,
-        });
+
+        // Determine which channel to send the notification to
+        const notificationChannelId = verificationSettings?.approved_channel_id || interaction.channelId;
+        const notificationChannel = await interaction.guild.channels.fetch(notificationChannelId);
+
+        if (notificationChannel?.isTextBased()) {
+          await notificationChannel.send({
+            content: `<@${userId}> ${t.verification.approvalNotification(guildName)}`,
+          });
+        } else {
+          // Fallback to current channel if configured channel is unavailable
+          await interaction.followUp({
+            content: `<@${userId}> ${t.verification.approvalNotification(guildName)}`,
+            ephemeral: false,
+          });
+        }
       } catch (error) {
         console.error('[Verification] Failed to ping user:', error);
       }

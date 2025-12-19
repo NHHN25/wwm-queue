@@ -155,6 +155,7 @@ export interface Translations {
       reviewChannelOption: string;
       pendingRoleOption: string;
       approvedRoleOption: string;
+      approvedChannelOption: string;
     };
     disableVerification: {
       description: string;
