@@ -150,10 +150,12 @@ async function handleJoinButton(
         });
 
         // Send ephemeral confirmation
+        const t = getGuildTranslations(guildId || '');
         const roleEmoji = ROLE_CONFIGS[role].emoji;
         const roleName = ROLE_CONFIGS[role].displayName;
+        const roleDisplay = `${roleEmoji} **${roleName}**`;
         await interaction.followUp({
-          content: `🔄 You switched to ${roleEmoji} **${roleName}**!`,
+          content: t.success.switchedRole(roleDisplay),
           ephemeral: true,
         });
       }
@@ -207,10 +209,12 @@ async function handleJoinButton(
     });
 
     // Send ephemeral confirmation to the user
+    const t = getGuildTranslations(guildId || '');
     const roleEmoji = ROLE_CONFIGS[role].emoji;
     const roleName = ROLE_CONFIGS[role].displayName;
+    const roleDisplay = `${roleEmoji} **${roleName}**`;
     await interaction.followUp({
-      content: `✅ You joined the queue as ${roleEmoji} **${roleName}**!\n\n💡 *Click a different role to switch, or click ❌ Leave to exit the queue.*`,
+      content: t.success.joinedQueue(roleDisplay),
       ephemeral: true,
     });
 
@@ -286,8 +290,9 @@ async function handleLeaveButton(
     });
 
     // Send ephemeral confirmation
+    const t = getGuildTranslations(guildId || '');
     await interaction.followUp({
-      content: `✅ You left the queue.`,
+      content: t.success.leftQueue,
       ephemeral: true,
     });
   } catch (error) {
