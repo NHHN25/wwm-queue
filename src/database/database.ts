@@ -364,18 +364,20 @@ export function upsertPlayerRegistration(
   ingameName: string,
   ingameUid: string,
   gearScore: number,
+  arenaRank: string,
   primaryWeapon: string,
   secondaryWeapon: string
 ): boolean {
   const db = getDatabase();
   const stmt = db.prepare(`
     INSERT INTO player_registrations
-      (guild_id, user_id, ingame_name, ingame_uid, gear_score, primary_weapon, secondary_weapon, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+      (guild_id, user_id, ingame_name, ingame_uid, gear_score, arena_rank, primary_weapon, secondary_weapon, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
     ON CONFLICT(guild_id, user_id) DO UPDATE SET
       ingame_name = excluded.ingame_name,
       ingame_uid = excluded.ingame_uid,
       gear_score = excluded.gear_score,
+      arena_rank = excluded.arena_rank,
       primary_weapon = excluded.primary_weapon,
       secondary_weapon = excluded.secondary_weapon,
       updated_at = CURRENT_TIMESTAMP
@@ -387,6 +389,7 @@ export function upsertPlayerRegistration(
     ingameName,
     ingameUid,
     gearScore,
+    arenaRank,
     primaryWeapon,
     secondaryWeapon
   );
@@ -442,6 +445,27 @@ export function deletePlayerRegistration(
   `);
 
   const result = stmt.run(guildId, userId);
+  return result.changes > 0;
+}
+
+/**
+ * Update only gear score and arena rank (quick update)
+ * Returns true if successful
+ */
+export function updatePlayerStats(
+  guildId: string,
+  userId: string,
+  gearScore: number,
+  arenaRank: string
+): boolean {
+  const db = getDatabase();
+  const stmt = db.prepare(`
+    UPDATE player_registrations
+    SET gear_score = ?, arena_rank = ?, updated_at = CURRENT_TIMESTAMP
+    WHERE guild_id = ? AND user_id = ?
+  `);
+
+  const result = stmt.run(gearScore, arenaRank, guildId, userId);
   return result.changes > 0;
 }
 

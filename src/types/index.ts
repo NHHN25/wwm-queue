@@ -208,6 +208,7 @@ export interface PlayerRegistrationRow {
   ingame_name: string;
   ingame_uid: string;
   gear_score: number;
+  arena_rank: string;
   primary_weapon: WeaponName;
   secondary_weapon: WeaponName;
   approval_status: ApprovalStatus;

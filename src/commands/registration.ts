@@ -60,11 +60,17 @@ export function buildRegistrationCommands() {
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
     .setDMPermission(false);
 
+  const capnhatCommand = new SlashCommandBuilder()
+    .setName('capnhat')
+    .setDescription('Cập nhật lực chiến và hạng đấu trường')
+    .setDMPermission(false);
+
   return [
     registerCommand,
     baodanhCommand,
     infoCommand,
     setupRegistrationCommand,
+    capnhatCommand,
   ];
 }
 
@@ -83,6 +89,8 @@ export async function handleRegistrationCommand(
       await handleInfoCommand(interaction);
     } else if (commandName === 'setup-registration') {
       await handleSetupRegistrationCommand(interaction);
+    } else if (commandName === 'capnhat') {
+      await handleCapnhatCommand(interaction);
     }
   } catch (error) {
     console.error(`[Registration] Error handling /${commandName}:`, error);
@@ -217,9 +225,7 @@ export async function showRegistrationModalWithWeapons(
   secondaryWeapon: WeaponName,
   language: 'en' | 'vi'
 ): Promise<void> {
-  console.log(`[Registration Modal] Language: ${language}, Primary: ${primaryWeapon}, Secondary: ${secondaryWeapon}`);
   const t = getTranslations(language);
-  console.log(`[Registration Modal] Modal Title: ${t.registration.modalTitle}`);
   const existingReg = getPlayerRegistration(
     interaction.guildId!,
     interaction.user.id
@@ -257,6 +263,16 @@ export async function showRegistrationModalWithWeapons(
   if (existingReg)
     gearScoreInput.setValue(existingReg.gear_score.toString());
 
+  const arenaRankInput = new TextInputBuilder()
+    .setCustomId('arena_rank')
+    .setLabel(t.registration.modalArenaRank)
+    .setStyle(TextInputStyle.Short)
+    .setPlaceholder(t.registration.placeholderArenaRank)
+    .setRequired(false)
+    .setMaxLength(50);
+  if (existingReg && existingReg.arena_rank)
+    arenaRankInput.setValue(existingReg.arena_rank);
+
   modal.addComponents(
     new ActionRowBuilder<ModalActionRowComponentBuilder>().addComponents(
       ingameNameInput
@@ -266,6 +282,9 @@ export async function showRegistrationModalWithWeapons(
     ),
     new ActionRowBuilder<ModalActionRowComponentBuilder>().addComponents(
       gearScoreInput
+    ),
+    new ActionRowBuilder<ModalActionRowComponentBuilder>().addComponents(
+      arenaRankInput
     )
   );
 
@@ -373,4 +392,76 @@ async function handleSetupRegistrationCommand(
     content: t.registration.channelSetSuccess(`<#${targetChannel.id}>`),
     ephemeral: true,
   });
+}
+
+/**
+ * Handle /capnhat command
+ * Opens modal with current gear score and arena rank
+ */
+async function handleCapnhatCommand(
+  interaction: CommandInteraction
+): Promise<void> {
+  if (!interaction.guildId) {
+    await interaction.reply({
+      content: '❌ This command can only be used in a server.',
+      ephemeral: true,
+    });
+    return;
+  }
+
+  const t = getGuildTranslations(interaction.guildId);
+
+  // Check if user is registered
+  const existingReg = getPlayerRegistration(interaction.guildId, interaction.user.id);
+
+  if (!existingReg) {
+    await interaction.reply({
+      content: '❌ You need to register first using `/baodanh` or `/register`.',
+      ephemeral: true,
+    });
+    return;
+  }
+
+  // Create update modal with pre-filled values
+  const modal = new ModalBuilder()
+    .setCustomId('capnhat_modal')
+    .setTitle(t.registration.updateModalTitle);
+
+  // Format gear score for display (divide by 1000)
+  const formattedGearScore = (existingReg.gear_score / 1000).toLocaleString('en-US', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 3,
+  });
+
+  const gearScoreInput = new TextInputBuilder()
+    .setCustomId('gear_score_update')
+    .setLabel(t.registration.modalGearScore)
+    .setStyle(TextInputStyle.Short)
+    .setPlaceholder(t.registration.placeholderGearScore)
+    .setRequired(true)
+    .setMaxLength(10)
+    .setValue(formattedGearScore);
+
+  const arenaRankInput = new TextInputBuilder()
+    .setCustomId('arena_rank_update')
+    .setLabel(t.registration.modalArenaRank)
+    .setStyle(TextInputStyle.Short)
+    .setPlaceholder(t.registration.placeholderArenaRank)
+    .setRequired(false)
+    .setMaxLength(50);
+
+  if (existingReg.arena_rank) {
+    arenaRankInput.setValue(existingReg.arena_rank);
+  }
+
+  modal.addComponents(
+    new ActionRowBuilder<ModalActionRowComponentBuilder>().addComponents(
+      gearScoreInput
+    ),
+    new ActionRowBuilder<ModalActionRowComponentBuilder>().addComponents(
+      arenaRankInput
+    )
+  );
+
+  await interaction.showModal(modal);
 }

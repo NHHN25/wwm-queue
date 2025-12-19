@@ -110,19 +110,24 @@ export const vi: Translations = {
     modalIngameName: 'Tên Trong Game',
     modalIngameUid: 'UID Trong Game',
     modalGearScore: 'Lực Chiến',
+    modalArenaRank: 'Hạng Đấu Trường',
     modalPrimaryWeapon: 'Vũ Khí Chính',
     modalSecondaryWeapon: 'Vũ Khí Phụ',
     placeholderIngameName: 'Tên nhân vật của bạn',
     placeholderIngameUid: 'ID duy nhất của bạn',
     placeholderGearScore: 'vd: 1.628 hoặc 16280',
+    placeholderArenaRank: 'vd: Beginner I, Legend II, Mythic, v.v. (tùy chọn)',
     selectWeapons: '🗡️ Vui lòng chọn vũ khí của bạn:',
     registrationSuccess: '✅ Đăng ký thành công! Hồ sơ của bạn đã được tạo.',
     registrationUpdated: '✅ Đã cập nhật! Hồ sơ của bạn đã được làm mới.',
+    updateModalTitle: 'Cập Nhật Chỉ Số',
+    updateSuccess: '✅ Đã cập nhật chỉ số thành công!',
     profileTitle: 'Hồ Sơ Người Chơi',
     profileNotFound: 'Người chơi này chưa đăng ký.',
     profileFieldIngameName: '🎮 Tên Trong Game',
     profileFieldUid: '🆔 UID',
     profileFieldGearScore: '⚔️ Lực Chiến',
+    profileFieldArenaRank: '🏆 Hạng Đấu Trường',
     profileFieldWeapons: '🗡️ Vũ Khí',
     profileFieldPrimaryWeapon: 'Vũ Khí Chính',
     profileFieldSecondaryWeapon: 'Vũ Khí Phụ',
@@ -134,7 +139,7 @@ export const vi: Translations = {
     errorNoChannel:
       '❌ Đăng ký chưa được bật trong máy chủ này. Liên hệ quản trị viên.',
     errorInvalidGearScore:
-      '❌ Lực chiến phải là một số hợp lệ (vd: 15000).',
+      '❌ Lực chiến phải là một số hợp lệ (vd: 15000 hoặc 1.5).',
   },
 
   weapons: {
@@ -168,6 +173,8 @@ export const vi: Translations = {
     rejectButton: '❌ Từ Chối',
     approved: '✅ Đã duyệt đơn đăng ký thành công!',
     rejected: '❌ Đơn đăng ký đã bị từ chối.',
+    approvalNotification: (guildName: string) =>
+      `Đơn đăng ký của bạn đã được duyệt! Chào mừng bạn đến với ${guildName}!`,
     approvedCardTitle: '✅ Đơn Đăng Ký Đã Được Duyệt',
     rejectedCardTitle: '❌ Đơn Đăng Ký Bị Từ Chối',
     approvedBy: (username: string) => `Được duyệt bởi @${username}`,

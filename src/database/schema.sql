@@ -64,6 +64,7 @@ CREATE TABLE IF NOT EXISTS player_registrations (
   ingame_name TEXT NOT NULL,           -- Player's in-game name
   ingame_uid TEXT NOT NULL,            -- Player's unique game ID
   gear_score INTEGER NOT NULL,         -- Combat power / "lực chiến"
+  arena_rank TEXT DEFAULT '',          -- Arena/PvP rank (free text: "Gold III", "Diamond", etc.)
   primary_weapon TEXT NOT NULL,        -- Primary weapon name (e.g., 'strategic_sword', 'nameless_spear')
   secondary_weapon TEXT NOT NULL,      -- Secondary weapon name
   approval_status TEXT DEFAULT 'pending' -- Approval status: 'pending', 'approved', 'rejected'

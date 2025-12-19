@@ -15,6 +15,7 @@ import {
   handleRegistrationSubmitButton,
 } from './components/registrationSelectMenus.js';
 import { handleApprovalButtonInteraction } from './components/verificationButtons.js';
+import { handleUpdateModalSubmit } from './components/updateModal.js';
 
 // Load environment variables
 config();
@@ -90,6 +91,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
     } else if (interaction.isModalSubmit()) {
       if (interaction.customId.startsWith('registration_modal')) {
         await handleRegistrationModalSubmit(interaction);
+      } else if (interaction.customId === 'capnhat_modal') {
+        await handleUpdateModalSubmit(interaction);
       }
     }
   } catch (error) {

@@ -26,8 +26,6 @@ export async function handleRegistrationModalSubmit(
   const secondaryWeapon = customIdParts[2];
   const language = customIdParts[3] as 'en' | 'vi';
 
-  console.log(`[Registration Modal Submit] Primary: ${primaryWeapon}, Secondary: ${secondaryWeapon}, Language: ${language}`);
-
   if (
     !isValidWeaponName(primaryWeapon) ||
     !isValidWeaponName(secondaryWeapon)
@@ -50,6 +48,9 @@ export async function handleRegistrationModalSubmit(
       .trim();
     const gearScoreStr = interaction.fields
       .getTextInputValue('gear_score')
+      .trim();
+    const arenaRank = interaction.fields
+      .getTextInputValue('arena_rank')
       .trim();
 
     // Parse gear score - support both formats:
@@ -74,8 +75,6 @@ export async function handleRegistrationModalSubmit(
       gearScore = Math.round(gearScoreFloat);
     }
 
-    console.log(`[Registration] Gear score input: "${gearScoreStr}" -> stored as: ${gearScore}`);
-
     const wasRegistered = isPlayerRegistered(
       interaction.guildId,
       interaction.user.id
@@ -87,6 +86,7 @@ export async function handleRegistrationModalSubmit(
       ingameName,
       ingameUid,
       gearScore,
+      arenaRank,
       primaryWeapon,
       secondaryWeapon
     );
@@ -166,12 +166,47 @@ export async function handleRegistrationModalSubmit(
         ephemeral: true,
       });
     }
+
+    // Delete the weapon selection message and show profile
+    try {
+      // Delete the original weapon selection message
+      if (interaction.message) {
+        await interaction.message.delete();
+      }
+
+      // Send profile info to the channel
+      const { createProfileEmbed } = await import(
+        '../utils/registrationEmbeds.js'
+      );
+      const profileEmbed = createProfileEmbed(
+        registration!,
+        interaction.user,
+        interaction.guildId
+      );
+
+      await interaction.followUp({
+        embeds: [profileEmbed],
+        ephemeral: false, // Make it public so everyone can see
+      });
+    } catch (error) {
+      console.error(
+        '[Registration Modal] Error cleaning up message:',
+        error
+      );
+      // Don't fail the whole registration if cleanup fails
+    }
   } catch (error) {
     console.error('[Registration Modal] Error handling submission:', error);
-    await interaction.reply({
-      content:
-        '❌ An error occurred while processing your registration.',
-      ephemeral: true,
-    });
+
+    try {
+      await interaction.reply({
+        content:
+          '❌ An error occurred while processing your registration.',
+        ephemeral: true,
+      });
+    } catch (replyError) {
+      // If we can't reply, the interaction may have already been responded to
+      console.error('[Registration Modal] Failed to send error message:', replyError);
+    }
   }
 }

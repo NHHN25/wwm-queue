@@ -54,6 +54,11 @@ export function createProfileEmbed(
       inline: true,
     },
     {
+      name: t.registration.profileFieldArenaRank,
+      value: registration.arena_rank || 'N/A',
+      inline: true,
+    },
+    {
       name: t.registration.profileFieldWeapons,
       value: `**${t.registration.profileFieldPrimaryWeapon}:** ${primaryWeapon}\n**${t.registration.profileFieldSecondaryWeapon}:** ${secondaryWeapon}`,
       inline: false,

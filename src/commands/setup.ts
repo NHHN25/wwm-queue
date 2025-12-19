@@ -182,7 +182,7 @@ export async function handleCommandInteraction(
     } else if (commandName === 'language') {
       await handleLanguageCommand(interaction);
     } else if (
-      ['register', 'baodanh', 'info', 'setup-registration'].includes(
+      ['register', 'baodanh', 'info', 'setup-registration', 'capnhat'].includes(
         commandName
       )
     ) {

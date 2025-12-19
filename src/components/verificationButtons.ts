@@ -168,7 +168,7 @@ export async function handleApprovalButtonInteraction(
         components: [], // Remove buttons
       });
 
-      // Send followup message
+      // Send followup message to admin
       if (errors.length > 0) {
         await interaction.followUp({
           content: t.verification.errorMissingPermissions(errors),
@@ -179,6 +179,17 @@ export async function handleApprovalButtonInteraction(
           content: t.verification.approved,
           ephemeral: true,
         });
+      }
+
+      // Ping the player to notify them of approval
+      try {
+        const guildName = interaction.guild.name;
+        await interaction.followUp({
+          content: `<@${userId}> ${t.verification.approvalNotification(guildName)}`,
+          ephemeral: false,
+        });
+      } catch (error) {
+        console.error('[Verification] Failed to ping user:', error);
       }
 
       console.log(
