@@ -9,6 +9,7 @@ import {
   createApprovedRegistrationEmbed,
   createRejectedRegistrationEmbed,
 } from '../utils/verificationEmbeds.js';
+import { createProfileEmbed } from '../utils/registrationEmbeds.js';
 import { applyApprovalActions } from '../utils/verificationHelpers.js';
 import { getVerificationSettings } from '../database/database.js';
 import { getGuildTranslations } from '../localization/index.js';
@@ -181,9 +182,16 @@ export async function handleApprovalButtonInteraction(
         });
       }
 
-      // Ping the player to notify them of approval
+      // Send user's profile card to notify them of approval
       try {
         const guildName = interaction.guild.name;
+
+        // Create the profile embed
+        const profileEmbed = createProfileEmbed(
+          registration,
+          targetMember.user,
+          interaction.guildId
+        );
 
         // Determine which channel to send the notification to
         const notificationChannelId = verificationSettings?.approved_channel_id || interaction.channelId;
@@ -192,16 +200,18 @@ export async function handleApprovalButtonInteraction(
         if (notificationChannel?.isTextBased()) {
           await notificationChannel.send({
             content: `<@${userId}> ${t.verification.approvalNotification(guildName)}`,
+            embeds: [profileEmbed],
           });
         } else {
           // Fallback to current channel if configured channel is unavailable
           await interaction.followUp({
             content: `<@${userId}> ${t.verification.approvalNotification(guildName)}`,
+            embeds: [profileEmbed],
             ephemeral: false,
           });
         }
       } catch (error) {
-        console.error('[Verification] Failed to ping user:', error);
+        console.error('[Verification] Failed to send approval notification:', error);
       }
 
       console.log(
