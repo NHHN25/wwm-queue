@@ -54,8 +54,8 @@ export async function handleRegistrationModalSubmit(
       .trim();
 
     // Parse gear score - support both formats:
-    // - Decimal format: "1.628" (in thousands) -> store as 1628
-    // - Whole number: "16280" -> store as 16280
+    // - Goose format: "1.82" or "0.68" -> multiply by 10000 -> store as 18200 or 6800
+    // - Whole number: "18200" or "6800" -> store as-is
     let gearScore: number;
     const gearScoreFloat = parseFloat(gearScoreStr);
 
@@ -67,10 +67,10 @@ export async function handleRegistrationModalSubmit(
       return;
     }
 
-    // If input contains a decimal point or is less than 100, treat as thousands (e.g., 1.628 or 16.28)
-    // Otherwise treat as whole number (e.g., 16280)
+    // If input contains a decimal point or is less than 100, treat as goose format (e.g., 1.82, 0.68)
+    // Otherwise treat as whole number (e.g., 18200, 6800)
     if (gearScoreStr.includes('.') || gearScoreFloat < 100) {
-      gearScore = Math.round(gearScoreFloat * 1000);
+      gearScore = Math.round(gearScoreFloat * 10000);
     } else {
       gearScore = Math.round(gearScoreFloat);
     }
