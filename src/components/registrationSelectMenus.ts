@@ -70,8 +70,9 @@ export async function handleWeaponSelectMenu(
     statusMessage += `⬜ **${t.registration.modalSecondaryWeapon}:** Not selected`;
   }
 
-  // Keep existing select menu components
-  const components: any[] = [...interaction.message.components];
+  // Keep only the select menu components (first 2 rows), filter out old submit buttons
+  const selectMenuComponents = interaction.message.components.slice(0, 2);
+  const components: any[] = [...selectMenuComponents];
 
   // Add submit button if both weapons are selected
   if (selections.primary && selections.secondary) {

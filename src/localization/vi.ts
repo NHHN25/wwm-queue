@@ -115,7 +115,7 @@ export const vi: Translations = {
     modalSecondaryWeapon: 'Vũ Khí Phụ',
     placeholderIngameName: 'Tên nhân vật của bạn',
     placeholderIngameUid: 'ID duy nhất của bạn',
-    placeholderGearScore: 'vd: 1.628 hoặc 16280',
+    placeholderGearScore: 'vd: 1.82 (hiển thị 1.82🦆) hoặc 18200',
     placeholderArenaRank: 'vd: Beginner I, Legend II, Mythic, v.v. (tùy chọn)',
     selectWeapons: '🗡️ Vui lòng chọn vũ khí của bạn:',
     registrationSuccess: '✅ Đăng ký thành công! Hồ sơ của bạn đã được tạo.',

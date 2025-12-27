@@ -169,9 +169,16 @@ export async function handleRegistrationModalSubmit(
 
     // Delete the weapon selection message and show profile
     try {
-      // Delete the original weapon selection message
-      if (interaction.message) {
-        await interaction.message.delete();
+      // Delete the original weapon selection message (if it still exists)
+      if (interaction.message && interaction.message.deletable) {
+        try {
+          await interaction.message.delete();
+        } catch (deleteError: any) {
+          // Ignore "Unknown Message" errors (code 10008) - message was already deleted
+          if (deleteError?.code !== 10008) {
+            console.error('[Registration Modal] Error deleting message:', deleteError);
+          }
+        }
       }
 
       // Send profile info to the channel
@@ -190,7 +197,7 @@ export async function handleRegistrationModalSubmit(
       });
     } catch (error) {
       console.error(
-        '[Registration Modal] Error cleaning up message:',
+        '[Registration Modal] Error in post-registration flow:',
         error
       );
       // Don't fail the whole registration if cleanup fails

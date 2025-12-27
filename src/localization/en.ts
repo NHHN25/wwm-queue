@@ -115,7 +115,7 @@ export const en: Translations = {
     modalSecondaryWeapon: 'Secondary Weapon',
     placeholderIngameName: 'Your character name',
     placeholderIngameUid: 'Your unique player ID',
-    placeholderGearScore: 'e.g., 1.628 or 16280',
+    placeholderGearScore: 'e.g., 1.82 (shown as 1.82🦆) or 18200',
     placeholderArenaRank: 'e.g., Gold III, Diamond, etc. (optional)',
     selectWeapons: '🗡️ Please select your weapons:',
     registrationSuccess:

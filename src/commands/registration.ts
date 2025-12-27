@@ -18,6 +18,7 @@ import {
   setRegistrationChannel,
   getPlayerRegistration,
 } from '../database/database.js';
+import { formatGearScoreAsGoose } from '../utils/embeds.js';
 import { createProfileEmbed } from '../utils/registrationEmbeds.js';
 import { WEAPON_CONFIGS } from '../utils/weaponConstants.js';
 import type { WeaponName } from '../types/index.js';
@@ -427,11 +428,9 @@ async function handleCapnhatCommand(
     .setCustomId('capnhat_modal')
     .setTitle(t.registration.updateModalTitle);
 
-  // Format gear score for display (divide by 1000)
-  const formattedGearScore = (existingReg.gear_score / 1000).toLocaleString('en-US', {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 3,
-  });
+  // Format gear score for display (Goose format without emoji for input field)
+  const formattedGearScore = formatGearScoreAsGoose(existingReg.gear_score)
+    .replace('🦆', ''); // Remove emoji for input field
 
   const gearScoreInput = new TextInputBuilder()
     .setCustomId('gear_score_update')

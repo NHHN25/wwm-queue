@@ -285,3 +285,21 @@ export function createCloseEmbed(
     .setColor(config.color)
     .setTimestamp(new Date());
 }
+
+/**
+ * Formats gear score as Goose display
+ * @param gearScore - Raw gear score integer from database (e.g., 18200, 6800)
+ * @returns Formatted string like "1.82🦆" or "0.68🦆"
+ */
+export function formatGearScoreAsGoose(gearScore: number): string {
+  const gooseValue = gearScore / 10000;
+
+  // Format with up to 3 decimal places, removing trailing zeros
+  const formatted = gooseValue.toLocaleString('en-US', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 3,
+    useGrouping: false  // Don't add thousands separator for values like 1.234
+  });
+
+  return `${formatted}🦆`;
+}

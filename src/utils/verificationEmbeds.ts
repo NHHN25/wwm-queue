@@ -5,6 +5,7 @@ import {
   getGuildLanguage,
 } from '../localization/index.js';
 import { getWeaponWithEmoji } from './weaponConstants.js';
+import { formatGearScoreAsGoose } from './embeds.js';
 
 /**
  * Create pending registration embed (orange card for admin review)
@@ -26,14 +27,8 @@ export function createPendingRegistrationEmbed(
     language
   );
 
-  // Format gear score with thousands separator
-  const formattedGearScore = (registration.gear_score / 1000).toLocaleString(
-    'en-US',
-    {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 3,
-    }
-  );
+  // Format gear score as Goose display
+  const formattedGearScore = formatGearScoreAsGoose(registration.gear_score);
 
   const embed = new EmbedBuilder()
     .setTitle(t.verification.pendingCardTitle)
@@ -98,14 +93,8 @@ export function createApprovedRegistrationEmbed(
     language
   );
 
-  // Format gear score with thousands separator
-  const formattedGearScore = (registration.gear_score / 1000).toLocaleString(
-    'en-US',
-    {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 3,
-    }
-  );
+  // Format gear score as Goose display
+  const formattedGearScore = formatGearScoreAsGoose(registration.gear_score);
 
   const embed = new EmbedBuilder()
     .setTitle(t.verification.approvedCardTitle)
@@ -172,14 +161,8 @@ export function createRejectedRegistrationEmbed(
     language
   );
 
-  // Format gear score with thousands separator
-  const formattedGearScore = (registration.gear_score / 1000).toLocaleString(
-    'en-US',
-    {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 3,
-    }
-  );
+  // Format gear score as Goose display
+  const formattedGearScore = formatGearScoreAsGoose(registration.gear_score);
 
   const embed = new EmbedBuilder()
     .setTitle(t.verification.rejectedCardTitle)

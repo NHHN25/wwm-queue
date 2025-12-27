@@ -5,6 +5,7 @@ import {
   getGuildLanguage,
 } from '../localization/index.js';
 import { getWeaponWithEmoji } from './weaponConstants.js';
+import { formatGearScoreAsGoose } from './embeds.js';
 
 /**
  * Create player profile embed (namecard style)
@@ -25,11 +26,8 @@ export function createProfileEmbed(
     registration.secondary_weapon,
     language
   );
-  // Format gear score with thousands separator (e.g., 16287952 -> 16.288 or 16,288)
-  const formattedGearScore = (registration.gear_score / 1000).toLocaleString('en-US', {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 3
-  });
+  // Format gear score as Goose display (e.g., 18200 -> 1.82🦆)
+  const formattedGearScore = formatGearScoreAsGoose(registration.gear_score);
 
   const embed = new EmbedBuilder()
     .setTitle(`${t.registration.profileTitle}`)
