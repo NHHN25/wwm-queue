@@ -102,7 +102,21 @@ function buildQueueDescription(state: QueueState, t: any): string {
     if (player) {
       const roleEmoji = getRoleEmoji(player.role);
       const roleName = getRoleDisplayName(player.role).toUpperCase(); // Keep in English
-      lines.push(`**${i + 1}.** ${roleEmoji} \`${roleName}\` • <@${player.userId}>`);
+
+      // Base player line
+      let playerLine = `**${i + 1}.** ${roleEmoji} \`${roleName}\` • <@${player.userId}>`;
+
+      // Add stats if available
+      if (player.gearScore !== null && player.gearScore !== undefined) {
+        const gearScoreDisplay = formatGearScoreAsGoose(player.gearScore);
+        playerLine += ` • ${gearScoreDisplay}`;
+
+        if (player.arenaRank && player.arenaRank.trim() !== '') {
+          playerLine += ` • 🏆 ${player.arenaRank}`;
+        }
+      }
+
+      lines.push(playerLine);
     } else {
       lines.push(`**${i + 1}.** ${EMOJIS.EMPTY_SLOT} \`${t.embeds.openSlot}\``);
     }

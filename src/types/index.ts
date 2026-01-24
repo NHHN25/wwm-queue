@@ -9,7 +9,7 @@
 /**
  * Supported queue types
  */
-export type QueueType = 'sword_trial' | 'hero_realm';
+export type QueueType = 'sword_trial' | 'hero_realm' | 'guild_war';
 
 /**
  * Player role types
@@ -51,6 +51,10 @@ export interface QueuePlayerData {
   username: string;
   role: PlayerRole;
   joinedAt: Date;
+  // Optional player stats from player_registrations table
+  gearScore?: number | null;
+  arenaRank?: string | null;
+  ingameName?: string | null;
 }
 
 /**

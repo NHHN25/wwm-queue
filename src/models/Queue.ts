@@ -201,6 +201,28 @@ export class Queue {
   }
 
   /**
+   * Get all players with their registration stats (gear score, arena rank)
+   * Returns player data with optional stats (null if not registered or not approved)
+   */
+  getPlayersWithStats(): Array<QueuePlayerData & {
+    gearScore: number | null;
+    arenaRank: string | null;
+    ingameName: string | null;
+  }> {
+    const playerRows = db.getQueuePlayersWithStats(this.messageId);
+
+    return playerRows.map((row) => ({
+      userId: row.user_id,
+      username: row.username,
+      role: row.role,
+      joinedAt: new Date(row.joined_at),
+      gearScore: row.gear_score,
+      arenaRank: row.arena_rank,
+      ingameName: row.ingame_name,
+    }));
+  }
+
+  /**
    * Get complete queue state (queue metadata + players)
    * This is the primary method for generating embeds
    */
@@ -214,7 +236,7 @@ export class Queue {
         capacity: this.capacity,
         createdAt: this.createdAt,
       },
-      players: this.getPlayers(),
+      players: this.getPlayersWithStats(),
     };
   }
 

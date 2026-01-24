@@ -18,6 +18,13 @@ export const QUEUE_CONFIGS: Record<QueueType, QueueConfig> = {
     emoji: '🏰',
     color: 0xe74c3c, // Red
   },
+  guild_war: {
+    type: 'guild_war',
+    capacity: 30,
+    displayName: 'Guild War',
+    emoji: '🏆',
+    color: 0x9b59b6, // Purple
+  },
 };
 
 /**
@@ -61,6 +68,7 @@ export const EMOJIS = {
   // Queue types (quick access)
   SWORD_TRIAL: QUEUE_CONFIGS.sword_trial.emoji,
   HERO_REALM: QUEUE_CONFIGS.hero_realm.emoji,
+  GUILD_WAR: QUEUE_CONFIGS.guild_war.emoji,
 
   // Actions
   PARTY: '🎉',

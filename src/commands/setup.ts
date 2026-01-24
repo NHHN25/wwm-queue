@@ -68,6 +68,18 @@ export function buildCommands() {
             .setRequired(false)
         )
     )
+    .addSubcommand((sub) =>
+      sub
+        .setName('guild-war')
+        .setDescription('Create a Guild War queue (30 players)')
+        .addChannelOption((opt) =>
+          opt
+            .setName('channel')
+            .setDescription('Channel for the queue (default: current channel)')
+            .addChannelTypes(ChannelType.GuildText)
+            .setRequired(false)
+        )
+    )
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
     .setDMPermission(false);
 
@@ -81,7 +93,8 @@ export function buildCommands() {
         .setRequired(true)
         .addChoices(
           { name: 'Sword Trial', value: 'sword_trial' },
-          { name: 'Hero Realm', value: 'hero_realm' }
+          { name: 'Hero Realm', value: 'hero_realm' },
+          { name: 'Guild War', value: 'guild_war' }
         )
     )
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
@@ -97,7 +110,8 @@ export function buildCommands() {
         .setRequired(true)
         .addChoices(
           { name: 'Sword Trial', value: 'sword_trial' },
-          { name: 'Hero Realm', value: 'hero_realm' }
+          { name: 'Hero Realm', value: 'hero_realm' },
+          { name: 'Guild War', value: 'guild_war' }
         )
     )
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
@@ -226,13 +240,16 @@ async function handleSetupCommand(
     return;
   }
 
-  // Get subcommand (sword-trial or hero-realm)
+  // Get subcommand (sword-trial, hero-realm, or guild-war)
   const subcommand = (interaction as any).options.data[0]?.name as
     | 'sword-trial'
-    | 'hero-realm';
+    | 'hero-realm'
+    | 'guild-war';
 
   const queueType: QueueType =
-    subcommand === 'sword-trial' ? 'sword_trial' : 'hero_realm';
+    subcommand === 'sword-trial' ? 'sword_trial' :
+    subcommand === 'hero-realm' ? 'hero_realm' :
+    'guild_war';
 
   // Get target channel (or default to current)
   const targetChannel =

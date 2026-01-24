@@ -70,6 +70,7 @@ export const en: Translations = {
       description: 'Create a party for Where Winds Meet activities',
       swordTrial: 'Create a Sword Trial queue (5 players)',
       heroRealm: 'Create a Hero Realm party (10 players)',
+      guildWar: 'Create a Guild War party (30 players)',
       channelOption: 'Channel for the party (default: current channel)',
     },
     reset: {
@@ -103,6 +104,7 @@ export const en: Translations = {
   queueTypes: {
     swordTrial: 'Sword Trial',
     heroRealm: 'Hero Realm',
+    guildWar: 'Guild War',
   },
 
   registration: {

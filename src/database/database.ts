@@ -73,6 +73,55 @@ function runMigrations(): void {
       `);
       console.log('[Database] Migration: Added approved_channel_id column to verification_settings');
     }
+
+    // Migration: Update queue_type CHECK constraint to include 'guild_war'
+    // Check if the constraint needs updating by attempting to insert a guild_war queue (rollback after)
+    try {
+      db.exec('BEGIN TRANSACTION');
+      db.exec(`
+        INSERT INTO queues (message_id, guild_id, channel_id, queue_type, capacity)
+        VALUES ('migration_test', 'test_guild', 'test_channel', 'guild_war', 30)
+      `);
+      db.exec('ROLLBACK');
+      console.log('[Database] Migration: guild_war queue type already supported');
+    } catch (constraintError: any) {
+      // Constraint violation means we need to migrate
+      db.exec('ROLLBACK');
+      if (constraintError.message && constraintError.message.includes('CHECK constraint failed')) {
+        console.log('[Database] Migration: Updating queue_type CHECK constraint for guild_war...');
+
+        // SQLite requires table recreation to modify CHECK constraints
+        db.exec(`
+          PRAGMA foreign_keys=OFF;
+
+          -- Create new table with updated constraint
+          CREATE TABLE queues_new (
+            message_id TEXT PRIMARY KEY,
+            guild_id TEXT NOT NULL,
+            channel_id TEXT NOT NULL,
+            queue_type TEXT NOT NULL
+              CHECK(queue_type IN ('sword_trial', 'hero_realm', 'guild_war')),
+            capacity INTEGER NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+          );
+
+          -- Copy existing data
+          INSERT INTO queues_new SELECT * FROM queues;
+
+          -- Drop old table and rename new one
+          DROP TABLE queues;
+          ALTER TABLE queues_new RENAME TO queues;
+
+          -- Recreate indexes
+          CREATE INDEX IF NOT EXISTS idx_queues_guild ON queues(guild_id);
+          CREATE INDEX IF NOT EXISTS idx_queues_type ON queues(guild_id, queue_type);
+
+          PRAGMA foreign_keys=ON;
+        `);
+
+        console.log('[Database] Migration: Updated queue_type constraint for guild_war');
+      }
+    }
   } catch (error) {
     console.error('[Database] Migration error:', error);
   }
@@ -97,7 +146,7 @@ export interface QueueRow {
   message_id: string;
   guild_id: string;
   channel_id: string;
-  queue_type: 'sword_trial' | 'hero_realm';
+  queue_type: 'sword_trial' | 'hero_realm' | 'guild_war';
   capacity: number;
   created_at: string;
 }
@@ -109,7 +158,7 @@ export function createQueue(
   messageId: string,
   guildId: string,
   channelId: string,
-  queueType: 'sword_trial' | 'hero_realm',
+  queueType: 'sword_trial' | 'hero_realm' | 'guild_war',
   capacity: number
 ): void {
   const db = getDatabase();
@@ -135,7 +184,7 @@ export function getQueue(messageId: string): QueueRow | null {
  */
 export function getQueueByType(
   guildId: string,
-  queueType: 'sword_trial' | 'hero_realm'
+  queueType: 'sword_trial' | 'hero_realm' | 'guild_war'
 ): QueueRow | null {
   const db = getDatabase();
   const stmt = db.prepare(`
@@ -337,6 +386,43 @@ export function getUserQueueStats(userId: string): {
   });
 
   return stats;
+}
+
+/**
+ * Get all players in a queue with their registration stats (gear score, arena rank)
+ * Uses LEFT JOIN to include players without registration data
+ */
+export function getQueuePlayersWithStats(messageId: string): Array<QueuePlayerRow & {
+  gear_score: number | null;
+  arena_rank: string | null;
+  ingame_name: string | null;
+}> {
+  const db = getDatabase();
+  const stmt = db.prepare(`
+    SELECT
+      qp.id,
+      qp.message_id,
+      qp.user_id,
+      qp.username,
+      qp.role,
+      qp.joined_at,
+      pr.gear_score,
+      pr.arena_rank,
+      pr.ingame_name
+    FROM queue_players qp
+    LEFT JOIN player_registrations pr
+      ON qp.user_id = pr.user_id
+      AND pr.guild_id = (SELECT guild_id FROM queues WHERE message_id = qp.message_id)
+      AND pr.approval_status = 'approved'
+    WHERE qp.message_id = ?
+    ORDER BY qp.joined_at ASC
+  `);
+
+  return stmt.all(messageId) as Array<QueuePlayerRow & {
+    gear_score: number | null;
+    arena_rank: string | null;
+    ingame_name: string | null;
+  }>;
 }
 
 // ============================================================================

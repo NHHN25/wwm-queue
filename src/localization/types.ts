@@ -67,6 +67,7 @@ export interface Translations {
       description: string;
       swordTrial: string;
       heroRealm: string;
+      guildWar: string;
       channelOption: string;
     };
     reset: {
@@ -101,6 +102,7 @@ export interface Translations {
   queueTypes: {
     swordTrial: string;
     heroRealm: string;
+    guildWar: string;
   };
 
   // Player registration

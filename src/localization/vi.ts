@@ -70,6 +70,7 @@ export const vi: Translations = {
       description: 'Tạo tổ đội cho các hoạt động Where Winds Meet',
       swordTrial: 'Tạo tổ đội Sword Trial (5 người chơi)',
       heroRealm: 'Tạo tổ đội Hero Realm (10 người chơi)',
+      guildWar: 'Tạo tổ đội Chiến Trường Bang Hội (30 người chơi)',
       channelOption: 'Kênh cho tổ đội (mặc định: kênh hiện tại)',
     },
     reset: {
@@ -103,6 +104,7 @@ export const vi: Translations = {
   queueTypes: {
     swordTrial: 'Sword Trial',
     heroRealm: 'Hero Realm',
+    guildWar: 'Chiến Trường Bang Hội',
   },
 
   registration: {

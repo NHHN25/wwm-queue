@@ -7,8 +7,8 @@ CREATE TABLE IF NOT EXISTS queues (
   message_id TEXT PRIMARY KEY,      -- Discord message ID (unique identifier)
   guild_id TEXT NOT NULL,            -- Discord guild (server) ID
   channel_id TEXT NOT NULL,          -- Discord channel ID where queue is posted
-  queue_type TEXT NOT NULL           -- Type of queue: 'sword_trial' or 'hero_realm'
-    CHECK(queue_type IN ('sword_trial', 'hero_realm')),
+  queue_type TEXT NOT NULL           -- Type of queue: 'sword_trial', 'hero_realm', or 'guild_war'
+    CHECK(queue_type IN ('sword_trial', 'hero_realm', 'guild_war')),
   capacity INTEGER NOT NULL,         -- Maximum number of players (5 or 10)
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
