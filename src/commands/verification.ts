@@ -21,10 +21,16 @@ import { getGuildTranslations } from '../localization/index.js';
 export const setupVerificationCommand = new SlashCommandBuilder()
   .setName('setupverification')
   .setDescription('Set up member verification system')
+  .setDescriptionLocalizations({
+    vi: 'Thiết lập hệ thống xác minh thành viên',
+  })
   .addChannelOption((option) =>
     option
       .setName('reviewchannel')
       .setDescription('Channel where pending registrations are posted')
+      .setDescriptionLocalizations({
+        vi: 'Kênh đăng các đơn đăng ký chờ duyệt',
+      })
       .addChannelTypes(ChannelType.GuildText)
       .setRequired(true)
   )
@@ -32,18 +38,27 @@ export const setupVerificationCommand = new SlashCommandBuilder()
     option
       .setName('pendingrole')
       .setDescription('Role to remove after approval (optional)')
+      .setDescriptionLocalizations({
+        vi: 'Vai trò cần xóa sau khi duyệt (tùy chọn)',
+      })
       .setRequired(false)
   )
   .addRoleOption((option) =>
     option
       .setName('approvedrole')
       .setDescription('Role to add after approval (optional)')
+      .setDescriptionLocalizations({
+        vi: 'Vai trò cần thêm sau khi duyệt (tùy chọn)',
+      })
       .setRequired(false)
   )
   .addChannelOption((option) =>
     option
       .setName('approvedchannel')
       .setDescription('Channel where approval notifications are sent (optional)')
+      .setDescriptionLocalizations({
+        vi: 'Kênh gửi thông báo phê duyệt (tùy chọn)',
+      })
       .addChannelTypes(ChannelType.GuildText)
       .setRequired(false)
   )
@@ -57,6 +72,9 @@ export const setupVerificationCommand = new SlashCommandBuilder()
 export const disableVerificationCommand = new SlashCommandBuilder()
   .setName('disableverification')
   .setDescription('Disable member verification system')
+  .setDescriptionLocalizations({
+    vi: 'Tắt hệ thống xác minh thành viên',
+  })
   .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
   .setDMPermission(false);
 

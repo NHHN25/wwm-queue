@@ -44,14 +44,23 @@ export function buildCommands() {
   const setupCommand = new SlashCommandBuilder()
     .setName('setup')
     .setDescription('Create a queue for Where Winds Meet activities')
+    .setDescriptionLocalizations({
+      vi: 'Tạo tổ đội cho các hoạt động Where Winds Meet',
+    })
     .addSubcommand((sub) =>
       sub
         .setName('sword-trial')
         .setDescription('Create a Sword Trial queue (5 players)')
+        .setDescriptionLocalizations({
+          vi: 'Tạo tổ đội Sword Trial (5 người chơi)',
+        })
         .addChannelOption((opt) =>
           opt
             .setName('channel')
             .setDescription('Channel for the queue (default: current channel)')
+            .setDescriptionLocalizations({
+              vi: 'Kênh cho tổ đội (mặc định: kênh hiện tại)',
+            })
             .addChannelTypes(ChannelType.GuildText)
             .setRequired(false)
         )
@@ -60,10 +69,16 @@ export function buildCommands() {
       sub
         .setName('hero-realm')
         .setDescription('Create a Hero Realm queue (10 players)')
+        .setDescriptionLocalizations({
+          vi: 'Tạo tổ đội Hero Realm (10 người chơi)',
+        })
         .addChannelOption((opt) =>
           opt
             .setName('channel')
             .setDescription('Channel for the queue (default: current channel)')
+            .setDescriptionLocalizations({
+              vi: 'Kênh cho tổ đội (mặc định: kênh hiện tại)',
+            })
             .addChannelTypes(ChannelType.GuildText)
             .setRequired(false)
         )
@@ -72,10 +87,16 @@ export function buildCommands() {
       sub
         .setName('guild-war')
         .setDescription('Create a Guild War queue (30 players)')
+        .setDescriptionLocalizations({
+          vi: 'Tạo tổ đội Chiến Trường Bang Hội (30 người chơi)',
+        })
         .addChannelOption((opt) =>
           opt
             .setName('channel')
             .setDescription('Channel for the queue (default: current channel)')
+            .setDescriptionLocalizations({
+              vi: 'Kênh cho tổ đội (mặc định: kênh hiện tại)',
+            })
             .addChannelTypes(ChannelType.GuildText)
             .setRequired(false)
         )
@@ -86,10 +107,16 @@ export function buildCommands() {
   const resetCommand = new SlashCommandBuilder()
     .setName('reset')
     .setDescription('Clear all players from a queue')
+    .setDescriptionLocalizations({
+      vi: 'Xóa tất cả người chơi khỏi tổ đội',
+    })
     .addStringOption((opt) =>
       opt
         .setName('queue-type')
         .setDescription('Which queue to reset')
+        .setDescriptionLocalizations({
+          vi: 'Tổ đội nào cần xóa',
+        })
         .setRequired(true)
         .addChoices(
           { name: 'Sword Trial', value: 'sword_trial' },
@@ -103,10 +130,16 @@ export function buildCommands() {
   const closeCommand = new SlashCommandBuilder()
     .setName('close')
     .setDescription('Delete a queue completely')
+    .setDescriptionLocalizations({
+      vi: 'Xóa hoàn toàn tổ đội',
+    })
     .addStringOption((opt) =>
       opt
         .setName('queue-type')
         .setDescription('Which queue to close')
+        .setDescriptionLocalizations({
+          vi: 'Tổ đội nào cần đóng',
+        })
         .setRequired(true)
         .addChoices(
           { name: 'Sword Trial', value: 'sword_trial' },
@@ -120,14 +153,20 @@ export function buildCommands() {
   const languageCommand = new SlashCommandBuilder()
     .setName('language')
     .setDescription('Change the bot language')
+    .setDescriptionLocalizations({
+      vi: 'Thay đổi ngôn ngữ bot',
+    })
     .addStringOption((opt) =>
       opt
         .setName('language')
         .setDescription('Select a language')
+        .setDescriptionLocalizations({
+          vi: 'Chọn ngôn ngữ',
+        })
         .setRequired(true)
         .addChoices(
           { name: 'English', value: 'en' },
-          { name: 'Vietnamese', value: 'vi' }
+          { name: 'Tiếng Việt', value: 'vi' }
         )
     )
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)

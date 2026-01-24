@@ -30,20 +30,32 @@ export function buildRegistrationCommands() {
   const registerCommand = new SlashCommandBuilder()
     .setName('register')
     .setDescription('Register your in-game profile')
+    .setDescriptionLocalizations({
+      vi: 'Đăng ký hồ sơ người chơi',
+    })
     .setDMPermission(false);
 
   const baodanhCommand = new SlashCommandBuilder()
     .setName('baodanh')
     .setDescription('Đăng ký hồ sơ người chơi')
+    .setDescriptionLocalizations({
+      vi: 'Đăng ký hồ sơ người chơi',
+    })
     .setDMPermission(false);
 
   const infoCommand = new SlashCommandBuilder()
     .setName('info')
     .setDescription("View a player's profile")
+    .setDescriptionLocalizations({
+      vi: 'Xem hồ sơ người chơi',
+    })
     .addUserOption((opt) =>
       opt
         .setName('user')
         .setDescription('The player to view (leave empty for yourself)')
+        .setDescriptionLocalizations({
+          vi: 'Người chơi cần xem (để trống nếu xem bản thân)',
+        })
         .setRequired(false)
     )
     .setDMPermission(false);
@@ -51,10 +63,16 @@ export function buildRegistrationCommands() {
   const setupRegistrationCommand = new SlashCommandBuilder()
     .setName('setup-registration')
     .setDescription('Set the registration channel')
+    .setDescriptionLocalizations({
+      vi: 'Đặt kênh đăng ký',
+    })
     .addChannelOption((opt) =>
       opt
         .setName('channel')
         .setDescription('Channel where players can register')
+        .setDescriptionLocalizations({
+          vi: 'Kênh mà người chơi có thể đăng ký',
+        })
         .addChannelTypes(ChannelType.GuildText)
         .setRequired(true)
     )
@@ -64,6 +82,9 @@ export function buildRegistrationCommands() {
   const capnhatCommand = new SlashCommandBuilder()
     .setName('capnhat')
     .setDescription('Cập nhật lực chiến và hạng đấu trường')
+    .setDescriptionLocalizations({
+      vi: 'Cập nhật lực chiến và hạng đấu trường',
+    })
     .setDMPermission(false);
 
   return [
