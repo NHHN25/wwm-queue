@@ -25,8 +25,10 @@ export function createQueueEmbed(
   const t = guildId ? getGuildTranslations(guildId) : getGuildTranslations('');
 
   // Get queue type display name
-  const displayName = queue.queueType === 'sword_trial' 
-    ? t.queueTypes.swordTrial 
+  const displayName = queue.queueType === 'sword_trial'
+    ? t.queueTypes.swordTrial
+    : queue.queueType === 'guild_war'
+    ? t.queueTypes.guildWar
     : t.queueTypes.heroRealm;
 
   // Build title with status indicator
@@ -77,6 +79,11 @@ function buildQueueDescription(state: QueueState, t: any): string {
 
   const lines: string[] = [];
 
+  // Get queue-specific beTheFirst message
+  const beTheFirstMessage = queue.queueType === 'guild_war'
+    ? t.embeds.beTheFirstGuildWar
+    : t.embeds.beTheFirst;
+
   // If queue is empty, show welcoming message
   if (playerCount === 0) {
     lines.push('```');
@@ -85,7 +92,7 @@ function buildQueueDescription(state: QueueState, t: any): string {
     lines.push('╚═══════════════════════════════╝');
     lines.push('```');
     lines.push('');
-    lines.push(`> ${t.embeds.beTheFirst}`);
+    lines.push(`> ${beTheFirstMessage}`);
     lines.push(`> ${t.embeds.clickRole}`);
     return lines.join('\n');
   }

@@ -11,6 +11,7 @@ export interface Translations {
   embeds: {
     queueEmpty: string;
     beTheFirst: string;
+    beTheFirstGuildWar: string;
     clickRole: string;
     partyRoster: string;
     openSlot: string;

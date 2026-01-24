@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat: add guild war queue \\(30 players\\) and display player stats in embeds\n\n- Add new guild_war queue type with 30-player capacity, trophy emoji, and purple color\n- Add /setup guild-war command with reset and close support\n- Display gear score \\(goose format\\) and arena rank in queue embeds\n- Fetch player stats from player_registrations via LEFT JOIN\n- Add database migration to update queue_type CHECK constraint\n- Add English and Vietnamese translations for guild war queue\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
     ]
   }
 }

@@ -7,6 +7,7 @@ export const vi: Translations = {
   embeds: {
     queueEmpty: 'ĐANG CHỜ LẬP ĐỘI',
     beTheFirst: '💡 **Tham gia để lập tổ đội chinh phạt boss!**',
+    beTheFirstGuildWar: '💡 **Tham gia Bang Chiến!**',
     clickRole: 'Nhấp vào nút vai trò bên dưới để bắt đầu thành lập tổ đội',
     partyRoster: 'DANH SÁCH TỔ ĐỘI',
     openSlot: 'VỊ TRÍ TRỐNG',

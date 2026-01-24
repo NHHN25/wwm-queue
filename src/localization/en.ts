@@ -7,6 +7,7 @@ export const en: Translations = {
   embeds: {
     queueEmpty: 'WAITING FOR PLAYERS',
     beTheFirst: '💡 **Be the first to join!**',
+    beTheFirstGuildWar: '💡 **Join the Guild War!**',
     clickRole: 'Click a role button below to start the party',
     partyRoster: 'PARTY ROSTER',
     openSlot: 'OPEN SLOT',
