@@ -1,6 +1,11 @@
 import type { QueueType, QueueConfig, PlayerRole, RoleConfig } from '../types/index.js';
 
 /**
+ * Queue timer duration in milliseconds (15 minutes)
+ */
+export const QUEUE_TIMER_DURATION_MS = 15 * 60 * 1000;
+
+/**
  * Queue type configurations
  */
 export const QUEUE_CONFIGS: Record<QueueType, QueueConfig> = {
@@ -55,6 +60,8 @@ export const EMOJIS = {
   // Queue status
   EMPTY_SLOT: '⬜',
   FULL_QUEUE: '✅',
+  CLOSED: '🔒',
+  TIMER: '⏰',
   WARNING: '⚠️',
   ERROR: '❌',
   SUCCESS: '✅',
@@ -85,6 +92,7 @@ export const COLORS = {
   WARNING: 0xfee75c, // Yellow
   DANGER: 0xed4245, // Red
   INFO: 0x5865f2, // Blue
+  CLOSED: 0x95a5a6, // Gray (for closed queues)
   EMBED_BACKGROUND: 0x2b2d31, // Dark gray
 } as const;
 
@@ -113,6 +121,7 @@ export const COMMANDS = {
 export const ERROR_MESSAGES = {
   QUEUE_NOT_FOUND: '❌ This queue no longer exists.',
   QUEUE_FULL: '❌ This queue is full! Please wait for the next one.',
+  QUEUE_CLOSED: '🔒 This queue is closed.',
   PLAYER_ALREADY_IN_QUEUE: '❌ You are already in this queue!',
   PLAYER_IN_ANOTHER_QUEUE:
     '❌ You are already in another queue! Leave that queue first.',
@@ -157,6 +166,7 @@ export const EMBED_FOOTERS = {
   QUEUE_EMPTY: 'Click a role button to join the queue!',
   QUEUE_ACTIVE: 'Players are listed in join order',
   QUEUE_FULL: 'Queue is full! Starting soon...',
+  QUEUE_CLOSED: 'This queue is closed.',
 } as const;
 
 /**

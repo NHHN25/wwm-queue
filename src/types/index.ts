@@ -17,6 +17,11 @@ export type QueueType = 'sword_trial' | 'hero_realm' | 'guild_war';
 export type PlayerRole = 'tank' | 'healer' | 'dps';
 
 /**
+ * Queue status types
+ */
+export type QueueStatus = 'open' | 'closed';
+
+/**
  * Queue configuration
  */
 export interface QueueConfig {
@@ -40,6 +45,8 @@ export interface QueueData {
   channelId: string;
   queueType: QueueType;
   capacity: number;
+  status: QueueStatus;
+  expiresAt: Date | null;
   createdAt: Date;
 }
 
@@ -122,6 +129,7 @@ export enum QueueErrorCode {
   // User errors (show as ephemeral messages)
   QUEUE_NOT_FOUND = 'QUEUE_NOT_FOUND',
   QUEUE_FULL = 'QUEUE_FULL',
+  QUEUE_CLOSED = 'QUEUE_CLOSED',
   PLAYER_ALREADY_IN_QUEUE = 'PLAYER_ALREADY_IN_QUEUE',
   PLAYER_IN_ANOTHER_QUEUE = 'PLAYER_IN_ANOTHER_QUEUE',
   PLAYER_NOT_IN_QUEUE = 'PLAYER_NOT_IN_QUEUE',

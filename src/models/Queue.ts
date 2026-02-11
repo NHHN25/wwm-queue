@@ -1,6 +1,6 @@
-import type { QueueType, PlayerRole, QueuePlayerData, QueueState } from '../types/index.js';
+import type { QueueType, PlayerRole, QueuePlayerData, QueueState, QueueStatus } from '../types/index.js';
 import * as db from '../database/database.js';
-import { QUEUE_CONFIGS } from '../utils/constants.js';
+import { QUEUE_CONFIGS, QUEUE_TIMER_DURATION_MS } from '../utils/constants.js';
 
 /**
  * Queue model class
@@ -13,6 +13,8 @@ export class Queue {
     private readonly channelId: string,
     private readonly queueType: QueueType,
     private readonly capacity: number,
+    private status: QueueStatus,
+    private expiresAt: Date | null,
     private readonly createdAt: Date
   ) {}
 
@@ -21,7 +23,7 @@ export class Queue {
   // ==========================================================================
 
   /**
-   * Create a new queue
+   * Create a new queue with a 15-minute timer
    */
   static create(
     messageId: string,
@@ -30,8 +32,10 @@ export class Queue {
     queueType: QueueType
   ): Queue {
     const capacity = QUEUE_CONFIGS[queueType].capacity;
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + QUEUE_TIMER_DURATION_MS);
 
-    db.createQueue(messageId, guildId, channelId, queueType, capacity);
+    db.createQueue(messageId, guildId, channelId, queueType, capacity, expiresAt);
 
     return new Queue(
       messageId,
@@ -39,7 +43,9 @@ export class Queue {
       channelId,
       queueType,
       capacity,
-      new Date()
+      'open',
+      expiresAt,
+      now
     );
   }
 
@@ -60,6 +66,8 @@ export class Queue {
       queueRow.channel_id,
       queueRow.queue_type,
       queueRow.capacity,
+      queueRow.status || 'open',
+      queueRow.expires_at ? new Date(queueRow.expires_at) : null,
       new Date(queueRow.created_at)
     );
   }
@@ -78,6 +86,8 @@ export class Queue {
           row.channel_id,
           row.queue_type,
           row.capacity,
+          row.status || 'open',
+          row.expires_at ? new Date(row.expires_at) : null,
           new Date(row.created_at)
         )
     );
@@ -97,6 +107,8 @@ export class Queue {
           row.channel_id,
           row.queue_type,
           row.capacity,
+          row.status || 'open',
+          row.expires_at ? new Date(row.expires_at) : null,
           new Date(row.created_at)
         )
     );
@@ -122,6 +134,8 @@ export class Queue {
       queueRow.channel_id,
       queueRow.queue_type,
       queueRow.capacity,
+      queueRow.status || 'open',
+      queueRow.expires_at ? new Date(queueRow.expires_at) : null,
       new Date(queueRow.created_at)
     );
   }
@@ -234,6 +248,8 @@ export class Queue {
         channelId: this.channelId,
         queueType: this.queueType,
         capacity: this.capacity,
+        status: this.status,
+        expiresAt: this.expiresAt,
         createdAt: this.createdAt,
       },
       players: this.getPlayersWithStats(),
@@ -266,6 +282,66 @@ export class Queue {
 
   getCreatedAt(): Date {
     return this.createdAt;
+  }
+
+  getStatus(): QueueStatus {
+    return this.status;
+  }
+
+  getExpiresAt(): Date | null {
+    return this.expiresAt;
+  }
+
+  // ==========================================================================
+  // Timer and Status Methods
+  // ==========================================================================
+
+  /**
+   * Check if the queue is closed
+   */
+  isClosed(): boolean {
+    return this.status === 'closed';
+  }
+
+  /**
+   * Check if the queue timer has expired
+   */
+  isExpired(): boolean {
+    if (!this.expiresAt) {
+      return false;
+    }
+    return new Date() >= this.expiresAt;
+  }
+
+  /**
+   * Get time remaining until expiration in milliseconds
+   * Returns 0 if already expired or no expiration set
+   */
+  getTimeRemaining(): number {
+    if (!this.expiresAt) {
+      return 0;
+    }
+    const remaining = this.expiresAt.getTime() - Date.now();
+    return Math.max(0, remaining);
+  }
+
+  /**
+   * Close the queue (set status to 'closed')
+   */
+  close(): void {
+    db.closeQueue(this.messageId);
+    this.status = 'closed';
+  }
+
+  /**
+   * Reopen the queue and reset the timer
+   * Used by /reset command
+   */
+  reopen(): void {
+    const newExpiresAt = new Date(Date.now() + QUEUE_TIMER_DURATION_MS);
+    db.reopenQueue(this.messageId, newExpiresAt);
+    this.status = 'open';
+    this.expiresAt = newExpiresAt;
   }
 
   // ==========================================================================
@@ -334,8 +410,12 @@ export class Queue {
       channelId: this.channelId,
       queueType: this.queueType,
       capacity: this.capacity,
+      status: this.status,
+      expiresAt: this.expiresAt?.toISOString() || null,
       playerCount: this.getPlayerCount(),
       isFull: this.isFull(),
+      isClosed: this.isClosed(),
+      isExpired: this.isExpired(),
       availableSlots: this.getAvailableSlots(),
       createdAt: this.createdAt.toISOString(),
     };

@@ -17,16 +17,22 @@ export const en: Translations = {
     full: 'FULL!',
     players: 'Players',
     partyFinder: 'Party Finder',
+    closed: 'Closed',
+    closes: 'Closes',
   },
 
   footers: {
     queueEmpty: 'Click a role button to join the party',
     queueActive: 'Party is filling up! Join now',
     queueFull: 'Party is ready! Good luck!',
+    queueClosed: 'This queue is closed',
   },
 
   buttons: {
     leave: '❌ Leave',
+    tank: 'Tank',
+    healer: 'Healer',
+    dps: 'DPS',
   },
 
   success: {
@@ -50,6 +56,7 @@ export const en: Translations = {
     queueNotFound:
       '❌ Party not found. It may have been deleted or does not exist.',
     queueFull: '❌ The party is full! Please wait for the next round.',
+    queueClosed: '🔒 This queue is closed.',
     queueAlreadyExists:
       '❌ A party of this type already exists in this server. Use `/reset` to clear it or `/close` to delete it.',
     playerAlreadyInQueue:
@@ -65,6 +72,9 @@ export const en: Translations = {
 
   queueFullMessage: (queueType: string, mentions: string) =>
     `🎉 **${queueType} Queue is Full!**\n\n${mentions}\n\nYour party is ready! Good luck and have fun!`,
+
+  queueExpiredMessage: (queueType: string, mentions: string) =>
+    `⏰ **${queueType} Queue Time Ended!**\n\n${mentions}\n\nThe queue timer has expired. The queue is now closed.`,
 
   commands: {
     setup: {

@@ -17,16 +17,22 @@ export const vi: Translations = {
     full: 'ĐẦY!',
     players: 'Người Chơi',
     partyFinder: 'Tìm Đội',
+    closed: 'Đã Đóng',
+    closes: 'Đóng',
   },
 
   footers: {
     queueEmpty: 'Nhấp vào nút vai trò để tham gia hàng đợi',
     queueActive: 'Tổ đội đang được lấp đầy! Tham gia ngay',
     queueFull: 'Tổ đội đã sẵn sàng! Lụm Boss nào!',
+    queueClosed: 'Tổ đội này đã đóng',
   },
 
   buttons: {
     leave: '❌ Rời Tổ Đội',
+    tank: 'Tank',
+    healer: 'Healer',
+    dps: 'DPS',
   },
 
   success: {
@@ -50,6 +56,7 @@ export const vi: Translations = {
     queueNotFound:
       '❌ Không tìm thấy tổ đội. Nó có thể đã bị xóa hoặc không tồn tại.',
     queueFull: '❌ Tổ đội đã đầy! Vui lòng chờ vòng tiếp theo.',
+    queueClosed: '🔒 Tổ đội này đã đóng.',
     queueAlreadyExists:
       '❌ Tổ đội loại này đã tồn tại trong máy chủ này. Sử dụng `/reset` để xóa hoặc `/close` để xóa hẳn.',
     playerAlreadyInQueue:
@@ -65,6 +72,9 @@ export const vi: Translations = {
 
   queueFullMessage: (queueType: string, mentions: string) =>
     `🎉 **Tổ Đội ${queueType} Đã Đầy!**\n\n${mentions}\n\nĐội của bạn đã sẵn sàng! Lụm Boss nào!`,
+
+  queueExpiredMessage: (queueType: string, mentions: string) =>
+    `⏰ **Hết Thời Gian Tổ Đội ${queueType}!**\n\n${mentions}\n\nThời gian tổ đội đã hết. Tổ đội đã đóng.`,
 
   commands: {
     setup: {

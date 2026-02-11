@@ -32,6 +32,11 @@ import {
   handleSetupVerification,
   handleDisableVerification,
 } from './verification.js';
+import {
+  startQueueTimer,
+  cancelQueueTimer,
+} from '../utils/timerManager.js';
+import { QUEUE_TIMER_DURATION_MS } from '../utils/constants.js';
 
 // ============================================================================
 // Command Definitions
@@ -354,6 +359,8 @@ async function handleSetupCommand(
 
     // 4. Create initial queue embed
     const guildName = interaction.guild.name;
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + QUEUE_TIMER_DURATION_MS);
     const initialState = {
       queue: {
         messageId: '', // Will be set after sending
@@ -361,7 +368,9 @@ async function handleSetupCommand(
         channelId: targetChannel.id,
         queueType,
         capacity: QUEUE_CONFIGS[queueType].capacity,
-        createdAt: new Date(),
+        status: 'open' as const,
+        expiresAt,
+        createdAt: now,
       },
       players: [],
     };
@@ -376,9 +385,12 @@ async function handleSetupCommand(
     });
 
     // 6. Create queue in database
-    Queue.create(message.id, interaction.guildId, targetChannel.id, queueType);
+    const queue = Queue.create(message.id, interaction.guildId, targetChannel.id, queueType);
 
-    // 7. Confirm success
+    // 7. Start the 15-minute timer
+    startQueueTimer(queue, interaction.client);
+
+    // 8. Confirm success
     const successMessage = SUCCESS_MESSAGES.QUEUE_CREATED(
       queueType,
       `<#${targetChannel.id}>`
@@ -431,10 +443,17 @@ async function handleResetCommand(
     // 2. Defer reply
     await interaction.deferReply({ ephemeral: true });
 
-    // 3. Clear all players
-    queue.clear();
+    // 3. Cancel existing timer
+    cancelQueueTimer(queue.getMessageId());
 
-    // 4. Update message
+    // 4. Clear all players and reopen the queue (restarts timer)
+    queue.clear();
+    queue.reopen();
+
+    // 5. Start new timer
+    startQueueTimer(queue, interaction.client);
+
+    // 6. Update message
     const state = queue.getState();
     const guildName = interaction.guild?.name;
     const embed = createQueueEmbed(state, guildName, interaction.guildId);
@@ -448,11 +467,11 @@ async function handleResetCommand(
       });
     }
 
-    // 5. Confirm success
+    // 7. Confirm success
     const successMessage = SUCCESS_MESSAGES.QUEUE_RESET(queueType);
     await interaction.editReply({ content: successMessage });
 
-    console.log(`[Reset] Cleared ${queueType} queue in guild ${interaction.guildId}`);
+    console.log(`[Reset] Cleared and reopened ${queueType} queue in guild ${interaction.guildId}`);
   } catch (error) {
     console.error('[Reset] Error resetting queue:', error);
 
@@ -493,7 +512,10 @@ async function handleCloseCommand(
     // 2. Defer reply
     await interaction.deferReply({ ephemeral: true });
 
-    // 3. Delete message from Discord
+    // 3. Cancel the timer
+    cancelQueueTimer(queue.getMessageId());
+
+    // 4. Delete message from Discord
     try {
       const channel = await interaction.client.channels.fetch(queue.getChannelId());
       if (channel?.isTextBased()) {
@@ -504,7 +526,7 @@ async function handleCloseCommand(
       console.warn('[Close] Failed to delete message (may already be deleted):', error);
     }
 
-    // 4. Delete from database
+    // 5. Delete from database
     queue.delete();
 
     // 5. Confirm success

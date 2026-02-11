@@ -74,6 +74,36 @@ function runMigrations(): void {
       console.log('[Database] Migration: Added approved_channel_id column to verification_settings');
     }
 
+    // Migration: Add status column to queues table (if not exists)
+    const hasStatusColumn = db
+      .prepare(
+        `SELECT COUNT(*) as count FROM pragma_table_info('queues') WHERE name='status'`
+      )
+      .get() as { count: number };
+
+    if (hasStatusColumn.count === 0) {
+      db.exec(`
+        ALTER TABLE queues
+        ADD COLUMN status TEXT NOT NULL DEFAULT 'open' CHECK(status IN ('open', 'closed'));
+      `);
+      console.log('[Database] Migration: Added status column to queues');
+    }
+
+    // Migration: Add expires_at column to queues table (if not exists)
+    const hasExpiresAtColumn = db
+      .prepare(
+        `SELECT COUNT(*) as count FROM pragma_table_info('queues') WHERE name='expires_at'`
+      )
+      .get() as { count: number };
+
+    if (hasExpiresAtColumn.count === 0) {
+      db.exec(`
+        ALTER TABLE queues
+        ADD COLUMN expires_at DATETIME;
+      `);
+      console.log('[Database] Migration: Added expires_at column to queues');
+    }
+
     // Migration: Update queue_type CHECK constraint to include 'guild_war'
     // Check if the constraint needs updating by attempting to insert a guild_war queue (rollback after)
     try {
@@ -148,6 +178,8 @@ export interface QueueRow {
   channel_id: string;
   queue_type: 'sword_trial' | 'hero_realm' | 'guild_war';
   capacity: number;
+  status: 'open' | 'closed';
+  expires_at: string | null;
   created_at: string;
 }
 
@@ -159,15 +191,17 @@ export function createQueue(
   guildId: string,
   channelId: string,
   queueType: 'sword_trial' | 'hero_realm' | 'guild_war',
-  capacity: number
+  capacity: number,
+  expiresAt: Date | null = null
 ): void {
   const db = getDatabase();
   const stmt = db.prepare(`
-    INSERT INTO queues (message_id, guild_id, channel_id, queue_type, capacity)
-    VALUES (?, ?, ?, ?, ?)
+    INSERT INTO queues (message_id, guild_id, channel_id, queue_type, capacity, status, expires_at)
+    VALUES (?, ?, ?, ?, ?, 'open', ?)
   `);
 
-  stmt.run(messageId, guildId, channelId, queueType, capacity);
+  const expiresAtStr = expiresAt ? expiresAt.toISOString() : null;
+  stmt.run(messageId, guildId, channelId, queueType, capacity, expiresAtStr);
 }
 
 /**
@@ -219,6 +253,29 @@ export function deleteQueue(messageId: string): void {
   const db = getDatabase();
   const stmt = db.prepare('DELETE FROM queues WHERE message_id = ?');
   stmt.run(messageId);
+}
+
+/**
+ * Close a queue (set status to 'closed')
+ */
+export function closeQueue(messageId: string): void {
+  const db = getDatabase();
+  const stmt = db.prepare(`
+    UPDATE queues SET status = 'closed' WHERE message_id = ?
+  `);
+  stmt.run(messageId);
+}
+
+/**
+ * Reopen a queue and reset the expiration timer
+ * Used by /reset command
+ */
+export function reopenQueue(messageId: string, expiresAt: Date): void {
+  const db = getDatabase();
+  const stmt = db.prepare(`
+    UPDATE queues SET status = 'open', expires_at = ? WHERE message_id = ?
+  `);
+  stmt.run(expiresAt.toISOString(), messageId);
 }
 
 // ============================================================================

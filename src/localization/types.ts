@@ -21,6 +21,8 @@ export interface Translations {
     full: string;
     players: string;
     partyFinder: string;
+    closed: string;
+    closes: string;
   };
 
   // Footer messages
@@ -28,11 +30,15 @@ export interface Translations {
     queueEmpty: string;
     queueActive: string;
     queueFull: string;
+    queueClosed: string;
   };
 
   // Button labels (Tank, Healer, DPS kept in English)
   buttons: {
     leave: string;
+    tank: string;
+    healer: string;
+    dps: string;
   };
 
   // Success messages
@@ -51,6 +57,7 @@ export interface Translations {
     genericError: string;
     queueNotFound: string;
     queueFull: string;
+    queueClosed: string;
     queueAlreadyExists: string;
     playerAlreadyInQueue: string;
     playerInAnotherQueue: string;
@@ -61,6 +68,9 @@ export interface Translations {
 
   // Queue full notification
   queueFullMessage: (queueType: string, mentions: string) => string;
+
+  // Queue expired notification
+  queueExpiredMessage: (queueType: string, mentions: string) => string;
 
   // Command descriptions
   commands: {

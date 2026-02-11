@@ -6,7 +6,7 @@ import {
 } from 'discord.js';
 import type { PlayerRole } from '../types/index.js';
 import { Queue } from '../models/Queue.js';
-import { createQueueEmbed } from '../utils/embeds.js';
+import { createQueueEmbed, createDisabledButtons } from '../utils/embeds.js';
 import {
   BUTTON_IDS,
   ERROR_MESSAGES,
@@ -15,6 +15,10 @@ import {
 } from '../utils/constants.js';
 import { formatPlayerMentions } from '../models/QueuePlayer.js';
 import { getGuildTranslations } from '../localization/index.js';
+import { cancelQueueTimer } from '../utils/timerManager.js';
+
+// Re-export formatPlayerMentions for use by timerManager
+export { formatPlayerMentions } from '../models/QueuePlayer.js';
 
 // ============================================================================
 // Button Builders
@@ -131,7 +135,16 @@ async function handleJoinButton(
       return;
     }
 
-    // 2. Check if user is already in THIS queue - if so, switch their role
+    // 2. Check if queue is closed
+    if (queue.isClosed()) {
+      await interaction.reply({
+        content: ERROR_MESSAGES.QUEUE_CLOSED,
+        ephemeral: true,
+      });
+      return;
+    }
+
+    // 3. Check if user is already in THIS queue - if so, switch their role
     if (queue.hasPlayer(userId)) {
       // Remove from current role and add with new role
       queue.removePlayer(userId);
@@ -218,8 +231,23 @@ async function handleJoinButton(
       ephemeral: true,
     });
 
-    // 5. If queue is now full, send notification
+    // 5. If queue is now full, close queue and send notification
     if (queue.isFull()) {
+      // Cancel the timer
+      cancelQueueTimer(messageId);
+
+      // Close the queue
+      queue.close();
+
+      // Update embed to show closed state with disabled buttons
+      const closedState = queue.getState();
+      const closedEmbed = createQueueEmbed(closedState, guildName, guildId);
+      await interaction.message.edit({
+        embeds: [closedEmbed],
+        components: [createDisabledButtons(guildId)],
+      });
+
+      // Send notification pinging all players
       await sendQueueFullNotification(interaction, queue);
     }
   } catch (error) {
@@ -266,7 +294,16 @@ async function handleLeaveButton(
       return;
     }
 
-    // 2. Remove player from queue
+    // 2. Check if queue is closed
+    if (queue.isClosed()) {
+      await interaction.reply({
+        content: ERROR_MESSAGES.QUEUE_CLOSED,
+        ephemeral: true,
+      });
+      return;
+    }
+
+    // 3. Remove player from queue
     const removed = queue.removePlayer(userId);
 
     if (!removed) {

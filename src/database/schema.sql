@@ -10,6 +10,9 @@ CREATE TABLE IF NOT EXISTS queues (
   queue_type TEXT NOT NULL           -- Type of queue: 'sword_trial', 'hero_realm', or 'guild_war'
     CHECK(queue_type IN ('sword_trial', 'hero_realm', 'guild_war')),
   capacity INTEGER NOT NULL,         -- Maximum number of players (5 or 10)
+  status TEXT NOT NULL DEFAULT 'open' -- Queue status: 'open' or 'closed'
+    CHECK(status IN ('open', 'closed')),
+  expires_at DATETIME,               -- When the queue timer expires (null = no timer)
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 

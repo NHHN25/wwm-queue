@@ -1,8 +1,10 @@
-import { EmbedBuilder } from 'discord.js';
+import { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
 import type { QueueState } from '../types/index.js';
 import {
   QUEUE_CONFIGS,
   EMOJIS,
+  COLORS,
+  BUTTON_IDS,
   getQueueEmoji,
 } from './constants.js';
 import { getGuildTranslations } from '../localization/index.js';
@@ -20,6 +22,7 @@ export function createQueueEmbed(
   const config = QUEUE_CONFIGS[queue.queueType];
   const playerCount = players.length;
   const isFull = playerCount >= queue.capacity;
+  const isClosed = queue.status === 'closed';
 
   // Get translations for this guild
   const t = guildId ? getGuildTranslations(guildId) : getGuildTranslations('');
@@ -33,13 +36,31 @@ export function createQueueEmbed(
 
   // Build title with status indicator
   const emoji = getQueueEmoji(queue.queueType);
-  const statusEmoji = isFull ? '✅' : playerCount > 0 ? '⏳' : '🔵';
-  const title = `${statusEmoji} ${emoji} ${displayName}`;
+  let statusEmoji: string;
+  let title: string;
+
+  if (isClosed) {
+    statusEmoji = EMOJIS.CLOSED;
+    title = `${statusEmoji} ${emoji} ${displayName} - ${t.embeds.closed || 'Closed'}`;
+  } else {
+    statusEmoji = isFull ? '✅' : playerCount > 0 ? '⏳' : '🔵';
+    title = `${statusEmoji} ${emoji} ${displayName}`;
+  }
+
+  // Determine embed color
+  let embedColor: number;
+  if (isClosed) {
+    embedColor = COLORS.CLOSED;
+  } else if (isFull) {
+    embedColor = COLORS.SUCCESS;
+  } else {
+    embedColor = config.color;
+  }
 
   // Build embed with enhanced styling
   const embed = new EmbedBuilder()
     .setTitle(title)
-    .setColor(isFull ? 0x57f287 : config.color) // Green when full
+    .setColor(embedColor)
     .setTimestamp(new Date());
 
   // Add guild name with icon
@@ -63,7 +84,7 @@ export function createQueueEmbed(
 
   // Add footer based on queue state
   const footer = getFooterText(state, t);
-  const footerIcon = isFull ? '✅' : '👥';
+  const footerIcon = isClosed ? EMOJIS.CLOSED : isFull ? '✅' : '👥';
   embed.setFooter({ text: `${footerIcon} ${footer}` });
 
   return embed;
@@ -191,15 +212,39 @@ function getRoleDisplayName(role: 'tank' | 'healer' | 'dps'): string {
 function getFooterText(state: QueueState, t: any): string {
   const { players, queue } = state;
 
+  // If queue is closed, show closed message
+  if (queue.status === 'closed') {
+    return t.footers.queueClosed || 'Queue closed';
+  }
+
+  // Build base footer text
+  let baseText: string;
   if (players.length === 0) {
-    return t.footers.queueEmpty;
+    baseText = t.footers.queueEmpty;
+  } else if (players.length >= queue.capacity) {
+    baseText = t.footers.queueFull;
+  } else {
+    baseText = t.footers.queueActive;
   }
 
-  if (players.length >= queue.capacity) {
-    return t.footers.queueFull;
+  // Add timer display if queue has an expiration time
+  if (queue.expiresAt) {
+    const timerText = formatTimerDisplay(queue.expiresAt, t);
+    return `${baseText} • ${timerText}`;
   }
 
-  return t.footers.queueActive;
+  return baseText;
+}
+
+/**
+ * Format timer display using Discord timestamp
+ * Shows auto-updating countdown using Discord's built-in relative timestamp
+ */
+function formatTimerDisplay(expiresAt: Date, t: any): string {
+  const unixTimestamp = Math.floor(expiresAt.getTime() / 1000);
+  const timerLabel = t.embeds.closes || 'Closes';
+  // Discord relative timestamp format: <t:UNIX:R> shows "in X minutes"
+  return `${EMOJIS.TIMER} ${timerLabel} <t:${unixTimestamp}:R>`;
 }
 
 /**
@@ -323,4 +368,39 @@ export function formatGearScoreAsGoose(gearScore: number): string {
   });
 
   return `${formatted}🦆`;
+}
+
+/**
+ * Create disabled buttons for closed queues
+ * These buttons are shown but cannot be clicked
+ */
+export function createDisabledButtons(guildId?: string): ActionRowBuilder<ButtonBuilder> {
+  const t = guildId ? getGuildTranslations(guildId) : getGuildTranslations('');
+
+  const tankButton = new ButtonBuilder()
+    .setCustomId(BUTTON_IDS.JOIN_TANK)
+    .setLabel(t.buttons.tank)
+    .setEmoji('🛡️')
+    .setStyle(ButtonStyle.Secondary)
+    .setDisabled(true);
+
+  const healerButton = new ButtonBuilder()
+    .setCustomId(BUTTON_IDS.JOIN_HEALER)
+    .setLabel(t.buttons.healer)
+    .setEmoji('💚')
+    .setStyle(ButtonStyle.Secondary)
+    .setDisabled(true);
+
+  const dpsButton = new ButtonBuilder()
+    .setCustomId(BUTTON_IDS.JOIN_DPS)
+    .setLabel(t.buttons.dps)
+    .setEmoji('⚔️')
+    .setStyle(ButtonStyle.Secondary)
+    .setDisabled(true);
+
+  return new ActionRowBuilder<ButtonBuilder>().addComponents(
+    tankButton,
+    healerButton,
+    dpsButton
+  );
 }

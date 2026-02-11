@@ -7,7 +7,7 @@ import {
   handleCommandInteraction,
 } from './commands/setup.js';
 import { Queue } from './models/Queue.js';
-import { createQueueEmbed } from './utils/embeds.js';
+import { createQueueEmbed, createDisabledButtons } from './utils/embeds.js';
 import { createJoinButtons } from './components/queueButtons.js';
 import { handleRegistrationModalSubmit } from './components/registrationModal.js';
 import {
@@ -16,6 +16,10 @@ import {
 } from './components/registrationSelectMenus.js';
 import { handleApprovalButtonInteraction } from './components/verificationButtons.js';
 import { handleUpdateModalSubmit } from './components/updateModal.js';
+import {
+  restoreTimers,
+  clearAllTimers,
+} from './utils/timerManager.js';
 
 // Load environment variables
 config();
@@ -182,15 +186,20 @@ async function restoreQueueState(client: Client): Promise<void> {
       const state = queue.getState();
       const embed = createQueueEmbed(state, guildName, guildId);
 
+      // Use appropriate buttons based on queue status
+      const buttons = queue.isClosed()
+        ? createDisabledButtons(guildId)
+        : createJoinButtons(guildId);
+
       await message.edit({
         embeds: [embed],
-        components: [createJoinButtons(guildId)],
+        components: [buttons],
       });
 
       restored++;
 
       console.log(
-        `[Restore] ✅ Restored ${queue.getQueueType()} queue in guild ${queue.getGuildId()}`
+        `[Restore] ✅ Restored ${queue.getQueueType()} queue in guild ${queue.getGuildId()} (status: ${queue.getStatus()})`
       );
     } catch (error) {
       console.error(
@@ -205,6 +214,9 @@ async function restoreQueueState(client: Client): Promise<void> {
   console.log(
     `[Restore] Restored ${restored} queues, cleaned up ${cleaned} orphaned records`
   );
+
+  // Restore timers for open queues (handles expired queues automatically)
+  await restoreTimers(client);
 }
 
 // ============================================================================
@@ -218,6 +230,9 @@ async function shutdown(signal: string): Promise<void> {
   console.log(`\n[Shutdown] Received ${signal}, shutting down gracefully...`);
 
   try {
+    // Clear all queue timers
+    clearAllTimers();
+
     // Destroy Discord client
     client.destroy();
     console.log('[Shutdown] Discord client destroyed');
