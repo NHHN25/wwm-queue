@@ -1,9 +1,9 @@
 import type { QueueType, QueueConfig, PlayerRole, RoleConfig } from '../types/index.js';
 
 /**
- * Queue timer duration in milliseconds (15 minutes)
+ * Queue timer duration in milliseconds (30 minutes)
  */
-export const QUEUE_TIMER_DURATION_MS = 15 * 60 * 1000;
+export const QUEUE_TIMER_DURATION_MS = 30 * 60 * 1000;
 
 /**
  * Queue type configurations
