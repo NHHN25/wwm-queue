@@ -106,6 +106,7 @@ export const BUTTON_IDS = {
   LEAVE: 'queue_leave',
   PANEL_CREATE_SWORD_TRIAL: 'panel_create_sword_trial',
   PANEL_CREATE_HERO_REALM: 'panel_create_hero_realm',
+  PANEL_CREATE_GUILD_WAR: 'panel_create_guild_war',
 } as const;
 
 /**
@@ -282,6 +283,10 @@ export function parsePanelButtonId(customId: string): {
 
   if (customId === BUTTON_IDS.PANEL_CREATE_HERO_REALM) {
     return { action: 'panel_create', queueType: 'hero_realm' };
+  }
+
+  if (customId === BUTTON_IDS.PANEL_CREATE_GUILD_WAR) {
+    return { action: 'panel_create', queueType: 'guild_war' };
   }
 
   return null;

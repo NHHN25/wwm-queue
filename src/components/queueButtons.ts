@@ -90,11 +90,15 @@ export function createPanelButton(
 
   const displayName = queueType === 'sword_trial'
     ? t.queueTypes.swordTrial
-    : t.queueTypes.heroRealm;
+    : queueType === 'hero_realm'
+    ? t.queueTypes.heroRealm
+    : t.queueTypes.guildWar;
 
   const customId = queueType === 'sword_trial'
     ? BUTTON_IDS.PANEL_CREATE_SWORD_TRIAL
-    : BUTTON_IDS.PANEL_CREATE_HERO_REALM;
+    : queueType === 'hero_realm'
+    ? BUTTON_IDS.PANEL_CREATE_HERO_REALM
+    : BUTTON_IDS.PANEL_CREATE_GUILD_WAR;
 
   const emoji = QUEUE_CONFIGS[queueType].emoji;
 
@@ -506,7 +510,9 @@ async function handlePanelCreateButton(
     // 7. Confirm to the user who clicked
     const displayName = queueType === 'sword_trial'
       ? t.queueTypes.swordTrial
-      : t.queueTypes.heroRealm;
+      : queueType === 'hero_realm'
+      ? t.queueTypes.heroRealm
+      : t.queueTypes.guildWar;
 
     await interaction.editReply({
       content: t.panel.queueCreatedByPanel(displayName),

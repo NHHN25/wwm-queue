@@ -261,7 +261,9 @@ export function createPanelEmbed(
 
   const displayName = queueType === 'sword_trial'
     ? t.queueTypes.swordTrial
-    : t.queueTypes.heroRealm;
+    : queueType === 'hero_realm'
+    ? t.queueTypes.heroRealm
+    : t.queueTypes.guildWar;
 
   const embed = new EmbedBuilder()
     .setTitle(`${config.emoji} ${displayName}`)
