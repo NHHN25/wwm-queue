@@ -202,4 +202,20 @@ export const vi: Translations = {
     errorPartialSuccess: (errors: string[]) =>
       `⚠️ Hoàn thành một phần với lỗi:\n${errors.map((e) => `• ${e}`).join('\n')}`,
   },
+
+  panel: {
+    description: (capacity: number) =>
+      `Sẵn sàng tìm đội? Nhấp bên dưới để mở hàng đợi cho **${capacity} người chơi**.\n\nHàng đợi sẽ xuất hiện tại đây và mọi người có thể tham gia bằng cách chọn vai trò.`,
+    roles: '🛡️ Tank   💚 Healer   ⚔️ DPS',
+    createButton: (queueType: string) => `Tạo Tổ Đội ${queueType}`,
+    footer: 'Chỉ một tổ đội có thể hoạt động cùng lúc.',
+    panelCreated: (queueType: string, channel: string) =>
+      `✅ Bảng **${queueType}** đã được tạo trong ${channel}!\n\nBất kỳ ai cũng có thể nhấp vào nút để mở tổ đội.`,
+    queueCreatedByPanel: (queueType: string) =>
+      `✅ Tổ đội **${queueType}** đã được mở! Tham gia bằng nút vai trò.`,
+    panelAlreadyExists:
+      '❌ Bảng cho loại tổ đội này đã tồn tại trong máy chủ này. Vui lòng xóa bảng cũ trước.',
+    noActiveQueue:
+      '❌ Không có tổ đội nào đang hoạt động để đóng. Bảng vẫn còn hoạt động.',
+  },
 };

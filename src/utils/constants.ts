@@ -104,6 +104,8 @@ export const BUTTON_IDS = {
   JOIN_HEALER: 'queue_join_healer',
   JOIN_DPS: 'queue_join_dps',
   LEAVE: 'queue_leave',
+  PANEL_CREATE_SWORD_TRIAL: 'panel_create_sword_trial',
+  PANEL_CREATE_HERO_REALM: 'panel_create_hero_realm',
 } as const;
 
 /**
@@ -262,6 +264,24 @@ export function parseButtonId(customId: string): {
 
   if (customId === BUTTON_IDS.JOIN_DPS) {
     return { action: 'join', role: 'dps' };
+  }
+
+  return null;
+}
+
+/**
+ * Parse panel button custom ID to extract queue type
+ */
+export function parsePanelButtonId(customId: string): {
+  action: 'panel_create';
+  queueType: QueueType;
+} | null {
+  if (customId === BUTTON_IDS.PANEL_CREATE_SWORD_TRIAL) {
+    return { action: 'panel_create', queueType: 'sword_trial' };
+  }
+
+  if (customId === BUTTON_IDS.PANEL_CREATE_HERO_REALM) {
+    return { action: 'panel_create', queueType: 'hero_realm' };
   }
 
   return null;

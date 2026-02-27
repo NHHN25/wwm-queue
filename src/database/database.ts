@@ -879,3 +879,82 @@ export function updatePlayerRegistrationApproval(
   const result = stmt.run(approvalStatus, approvedBy, id);
   return result.changes > 0;
 }
+
+// ============================================================================
+// Panel Operations
+// ============================================================================
+
+export interface PanelRow {
+  message_id: string;
+  guild_id: string;
+  channel_id: string;
+  queue_type: 'sword_trial' | 'hero_realm';
+  created_at: string;
+}
+
+/**
+ * Create a new panel
+ */
+export function createPanel(
+  messageId: string,
+  guildId: string,
+  channelId: string,
+  queueType: 'sword_trial' | 'hero_realm'
+): void {
+  const db = getDatabase();
+  const stmt = db.prepare(`
+    INSERT INTO panels (message_id, guild_id, channel_id, queue_type)
+    VALUES (?, ?, ?, ?)
+  `);
+  stmt.run(messageId, guildId, channelId, queueType);
+}
+
+/**
+ * Get panel by message ID
+ */
+export function getPanel(messageId: string): PanelRow | null {
+  const db = getDatabase();
+  const stmt = db.prepare('SELECT * FROM panels WHERE message_id = ?');
+  return (stmt.get(messageId) as PanelRow) || null;
+}
+
+/**
+ * Get panel by guild ID and queue type
+ */
+export function getPanelByType(
+  guildId: string,
+  queueType: 'sword_trial' | 'hero_realm'
+): PanelRow | null {
+  const db = getDatabase();
+  const stmt = db.prepare(
+    'SELECT * FROM panels WHERE guild_id = ? AND queue_type = ?'
+  );
+  return (stmt.get(guildId, queueType) as PanelRow) || null;
+}
+
+/**
+ * Delete a panel
+ */
+export function deletePanel(messageId: string): void {
+  const db = getDatabase();
+  const stmt = db.prepare('DELETE FROM panels WHERE message_id = ?');
+  stmt.run(messageId);
+}
+
+/**
+ * Get all panels across all guilds
+ */
+export function getAllPanels(): PanelRow[] {
+  const db = getDatabase();
+  const stmt = db.prepare('SELECT * FROM panels');
+  return stmt.all() as PanelRow[];
+}
+
+/**
+ * Get all panels for a specific guild
+ */
+export function getGuildPanels(guildId: string): PanelRow[] {
+  const db = getDatabase();
+  const stmt = db.prepare('SELECT * FROM panels WHERE guild_id = ?');
+  return stmt.all(guildId) as PanelRow[];
+}

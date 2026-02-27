@@ -197,4 +197,16 @@ export interface Translations {
     errorMissingPermissions: (errors: string[]) => string;
     errorPartialSuccess: (errors: string[]) => string;
   };
+
+  // Panel embed and button text
+  panel: {
+    description: (capacity: number) => string;
+    roles: string;
+    createButton: (queueType: string) => string;
+    footer: string;
+    panelCreated: (queueType: string, channel: string) => string;
+    queueCreatedByPanel: (queueType: string) => string;
+    panelAlreadyExists: string;
+    noActiveQueue: string;
+  };
 }

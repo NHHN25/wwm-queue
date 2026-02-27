@@ -1,13 +1,14 @@
 import { Client, GatewayIntentBits, Events } from 'discord.js';
 import { config } from 'dotenv';
 import { initializeDatabase, closeDatabase } from './database/database.js';
-import { handleButtonInteraction } from './components/queueButtons.js';
+import * as db from './database/database.js';
+import { handleButtonInteraction, createPanelButton } from './components/queueButtons.js';
 import {
   registerCommands,
   handleCommandInteraction,
 } from './commands/setup.js';
 import { Queue } from './models/Queue.js';
-import { createQueueEmbed, createDisabledButtons } from './utils/embeds.js';
+import { createQueueEmbed, createDisabledButtons, createPanelEmbed } from './utils/embeds.js';
 import { createJoinButtons } from './components/queueButtons.js';
 import { handleRegistrationModalSubmit } from './components/registrationModal.js';
 import {
@@ -20,6 +21,7 @@ import {
   restoreTimers,
   clearAllTimers,
 } from './utils/timerManager.js';
+import type { QueueType } from './types/index.js';
 
 // Load environment variables
 config();
@@ -58,8 +60,9 @@ client.once(Events.ClientReady, async (c) => {
     // Register slash commands
     await registerCommands(c);
 
-    // Restore queue state from database
+    // Restore state from database
     await restoreQueueState(c);
+    await restorePanelState(c);
 
     console.log('┌─────────────────────────────────────────┐');
     console.log('│ 🚀 Bot is ready and operational!        │');
@@ -217,6 +220,77 @@ async function restoreQueueState(client: Client): Promise<void> {
 
   // Restore timers for open queues (handles expired queues automatically)
   await restoreTimers(client);
+}
+
+/**
+ * Restore panel state on bot startup
+ * Loads all panels from database and verifies Discord messages still exist
+ */
+async function restorePanelState(client: Client): Promise<void> {
+  console.log('[Restore] Loading panels from database...');
+
+  const allPanels = db.getAllPanels();
+  let restored = 0;
+  let cleaned = 0;
+
+  for (const panelRow of allPanels) {
+    try {
+      // Fetch channel
+      const channel = await client.channels.fetch(panelRow.channel_id);
+
+      if (!channel?.isTextBased()) {
+        console.warn(
+          `[Restore] Panel channel ${panelRow.channel_id} not found, deleting panel`
+        );
+        db.deletePanel(panelRow.message_id);
+        cleaned++;
+        continue;
+      }
+
+      // Fetch message
+      const message = await channel.messages.fetch(panelRow.message_id);
+
+      if (!message) {
+        console.warn(
+          `[Restore] Panel message ${panelRow.message_id} not found, deleting panel`
+        );
+        db.deletePanel(panelRow.message_id);
+        cleaned++;
+        continue;
+      }
+
+      // Get guild name for embed
+      const guild = await client.guilds.fetch(panelRow.guild_id);
+      const guildName = guild?.name;
+
+      // Update panel to ensure consistency (e.g., language changes)
+      const queueType = panelRow.queue_type as QueueType;
+      const embed = createPanelEmbed(queueType, guildName, panelRow.guild_id);
+      const button = createPanelButton(queueType, panelRow.guild_id);
+
+      await message.edit({
+        embeds: [embed],
+        components: [button],
+      });
+
+      restored++;
+
+      console.log(
+        `[Restore] ✅ Restored ${panelRow.queue_type} panel in guild ${panelRow.guild_id}`
+      );
+    } catch (error) {
+      console.error(
+        `[Restore] ❌ Failed to restore panel ${panelRow.message_id}:`,
+        error
+      );
+      db.deletePanel(panelRow.message_id);
+      cleaned++;
+    }
+  }
+
+  console.log(
+    `[Restore] Panels: restored ${restored}, cleaned up ${cleaned} orphaned records`
+  );
 }
 
 // ============================================================================

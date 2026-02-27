@@ -202,4 +202,20 @@ export const en: Translations = {
     errorPartialSuccess: (errors: string[]) =>
       `⚠️ Partially completed with errors:\n${errors.map((e) => `• ${e}`).join('\n')}`,
   },
+
+  panel: {
+    description: (capacity: number) =>
+      `Ready to find a party? Click below to open a queue for **${capacity} players**.\n\nThe queue will appear here and anyone can join by selecting a role.`,
+    roles: '🛡️ Tank   💚 Healer   ⚔️ DPS',
+    createButton: (queueType: string) => `Create ${queueType} Queue`,
+    footer: 'Only one queue can be active at a time.',
+    panelCreated: (queueType: string, channel: string) =>
+      `✅ Panel for **${queueType}** created in ${channel}!\n\nAnyone can now click the button to open a queue.`,
+    queueCreatedByPanel: (queueType: string) =>
+      `✅ **${queueType}** queue is now open! Join with a role button.`,
+    panelAlreadyExists:
+      '❌ A panel for this queue type already exists in this server. Delete the old panel message first.',
+    noActiveQueue:
+      '❌ No active queue of this type to close. The panel is still active.',
+  },
 };

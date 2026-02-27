@@ -73,6 +73,18 @@ export interface QueueState {
   players: QueuePlayerData[];
 }
 
+/**
+ * Panel metadata (from database)
+ * Panels are persistent "Create Queue" embeds posted by admins via /setup
+ */
+export interface PanelData {
+  messageId: string;
+  guildId: string;
+  channelId: string;
+  queueType: QueueType;
+  createdAt: Date;
+}
+
 // ============================================================================
 // Button Interaction Data
 // ============================================================================

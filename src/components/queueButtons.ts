@@ -4,18 +4,22 @@ import {
   ButtonStyle,
   ButtonInteraction,
 } from 'discord.js';
-import type { PlayerRole } from '../types/index.js';
+import type { PlayerRole, QueueType } from '../types/index.js';
 import { Queue } from '../models/Queue.js';
 import { createQueueEmbed, createDisabledButtons } from '../utils/embeds.js';
 import {
   BUTTON_IDS,
   ERROR_MESSAGES,
+  QUEUE_FULL_MESSAGE,
+  QUEUE_CONFIGS,
   parseButtonId,
+  parsePanelButtonId,
   ROLE_CONFIGS,
 } from '../utils/constants.js';
 import { formatPlayerMentions } from '../models/QueuePlayer.js';
 import { getGuildTranslations } from '../localization/index.js';
 import { cancelQueueTimer } from '../utils/timerManager.js';
+import * as db from '../database/database.js';
 
 // Re-export formatPlayerMentions for use by timerManager
 export { formatPlayerMentions } from '../models/QueuePlayer.js';
@@ -75,6 +79,34 @@ export function createLeaveButton(guildId?: string): ActionRowBuilder<ButtonBuil
   return new ActionRowBuilder<ButtonBuilder>().addComponents(leaveButton);
 }
 
+/**
+ * Create the "Create Queue" button shown on a panel embed
+ */
+export function createPanelButton(
+  queueType: QueueType,
+  guildId?: string
+): ActionRowBuilder<ButtonBuilder> {
+  const t = guildId ? getGuildTranslations(guildId) : getGuildTranslations('');
+
+  const displayName = queueType === 'sword_trial'
+    ? t.queueTypes.swordTrial
+    : t.queueTypes.heroRealm;
+
+  const customId = queueType === 'sword_trial'
+    ? BUTTON_IDS.PANEL_CREATE_SWORD_TRIAL
+    : BUTTON_IDS.PANEL_CREATE_HERO_REALM;
+
+  const emoji = QUEUE_CONFIGS[queueType].emoji;
+
+  const button = new ButtonBuilder()
+    .setCustomId(customId)
+    .setLabel(t.panel.createButton(displayName))
+    .setEmoji(emoji)
+    .setStyle(ButtonStyle.Primary);
+
+  return new ActionRowBuilder<ButtonBuilder>().addComponents(button);
+}
+
 // ============================================================================
 // Button Interaction Handlers
 // ============================================================================
@@ -85,6 +117,14 @@ export function createLeaveButton(guildId?: string): ActionRowBuilder<ButtonBuil
 export async function handleButtonInteraction(
   interaction: ButtonInteraction
 ): Promise<void> {
+  // Try panel button routing first
+  const panelParsed = parsePanelButtonId(interaction.customId);
+  if (panelParsed) {
+    await handlePanelCreateButton(interaction, panelParsed.queueType);
+    return;
+  }
+
+  // Existing queue button routing
   const parsed = parseButtonId(interaction.customId);
 
   if (!parsed) {
@@ -370,17 +410,8 @@ async function sendQueueFullNotification(
     const playerIds = state.players.map((p) => p.userId);
     const playerMentions = formatPlayerMentions(playerIds);
     const queueType = queue.getQueueType();
-    
-    // Get translations for this guild
-    const guildId = interaction.guildId || undefined;
-    const t = guildId ? getGuildTranslations(guildId) : getGuildTranslations('');
-    
-    // Get localized queue type name
-    const queueTypeName = queueType === 'sword_trial' 
-      ? t.queueTypes.swordTrial 
-      : t.queueTypes.heroRealm;
 
-    const message = t.queueFullMessage(queueTypeName, playerMentions);
+    const message = QUEUE_FULL_MESSAGE(queueType, playerMentions);
 
     await interaction.followUp({
       content: message,
@@ -394,16 +425,106 @@ async function sendQueueFullNotification(
 }
 
 /**
- * Log button interaction (development only)
- * Currently unused but kept for future debugging
+ * Handle panel "Create Queue" button click
+ * Anyone can click — no permission check needed
  */
-// function logButtonInteraction(
-//   action: 'join' | 'leave',
-//   userId: string,
-//   role?: PlayerRole
-// ): void {
-//   if (process.env.NODE_ENV === 'development') {
-//     const roleText = role ? ` as ${role}` : '';
-//     console.log(`[Button] User ${userId} ${action}${roleText}`);
-//   }
-// }
+async function handlePanelCreateButton(
+  interaction: ButtonInteraction,
+  queueType: QueueType
+): Promise<void> {
+  const panelMessageId = interaction.message.id;
+  const guildId = interaction.guildId;
+
+  if (!guildId || !interaction.guild) {
+    await interaction.reply({
+      content: ERROR_MESSAGES.GENERIC_ERROR,
+      ephemeral: true,
+    });
+    return;
+  }
+
+  const t = getGuildTranslations(guildId);
+
+  try {
+    // 1. Verify the panel still exists in DB
+    const panel = db.getPanel(panelMessageId);
+    if (!panel) {
+      await interaction.reply({
+        content: t.errors.genericError,
+        ephemeral: true,
+      });
+      return;
+    }
+
+    // 2. Check for existing active queue of this type
+    const existingQueue = Queue.loadByType(guildId, queueType);
+    if (existingQueue) {
+      await interaction.reply({
+        content: t.errors.queueAlreadyExists,
+        ephemeral: true,
+      });
+      return;
+    }
+
+    // 3. Defer reply before async work
+    await interaction.deferReply({ ephemeral: true });
+
+    // 4. Build initial queue embed (empty queue)
+    const guildName = interaction.guild.name;
+    const initialState = {
+      queue: {
+        messageId: '',
+        guildId,
+        channelId: interaction.channelId,
+        queueType,
+        capacity: QUEUE_CONFIGS[queueType].capacity,
+        createdAt: new Date(),
+      },
+      players: [],
+    };
+
+    const embed = createQueueEmbed(initialState, guildName, guildId);
+    const buttons = createJoinButtons(guildId);
+
+    // 5. Send the queue message to the same channel
+    const channel = interaction.channel;
+    if (!channel || !channel.isTextBased() || !('send' in channel)) {
+      await interaction.editReply({ content: t.errors.genericError });
+      return;
+    }
+
+    const message = await channel.send({
+      embeds: [embed],
+      components: [buttons],
+    });
+
+    // 6. Persist the queue in database
+    Queue.create(message.id, guildId, interaction.channelId, queueType);
+
+    // 7. Confirm to the user who clicked
+    const displayName = queueType === 'sword_trial'
+      ? t.queueTypes.swordTrial
+      : t.queueTypes.heroRealm;
+
+    await interaction.editReply({
+      content: t.panel.queueCreatedByPanel(displayName),
+    });
+
+    console.log(
+      `[Panel] Created ${queueType} queue in guild ${guildId}, channel ${interaction.channelId}`
+    );
+  } catch (error) {
+    console.error('[Panel] Error handling panel create button:', error);
+
+    try {
+      const reply = { content: t.errors.genericError, ephemeral: true };
+      if (interaction.replied || interaction.deferred) {
+        await interaction.followUp(reply);
+      } else {
+        await interaction.reply(reply);
+      }
+    } catch (replyError) {
+      console.error('[Panel] Failed to send error message:', replyError);
+    }
+  }
+}

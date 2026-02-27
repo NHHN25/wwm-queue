@@ -149,3 +149,21 @@ CREATE INDEX IF NOT EXISTS idx_pending_registrations_message
 
 CREATE INDEX IF NOT EXISTS idx_pending_registrations_status
   ON pending_registrations(guild_id, status);
+
+-- Panels table
+-- Stores metadata for each panel embed (admin-posted, permanent)
+-- Panels are persistent "Create Queue" buttons that anyone can click
+CREATE TABLE IF NOT EXISTS panels (
+  message_id TEXT PRIMARY KEY,       -- Discord message ID (unique identifier)
+  guild_id TEXT NOT NULL,            -- Discord guild (server) ID
+  channel_id TEXT NOT NULL,          -- Discord channel ID where panel is posted
+  queue_type TEXT NOT NULL           -- Type of queue this panel creates
+    CHECK(queue_type IN ('sword_trial', 'hero_realm', 'guild_war')),
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_panels_guild
+  ON panels(guild_id);
+
+CREATE INDEX IF NOT EXISTS idx_panels_guild_type
+  ON panels(guild_id, queue_type);

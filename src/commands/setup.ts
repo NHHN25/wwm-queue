@@ -10,8 +10,8 @@ import {
 } from 'discord.js';
 import type { QueueType } from '../types/index.js';
 import { Queue } from '../models/Queue.js';
-import { createQueueEmbed } from '../utils/embeds.js';
-import { createJoinButtons } from '../components/queueButtons.js';
+import { createQueueEmbed, createPanelEmbed } from '../utils/embeds.js';
+import { createJoinButtons, createPanelButton } from '../components/queueButtons.js';
 import {
   ERROR_MESSAGES,
   SUCCESS_MESSAGES,
@@ -21,6 +21,7 @@ import {
   setGuildLanguage,
   getLanguageDisplayName,
   isValidLanguage,
+  getGuildTranslations,
 } from '../localization/index.js';
 import {
   buildRegistrationCommands,
@@ -37,6 +38,7 @@ import {
   cancelQueueTimer,
 } from '../utils/timerManager.js';
 import { QUEUE_TIMER_DURATION_MS } from '../utils/constants.js';
+import * as db from '../database/database.js';
 
 // ============================================================================
 // Command Definitions
@@ -272,6 +274,7 @@ export async function handleCommandInteraction(
 
 /**
  * Handle /setup command
+ * Creates a persistent panel embed with a "Create Queue" button
  */
 async function handleSetupCommand(
   interaction: CommandInteraction
@@ -284,6 +287,8 @@ async function handleSetupCommand(
     return;
   }
 
+  const t = getGuildTranslations(interaction.guildId);
+
   // Get subcommand (sword-trial, hero-realm, or guild-war)
   const subcommand = (interaction as any).options.data[0]?.name as
     | 'sword-trial'
@@ -295,25 +300,31 @@ async function handleSetupCommand(
     subcommand === 'hero-realm' ? 'hero_realm' :
     'guild_war';
 
+  const displayName = queueType === 'sword_trial'
+    ? t.queueTypes.swordTrial
+    : queueType === 'hero_realm'
+    ? t.queueTypes.heroRealm
+    : t.queueTypes.guildWar;
+
   // Get target channel (or default to current)
   const targetChannel =
     ((interaction as any).options.get('channel')?.channel ?? interaction.channel);
 
   if (!targetChannel || !targetChannel.isTextBased()) {
     await interaction.reply({
-      content: '❌ Invalid channel. Please select a text channel.',
+      content: t.errors.invalidChannel,
       ephemeral: true,
     });
     return;
   }
 
   try {
-    // 1. Check if queue already exists
-    const existingQueue = Queue.loadByType(interaction.guildId, queueType);
+    // 1. Check if panel already exists for this queue type
+    const existingPanel = db.getPanelByType(interaction.guildId, queueType);
 
-    if (existingQueue) {
+    if (existingPanel) {
       await interaction.reply({
-        content: ERROR_MESSAGES.QUEUE_ALREADY_EXISTS,
+        content: t.panel.panelAlreadyExists,
         ephemeral: true,
       });
       return;
@@ -348,63 +359,39 @@ async function handleSetupCommand(
 
     if (missingPermissions.length > 0) {
       await interaction.reply({
-        content: `❌ I'm missing these permissions in ${targetChannel}:\n${missingPermissions.map(p => `• ${p}`).join('\n')}\n\nPlease grant these permissions and try again.`,
+        content: t.errors.missingPermissions(missingPermissions),
         ephemeral: true,
       });
       return;
     }
 
-    // 3. Defer reply (queue creation might take a moment)
+    // 3. Defer reply (panel creation might take a moment)
     await interaction.deferReply({ ephemeral: true });
 
-    // 4. Create initial queue embed
+    // 4. Create panel embed and button
     const guildName = interaction.guild.name;
-    const now = new Date();
-    const expiresAt = new Date(now.getTime() + QUEUE_TIMER_DURATION_MS);
-    const initialState = {
-      queue: {
-        messageId: '', // Will be set after sending
-        guildId: interaction.guildId,
-        channelId: targetChannel.id,
-        queueType,
-        capacity: QUEUE_CONFIGS[queueType].capacity,
-        status: 'open' as const,
-        expiresAt,
-        createdAt: now,
-      },
-      players: [],
-    };
+    const embed = createPanelEmbed(queueType, guildName, interaction.guildId);
+    const button = createPanelButton(queueType, interaction.guildId);
 
-    const embed = createQueueEmbed(initialState, guildName, interaction.guildId);
-    const buttons = createJoinButtons(interaction.guildId);
-
-    // 5. Send queue message
+    // 5. Send panel message
     const message = await targetChannel.send({
       embeds: [embed],
-      components: [buttons],
+      components: [button],
     });
 
-    // 6. Create queue in database
-    const queue = Queue.create(message.id, interaction.guildId, targetChannel.id, queueType);
+    // 6. Save panel to database
+    db.createPanel(message.id, interaction.guildId, targetChannel.id, queueType);
 
-    // 7. Start the 15-minute timer
-    startQueueTimer(queue, interaction.client);
-
-    // 8. Confirm success
-    const successMessage = SUCCESS_MESSAGES.QUEUE_CREATED(
-      queueType,
-      `<#${targetChannel.id}>`
-    );
-
+    // 7. Confirm success
     await interaction.editReply({
-      content: successMessage,
+      content: t.panel.panelCreated(displayName, `<#${targetChannel.id}>`),
     });
 
     console.log(
-      `[Setup] Created ${queueType} queue in guild ${interaction.guildId}, channel ${targetChannel.id}`
+      `[Setup] Created ${queueType} panel in guild ${interaction.guildId}, channel ${targetChannel.id}`
     );
   } catch (error) {
-    console.error('[Setup] Error creating queue:', error);
+    console.error('[Setup] Error creating panel:', error);
 
     await interaction.editReply({
       content: ERROR_MESSAGES.GENERIC_ERROR,
@@ -483,6 +470,7 @@ async function handleResetCommand(
 
 /**
  * Handle /close command
+ * Closes the active queue but leaves the panel in place
  */
 async function handleCloseCommand(
   interaction: CommandInteraction
@@ -496,6 +484,7 @@ async function handleCloseCommand(
   }
 
   const queueType = (interaction as any).options.get('queue-type')?.value as QueueType;
+  const t = getGuildTranslations(interaction.guildId);
 
   try {
     // 1. Find queue
@@ -503,7 +492,7 @@ async function handleCloseCommand(
 
     if (!queue) {
       await interaction.reply({
-        content: `❌ No ${QUEUE_CONFIGS[queueType].displayName} queue exists in this server.`,
+        content: t.panel.noActiveQueue,
         ephemeral: true,
       });
       return;
@@ -610,12 +599,44 @@ async function handleLanguageCommand(
       }
     }
 
+    // Refresh all panel embeds for this guild with new language
+    const panelRows = db.getGuildPanels(interaction.guildId);
+    let updatedPanels = 0;
+
+    for (const panelRow of panelRows) {
+      try {
+        const panelChannel = await interaction.client.channels.fetch(panelRow.channel_id);
+        if (!panelChannel?.isTextBased()) continue;
+
+        const panelMessage = await panelChannel.messages.fetch(panelRow.message_id);
+        const panelEmbed = createPanelEmbed(
+          panelRow.queue_type as QueueType,
+          interaction.guild.name,
+          interaction.guildId
+        );
+        const panelButton = createPanelButton(
+          panelRow.queue_type as QueueType,
+          interaction.guildId
+        );
+
+        await panelMessage.edit({
+          embeds: [panelEmbed],
+          components: [panelButton],
+        });
+
+        updatedPanels++;
+      } catch (error) {
+        console.warn(`[Language] Failed to update panel ${panelRow.message_id}:`, error);
+      }
+    }
+
     // Get display name for the selected language
     const languageName = getLanguageDisplayName(languageOption);
+    const totalUpdated = updatedCount + updatedPanels;
 
     // Confirm success
-    const response = updatedCount > 0
-      ? `✅ Language changed to **${languageName}**\n\nUpdated ${updatedCount} queue${updatedCount === 1 ? '' : 's'}.`
+    const response = totalUpdated > 0
+      ? `✅ Language changed to **${languageName}**\n\nUpdated ${totalUpdated} message${totalUpdated === 1 ? '' : 's'}.`
       : `✅ Language changed to **${languageName}**`;
 
     await interaction.editReply({

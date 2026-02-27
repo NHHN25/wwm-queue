@@ -1,5 +1,5 @@
 import { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
-import type { QueueState } from '../types/index.js';
+import type { QueueState, QueueType } from '../types/index.js';
 import {
   QUEUE_CONFIGS,
   EMOJIS,
@@ -245,6 +245,39 @@ function formatTimerDisplay(expiresAt: Date, t: any): string {
   const timerLabel = t.embeds.closes || 'Closes';
   // Discord relative timestamp format: <t:UNIX:R> shows "in X minutes"
   return `${EMOJIS.TIMER} ${timerLabel} <t:${unixTimestamp}:R>`;
+}
+
+/**
+ * Create panel embed
+ * The persistent embed posted by /setup that contains the "Create Queue" button
+ */
+export function createPanelEmbed(
+  queueType: QueueType,
+  guildName?: string,
+  guildId?: string
+): EmbedBuilder {
+  const config = QUEUE_CONFIGS[queueType];
+  const t = guildId ? getGuildTranslations(guildId) : getGuildTranslations('');
+
+  const displayName = queueType === 'sword_trial'
+    ? t.queueTypes.swordTrial
+    : t.queueTypes.heroRealm;
+
+  const embed = new EmbedBuilder()
+    .setTitle(`${config.emoji} ${displayName}`)
+    .setColor(config.color)
+    .setDescription(
+      t.panel.description(config.capacity) +
+      `\n\n${t.panel.roles}`
+    )
+    .setFooter({ text: t.panel.footer })
+    .setTimestamp(new Date());
+
+  if (guildName) {
+    embed.setAuthor({ name: `${guildName} • ${t.embeds.partyFinder}` });
+  }
+
+  return embed;
 }
 
 /**
