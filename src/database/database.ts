@@ -888,7 +888,7 @@ export interface PanelRow {
   message_id: string;
   guild_id: string;
   channel_id: string;
-  queue_type: 'sword_trial' | 'hero_realm';
+  queue_type: 'sword_trial' | 'hero_realm' | 'guild_war';
   created_at: string;
 }
 
@@ -899,7 +899,7 @@ export function createPanel(
   messageId: string,
   guildId: string,
   channelId: string,
-  queueType: 'sword_trial' | 'hero_realm'
+  queueType: 'sword_trial' | 'hero_realm' | 'guild_war'
 ): void {
   const db = getDatabase();
   const stmt = db.prepare(`
@@ -923,7 +923,7 @@ export function getPanel(messageId: string): PanelRow | null {
  */
 export function getPanelByType(
   guildId: string,
-  queueType: 'sword_trial' | 'hero_realm'
+  queueType: 'sword_trial' | 'hero_realm' | 'guild_war'
 ): PanelRow | null {
   const db = getDatabase();
   const stmt = db.prepare(

@@ -37,7 +37,6 @@ import {
   startQueueTimer,
   cancelQueueTimer,
 } from '../utils/timerManager.js';
-import { QUEUE_TIMER_DURATION_MS } from '../utils/constants.js';
 import * as db from '../database/database.js';
 
 // ============================================================================

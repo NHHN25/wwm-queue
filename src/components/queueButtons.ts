@@ -478,6 +478,8 @@ async function handlePanelCreateButton(
         channelId: interaction.channelId,
         queueType,
         capacity: QUEUE_CONFIGS[queueType].capacity,
+        status: 'open' as const,
+        expiresAt: null,
         createdAt: new Date(),
       },
       players: [],
