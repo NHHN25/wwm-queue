@@ -217,5 +217,7 @@ export const en: Translations = {
       '❌ A panel for this queue type already exists in this server. Delete the old panel message first.',
     noActiveQueue:
       '❌ No active queue of this type to close. The panel is still active.',
+    panelDeleted: (queueType: string) =>
+      `✅ **${queueType}** panel has been deleted.`,
   },
 };

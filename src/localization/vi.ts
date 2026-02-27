@@ -217,5 +217,7 @@ export const vi: Translations = {
       '❌ Bảng cho loại tổ đội này đã tồn tại trong máy chủ này. Vui lòng xóa bảng cũ trước.',
     noActiveQueue:
       '❌ Không có tổ đội nào đang hoạt động để đóng. Bảng vẫn còn hoạt động.',
+    panelDeleted: (queueType: string) =>
+      `✅ Bảng **${queueType}** đã được xóa.`,
   },
 };

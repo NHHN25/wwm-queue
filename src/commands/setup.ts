@@ -156,6 +156,29 @@ export function buildCommands() {
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
     .setDMPermission(false);
 
+  const closepanelCommand = new SlashCommandBuilder()
+    .setName('closepanel')
+    .setDescription('Delete a panel completely')
+    .setDescriptionLocalizations({
+      vi: 'Xóa hoàn toàn bảng tổ đội',
+    })
+    .addStringOption((opt) =>
+      opt
+        .setName('queue-type')
+        .setDescription('Which panel to delete')
+        .setDescriptionLocalizations({
+          vi: 'Bảng nào cần xóa',
+        })
+        .setRequired(true)
+        .addChoices(
+          { name: 'Sword Trial', value: 'sword_trial' },
+          { name: 'Hero Realm', value: 'hero_realm' },
+          { name: 'Guild War', value: 'guild_war' }
+        )
+    )
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+    .setDMPermission(false);
+
   const languageCommand = new SlashCommandBuilder()
     .setName('language')
     .setDescription('Change the bot language')
@@ -178,7 +201,7 @@ export function buildCommands() {
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
     .setDMPermission(false);
 
-  const queueCommands = [setupCommand, resetCommand, closeCommand, languageCommand];
+  const queueCommands = [setupCommand, resetCommand, closeCommand, closepanelCommand, languageCommand];
   const registrationCommands = buildRegistrationCommands();
   const verificationCommands = [
     setupVerificationCommand,
@@ -238,6 +261,8 @@ export async function handleCommandInteraction(
       await handleResetCommand(interaction);
     } else if (commandName === 'close') {
       await handleCloseCommand(interaction);
+    } else if (commandName === 'closepanel') {
+      await handleClosePanelCommand(interaction);
     } else if (commandName === 'language') {
       await handleLanguageCommand(interaction);
     } else if (
@@ -524,6 +549,74 @@ async function handleCloseCommand(
     console.log(`[Close] Deleted ${queueType} queue in guild ${interaction.guildId}`);
   } catch (error) {
     console.error('[Close] Error closing queue:', error);
+
+    await interaction.editReply({
+      content: ERROR_MESSAGES.GENERIC_ERROR,
+    });
+  }
+}
+
+/**
+ * Handle /closepanel command
+ * Deletes a panel embed and its database record
+ */
+async function handleClosePanelCommand(
+  interaction: CommandInteraction
+): Promise<void> {
+  if (!interaction.guildId) {
+    await interaction.reply({
+      content: ERROR_MESSAGES.GENERIC_ERROR,
+      ephemeral: true,
+    });
+    return;
+  }
+
+  const queueType = (interaction as any).options.get('queue-type')?.value as QueueType;
+  const t = getGuildTranslations(interaction.guildId);
+
+  const displayName = queueType === 'sword_trial'
+    ? t.queueTypes.swordTrial
+    : queueType === 'hero_realm'
+    ? t.queueTypes.heroRealm
+    : t.queueTypes.guildWar;
+
+  try {
+    // 1. Find panel
+    const panel = db.getPanelByType(interaction.guildId, queueType);
+
+    if (!panel) {
+      await interaction.reply({
+        content: `❌ No ${QUEUE_CONFIGS[queueType].displayName} panel exists in this server.`,
+        ephemeral: true,
+      });
+      return;
+    }
+
+    // 2. Defer reply
+    await interaction.deferReply({ ephemeral: true });
+
+    // 3. Delete message from Discord
+    try {
+      const channel = await interaction.client.channels.fetch(panel.channel_id);
+      if (channel?.isTextBased()) {
+        const message = await channel.messages.fetch(panel.message_id);
+        await message.delete();
+      }
+    } catch (error) {
+      console.warn('[ClosePanel] Failed to delete message (may already be deleted):', error);
+    }
+
+    // 4. Delete from database
+    db.deletePanel(panel.message_id);
+
+    // 5. Confirm success
+    await interaction.editReply({
+      content: t.panel.panelDeleted(displayName),
+    });
+
+    console.log(`[ClosePanel] Deleted ${queueType} panel in guild ${interaction.guildId}`);
+  } catch (error) {
+    console.error('[ClosePanel] Error closing panel:', error);
 
     await interaction.editReply({
       content: ERROR_MESSAGES.GENERIC_ERROR,

@@ -208,5 +208,6 @@ export interface Translations {
     queueCreatedByPanel: (queueType: string) => string;
     panelAlreadyExists: string;
     noActiveQueue: string;
+    panelDeleted: (queueType: string) => string;
   };
 }
