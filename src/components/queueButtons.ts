@@ -18,7 +18,7 @@ import {
 } from '../utils/constants.js';
 import { formatPlayerMentions } from '../models/QueuePlayer.js';
 import { getGuildTranslations } from '../localization/index.js';
-import { cancelQueueTimer } from '../utils/timerManager.js';
+import { cancelQueueTimer, startQueueTimer } from '../utils/timerManager.js';
 import * as db from '../database/database.js';
 
 // Re-export formatPlayerMentions for use by timerManager
@@ -505,9 +505,12 @@ async function handlePanelCreateButton(
     });
 
     // 6. Persist the queue in database
-    Queue.create(message.id, guildId, interaction.channelId, queueType);
+    const queue = Queue.create(message.id, guildId, interaction.channelId, queueType);
 
-    // 7. Confirm to the user who clicked
+    // 7. Start auto-close timer
+    startQueueTimer(queue, interaction.client);
+
+    // 8. Confirm to the user who clicked
     const displayName = queueType === 'sword_trial'
       ? t.queueTypes.swordTrial
       : queueType === 'hero_realm'
