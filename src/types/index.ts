@@ -214,8 +214,10 @@ export type WeaponName =
   // Umbrellas
   | 'soulshade_umbrella'
   | 'vernal_umbrella'
+  | 'everspring_umbrella'
   // Rope Darts
-  | 'mortal_rope_dart';
+  | 'mortal_rope_dart'
+  | 'unfettered_rope_dart';
 
 /**
  * Approval status for registrations

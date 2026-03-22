@@ -92,6 +92,13 @@ export const WEAPON_CONFIGS: Record<WeaponName, WeaponConfig> = {
     displayNameEn: 'Vernal Umbrella',
     displayNameVi: 'Vernal Umbrella',
   },
+  everspring_umbrella: {
+    name: 'everspring_umbrella',
+    type: 'umbrella',
+    emoji: '☂️',
+    displayNameEn: 'Everspring Umbrella',
+    displayNameVi: 'Everspring Umbrella',
+  },
 
   // Rope Darts
   mortal_rope_dart: {
@@ -100,6 +107,13 @@ export const WEAPON_CONFIGS: Record<WeaponName, WeaponConfig> = {
     emoji: '🪢',
     displayNameEn: 'Mortal Rope Dart',
     displayNameVi: 'Mortal Rope Dart',
+  },
+  unfettered_rope_dart: {
+    name: 'unfettered_rope_dart',
+    type: 'rope_dart',
+    emoji: '🪢',
+    displayNameEn: 'Unfettered Rope Dart',
+    displayNameVi: 'Unfettered Rope Dart',
   },
 };
 
@@ -142,7 +156,9 @@ export function isValidWeaponName(name: string): name is WeaponName {
     'inkwell_fan',
     'soulshade_umbrella',
     'vernal_umbrella',
+    'everspring_umbrella',
     'mortal_rope_dart',
+    'unfettered_rope_dart',
   ].includes(name);
 }
 
