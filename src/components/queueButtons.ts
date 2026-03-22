@@ -20,6 +20,7 @@ import { formatPlayerMentions } from '../models/QueuePlayer.js';
 import { getGuildTranslations } from '../localization/index.js';
 import { cancelQueueTimer, startQueueTimer } from '../utils/timerManager.js';
 import * as db from '../database/database.js';
+import { handleJoinGuildWarButton } from './teamSelectMenus.js';
 
 // Re-export formatPlayerMentions for use by timerManager
 export { formatPlayerMentions } from '../models/QueuePlayer.js';
