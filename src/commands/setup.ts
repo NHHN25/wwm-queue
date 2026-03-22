@@ -474,7 +474,7 @@ async function handleResetCommand(
       const message = await channel.messages.fetch(queue.getMessageId());
       await message.edit({
         embeds: [embed],
-        components: [createJoinButtons(interaction.guildId)],
+        components: [createJoinButtons(queue.getQueueType(), interaction.guildId)],
       });
     }
 
@@ -682,7 +682,7 @@ async function handleLanguageCommand(
 
         await message.edit({
           embeds: [embed],
-          components: [createJoinButtons(interaction.guildId)],
+          components: [createJoinButtons(queue.getQueueType(), interaction.guildId)],
         });
 
         updatedCount++;

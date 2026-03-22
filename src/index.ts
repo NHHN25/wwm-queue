@@ -192,7 +192,7 @@ async function restoreQueueState(client: Client): Promise<void> {
       // Use appropriate buttons based on queue status
       const buttons = queue.isClosed()
         ? createDisabledButtons(guildId)
-        : createJoinButtons(guildId);
+        : createJoinButtons(queue.getQueueType(), guildId);
 
       await message.edit({
         embeds: [embed],

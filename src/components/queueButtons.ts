@@ -33,9 +33,23 @@ export { formatPlayerMentions } from '../models/QueuePlayer.js';
  * All buttons shown together for easy access
  * Tank/Healer/DPS stay in English, only Leave button is localized
  */
-export function createJoinButtons(guildId?: string): ActionRowBuilder<ButtonBuilder> {
+export function createJoinButtons(queueType: QueueType, guildId?: string): ActionRowBuilder<ButtonBuilder> {
   // Get translations for Leave button only
   const t = guildId ? getGuildTranslations(guildId) : getGuildTranslations('');
+
+  if (queueType === 'guild_war') {
+    const joinButton = new ButtonBuilder()
+      .setCustomId(BUTTON_IDS.JOIN_GUILD_WAR)
+      .setLabel(t.guildWar.joinButton)
+      .setStyle(ButtonStyle.Success);
+
+    const leaveButton = new ButtonBuilder()
+      .setCustomId(BUTTON_IDS.LEAVE)
+      .setLabel(t.buttons.leave)
+      .setStyle(ButtonStyle.Secondary);
+
+    return new ActionRowBuilder<ButtonBuilder>().addComponents(joinButton, leaveButton);
+  }
 
   const tankButton = new ButtonBuilder()
     .setCustomId(BUTTON_IDS.JOIN_TANK)
@@ -203,7 +217,7 @@ async function handleJoinButton(
 
         await interaction.update({
           embeds: [embed],
-          components: [createJoinButtons(guildId)],
+          components: [createJoinButtons(queue.getQueueType(), guildId)],
         });
 
         // Send ephemeral confirmation
@@ -262,7 +276,7 @@ async function handleJoinButton(
 
     await interaction.update({
       embeds: [embed],
-      components: [createJoinButtons(guildId)],
+      components: [createJoinButtons(queue.getQueueType(), guildId)],
     });
 
     // Send ephemeral confirmation to the user
@@ -367,7 +381,7 @@ async function handleLeaveButton(
 
     await interaction.update({
       embeds: [embed],
-      components: [createJoinButtons(guildId)],
+      components: [createJoinButtons(queue.getQueueType(), guildId)],
     });
 
     // Send ephemeral confirmation
@@ -490,7 +504,7 @@ async function handlePanelCreateButton(
     };
 
     const embed = createQueueEmbed(initialState, guildName, guildId);
-    const buttons = createJoinButtons(guildId);
+    const buttons = createJoinButtons(queueType, guildId);
 
     // 5. Send the queue message to the same channel
     const channel = interaction.channel;
