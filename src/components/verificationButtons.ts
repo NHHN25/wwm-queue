@@ -182,7 +182,7 @@ export async function handleApprovalButtonInteraction(
         });
       }
 
-      // Send user's profile card to notify them of approval
+      // Send user's profile card natively to their DMs to notify them of approval
       try {
         const guildName = interaction.guild.name;
 
@@ -193,25 +193,21 @@ export async function handleApprovalButtonInteraction(
           interaction.guildId
         );
 
-        // Determine which channel to send the notification to
-        const notificationChannelId = verificationSettings?.approved_channel_id || interaction.channelId;
-        const notificationChannel = await interaction.guild.channels.fetch(notificationChannelId);
-
-        if (notificationChannel?.isTextBased()) {
-          await notificationChannel.send({
-            content: `<@${userId}> ${t.verification.approvalNotification(guildName)}`,
+        try {
+          await targetMember.user.send({
+            content: `✅ ${t.verification.approvalNotification(guildName)}`,
             embeds: [profileEmbed],
           });
-        } else {
-          // Fallback to current channel if configured channel is unavailable
+        } catch (dmError) {
+          console.error(`[Verification] Could not DM user ${userId}.`, dmError);
+          // If DMs are closed, notify the admin silently so they know
           await interaction.followUp({
-            content: `<@${userId}> ${t.verification.approvalNotification(guildName)}`,
-            embeds: [profileEmbed],
-            ephemeral: false,
+            content: `⚠️ Note: <@${userId}> was approved but could not be notified because their DMs are closed.`,
+            ephemeral: true,
           });
         }
       } catch (error) {
-        console.error('[Verification] Failed to send approval notification:', error);
+        console.error('[Verification] Failed to process approval notification:', error);
       }
 
       console.log(
