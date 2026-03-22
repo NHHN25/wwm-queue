@@ -92,6 +92,35 @@ export function groupPlayersByRole(players: QueuePlayerData[]): {
 }
 
 /**
+ * Group players by team
+ */
+export function groupPlayersByTeam(players: QueuePlayerData[]): {
+  jungler: QueuePlayerData[];
+  offense: QueuePlayerData[];
+  defense: QueuePlayerData[];
+  none: QueuePlayerData[];
+} {
+  const jungler: QueuePlayerData[] = [];
+  const offense: QueuePlayerData[] = [];
+  const defense: QueuePlayerData[] = [];
+  const none: QueuePlayerData[] = [];
+
+  for (const player of players) {
+    if (player.team === 'jungler') {
+      jungler.push(player);
+    } else if (player.team === 'offense') {
+      offense.push(player);
+    } else if (player.team === 'defense') {
+      defense.push(player);
+    } else {
+      none.push(player);
+    }
+  }
+
+  return { jungler, offense, defense, none };
+}
+
+/**
  * Get role distribution as counts
  */
 export function getRoleDistribution(players: QueuePlayerData[]): {

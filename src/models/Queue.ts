@@ -1,4 +1,4 @@
-import type { QueueType, PlayerRole, QueuePlayerData, QueueState, QueueStatus } from '../types/index.js';
+import type { QueueType, PlayerRole, QueuePlayerData, QueueState, QueueStatus, GuildWarTeam } from '../types/index.js';
 import * as db from '../database/database.js';
 import { QUEUE_CONFIGS, QUEUE_TIMER_DURATION_MS } from '../utils/constants.js';
 
@@ -148,8 +148,8 @@ export class Queue {
    * Add a player to the queue
    * Returns true if successful, false if player already in queue
    */
-  addPlayer(userId: string, username: string, role: PlayerRole): boolean {
-    return db.addPlayer(this.messageId, userId, username, role);
+  addPlayer(userId: string, username: string, role: PlayerRole, team?: GuildWarTeam | null): boolean {
+    return db.addPlayer(this.messageId, userId, username, role, team || null);
   }
 
   /**
@@ -210,6 +210,7 @@ export class Queue {
       userId: row.user_id,
       username: row.username,
       role: row.role,
+      team: row.team,
       joinedAt: new Date(row.joined_at),
     }));
   }
@@ -229,6 +230,7 @@ export class Queue {
       userId: row.user_id,
       username: row.username,
       role: row.role,
+      team: row.team,
       joinedAt: new Date(row.joined_at),
       gearScore: row.gear_score,
       arenaRank: row.arena_rank,
