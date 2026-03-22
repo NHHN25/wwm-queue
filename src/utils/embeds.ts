@@ -78,7 +78,14 @@ export function createQueueEmbed(
   embed.setDescription(description);
 
   // Add progress bar field
-  const progressBar = createProgressBar(playerCount, queue.capacity, t);
+  let progressBar = createProgressBar(playerCount, queue.capacity, t);
+  
+  if (queue.expiresAt && !isClosed && !isFull) {
+    const unixTimestamp = Math.floor(queue.expiresAt.getTime() / 1000);
+    const timerLabel = t.embeds.closes || 'Closes';
+    progressBar += `\n${EMOJIS.TIMER} **${timerLabel}**: <t:${unixTimestamp}:R>`;
+  }
+
   embed.addFields({
     name: t.embeds.queueProgress,
     value: progressBar,
@@ -276,24 +283,7 @@ function getFooterText(state: QueueState, t: any): string {
     baseText = t.footers.queueActive;
   }
 
-  // Add timer display if queue has an expiration time
-  if (queue.expiresAt) {
-    const timerText = formatTimerDisplay(queue.expiresAt, t);
-    return `${baseText} • ${timerText}`;
-  }
-
   return baseText;
-}
-
-/**
- * Format timer display using Discord timestamp
- * Shows auto-updating countdown using Discord's built-in relative timestamp
- */
-function formatTimerDisplay(expiresAt: Date, t: any): string {
-  const unixTimestamp = Math.floor(expiresAt.getTime() / 1000);
-  const timerLabel = t.embeds.closes || 'Closes';
-  // Discord relative timestamp format: <t:UNIX:R> shows "in X minutes"
-  return `${EMOJIS.TIMER} ${timerLabel} <t:${unixTimestamp}:R>`;
 }
 
 /**
