@@ -52,13 +52,13 @@ export const WEAPON_CONFIGS: Record<WeaponName, WeaponConfig> = {
     displayNameVi: 'Infernal Twinblades',
   },
 
-  // Mo Dao
-  mo_dao: {
-    name: 'mo_dao',
-    type: 'mo_dao',
+  // Thundercry Blade
+  thundercry_blade: {
+    name: 'thundercry_blade',
+    type: 'thundercry_blade',
     emoji: '<:thundercryblade:1485378652295401614>',
-    displayNameEn: 'Mo Dao',
-    displayNameVi: 'Mo Dao',
+    displayNameEn: 'Thundercry Blade',
+    displayNameVi: 'Thundercry Blade',
   },
 
   // Fans
@@ -151,7 +151,7 @@ export function isValidWeaponName(name: string): name is WeaponName {
     'heavenquaker_spear',
     'nameless_spear',
     'infernal_twinblades',
-    'mo_dao',
+    'thundercry_blade',
     'panacea_fan',
     'inkwell_fan',
     'soulshade_umbrella',
@@ -170,7 +170,7 @@ export function getWeaponsByType(): Record<WeaponType, WeaponConfig[]> {
     sword: [],
     spear: [],
     dual_blades: [],
-    mo_dao: [],
+    thundercry_blade: [],
     fans: [],
     umbrella: [],
     rope_dart: [],

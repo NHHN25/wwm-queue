@@ -199,7 +199,7 @@ export interface GuildConfig {
 /**
  * Weapon types available in Where Winds Meet
  */
-export type WeaponType = 'sword' | 'spear' | 'dual_blades' | 'mo_dao' | 'fans' | 'umbrella' | 'rope_dart';
+export type WeaponType = 'sword' | 'spear' | 'dual_blades' | 'thundercry_blade' | 'fans' | 'umbrella' | 'rope_dart';
 
 /**
  * Specific weapon names in Where Winds Meet
@@ -214,8 +214,8 @@ export type WeaponName =
   | 'nameless_spear'
   // Dual Blades / Twinblades
   | 'infernal_twinblades'
-  // Mo Dao
-  | 'mo_dao'
+  // Thundercry Blade
+  | 'thundercry_blade'
   // Fans
   | 'panacea_fan'
   | 'inkwell_fan'
