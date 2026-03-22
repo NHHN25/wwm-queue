@@ -11,6 +11,8 @@ import {
   PermissionsBitField,
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder,
+  ButtonBuilder,
+  ButtonStyle,
 } from 'discord.js';
 import { getGuildTranslations, getTranslations, getGuildLanguage } from '../localization/index.js';
 import {
@@ -497,9 +499,26 @@ async function handleCapnhatCommand(
       secondaryWeaponSelect
     );
 
+  // Pre-populate capnhat weapon selections with current weapons
+  // so clicking submit without changing anything still works
+  const { capnhatWeaponSelections } = await import('../components/registrationSelectMenus.js');
+  const storageKey = `${interaction.guildId}_${interaction.user.id}`;
+  capnhatWeaponSelections.set(storageKey, {
+    primary: existingReg.primary_weapon as WeaponName,
+    secondary: existingReg.secondary_weapon as WeaponName,
+  });
+
+  // Show submit button immediately since weapons are pre-selected
+  const submitButton = new ButtonBuilder()
+    .setCustomId('capnhat_submit')
+    .setLabel('✅ Tiếp tục')
+    .setStyle(ButtonStyle.Success);
+
+  const row3 = new ActionRowBuilder<ButtonBuilder>().addComponents(submitButton);
+
   await interaction.reply({
     content: t.registration.selectWeapons || '🗡️ Please select your weapons:',
-    components: [row1, row2],
+    components: [row1, row2, row3],
     ephemeral: true,
   });
 }
