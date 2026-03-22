@@ -2,12 +2,15 @@ import { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'disc
 import type { QueueState, QueueType } from '../types/index.js';
 import {
   QUEUE_CONFIGS,
+  TEAM_CONFIGS,
   EMOJIS,
   COLORS,
   BUTTON_IDS,
   getQueueEmoji,
 } from './constants.js';
+import { getWeaponWithEmoji } from './weaponConstants.js';
 import { getGuildTranslations } from '../localization/index.js';
+import { groupPlayersByTeam } from '../models/QueuePlayer.js';
 
 /**
  * Create queue embed
@@ -124,29 +127,40 @@ function buildQueueDescription(state: QueueState, t: any): string {
   lines.push('```');
   lines.push('');
 
-  // Show all slots with enhanced formatting (keep role names in English)
-  for (let i = 0; i < capacity; i++) {
-    const player = players[i] || null;
-    if (player) {
-      const roleEmoji = getRoleEmoji(player.role);
-      const roleName = getRoleDisplayName(player.role).toUpperCase(); // Keep in English
-
-      // Base player line
-      let playerLine = `**${i + 1}.** ${roleEmoji} \`${roleName}\` • <@${player.userId}>`;
-
-      // Add stats if available
-      if (player.gearScore !== null && player.gearScore !== undefined) {
-        const gearScoreDisplay = formatGearScoreAsGoose(player.gearScore);
-        playerLine += ` • ${gearScoreDisplay}`;
-
-        if (player.arenaRank && player.arenaRank.trim() !== '') {
-          playerLine += ` • 🏆 ${player.arenaRank}`;
+  if (queue.queueType === 'guild_war') {
+    const grouped = groupPlayersByTeam(players);
+    const teams: Array<'jungler' | 'offense' | 'defense'> = ['jungler', 'offense', 'defense'];
+    let index = 1;
+    
+    for (const team of teams) {
+      const teamPlayers = grouped[team];
+      const teamConfig = TEAM_CONFIGS[team];
+      const teamDisplayName = t.guildWar ? 
+        (team === 'jungler' ? t.guildWar.teamJungler : 
+         team === 'offense' ? t.guildWar.teamOffense : 
+         t.guildWar.teamDefense) : teamConfig.displayNameEn;
+      
+      lines.push(`**${teamConfig.emoji} ${teamDisplayName} (${teamPlayers.length})**`);
+      
+      if (teamPlayers.length === 0) {
+        lines.push(`> *${t.embeds.empty}*`);
+      } else {
+        for (const player of teamPlayers) {
+          lines.push(formatPlayerLine(player, index));
+          index++;
         }
       }
-
-      lines.push(playerLine);
-    } else {
-      lines.push(`**${i + 1}.** ${EMOJIS.EMPTY_SLOT} \`${t.embeds.openSlot}\``);
+      lines.push(''); // Empty line between teams
+    }
+  } else {
+    // Show all slots with enhanced formatting (keep role names in English)
+    for (let i = 0; i < capacity; i++) {
+      const player = players[i] || null;
+      if (player) {
+        lines.push(formatPlayerLine(player, i + 1));
+      } else {
+        lines.push(`**${i + 1}.** ${EMOJIS.EMPTY_SLOT} \`${t.embeds.openSlot}\``);
+      }
     }
   }
 
@@ -159,6 +173,41 @@ function buildQueueDescription(state: QueueState, t: any): string {
   }
 
   return lines.join('\n');
+}
+
+/**
+ * Format a single player line with stats
+ */
+function formatPlayerLine(player: any, index: number): string {
+  const roleEmoji = getRoleEmoji(player.role);
+  const roleName = getRoleDisplayName(player.role).toUpperCase(); // Keep in English
+
+  // Base player line
+  let playerLine = `**${index}.** ${roleEmoji} \`${roleName}\` • <@${player.userId}>`;
+
+  // Add stats if available
+  if (player.gearScore !== null && player.gearScore !== undefined) {
+    if (player.primaryWeapon || player.secondaryWeapon) {
+      playerLine += ` •`;
+      if (player.primaryWeapon) {
+        const primaryEmoji = getWeaponWithEmoji(player.primaryWeapon, 'en').split(' ')[0];
+        playerLine += ` ${primaryEmoji}`;
+      }
+      if (player.secondaryWeapon) {
+        const secondaryEmoji = getWeaponWithEmoji(player.secondaryWeapon, 'en').split(' ')[0];
+        playerLine += `${secondaryEmoji}`;
+      }
+    }
+
+    const gearScoreDisplay = formatGearScoreAsGoose(player.gearScore);
+    playerLine += ` • ${gearScoreDisplay}`;
+
+    if (player.arenaRank && player.arenaRank.trim() !== '') {
+      playerLine += ` • 🏆 ${player.arenaRank}`;
+    }
+  }
+
+  return playerLine;
 }
 
 /**
