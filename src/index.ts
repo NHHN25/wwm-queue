@@ -14,6 +14,8 @@ import { handleRegistrationModalSubmit } from './components/registrationModal.js
 import {
   handleWeaponSelectMenu,
   handleRegistrationSubmitButton,
+  handleCapnhatWeaponSelectMenu,
+  handleCapnhatSubmitButton,
 } from './components/registrationSelectMenus.js';
 import { handleApprovalButtonInteraction } from './components/verificationButtons.js';
 import { handleUpdateModalSubmit } from './components/updateModal.js';
@@ -83,6 +85,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
       // Check if it's a registration submit button
       if (interaction.customId.startsWith('registration_submit_')) {
         await handleRegistrationSubmitButton(interaction);
+      } else if (interaction.customId === 'capnhat_submit') {
+        await handleCapnhatSubmitButton(interaction);
       } else if (interaction.customId.startsWith('approval_')) {
         // Verification approval buttons
         await handleApprovalButtonInteraction(interaction);
@@ -95,13 +99,15 @@ client.on(Events.InteractionCreate, async (interaction) => {
     } else if (interaction.isStringSelectMenu()) {
       if (interaction.customId.startsWith('registration_')) {
         await handleWeaponSelectMenu(interaction);
+      } else if (interaction.customId.startsWith('capnhat_')) {
+        await handleCapnhatWeaponSelectMenu(interaction);
       } else if (interaction.customId === 'gw_team_select' || interaction.customId === 'gw_role_select') {
         await handleGuildWarSelectMenu(interaction);
       }
     } else if (interaction.isModalSubmit()) {
       if (interaction.customId.startsWith('registration_modal')) {
         await handleRegistrationModalSubmit(interaction);
-      } else if (interaction.customId === 'capnhat_modal') {
+      } else if (interaction.customId.startsWith('capnhat_modal')) {
         await handleUpdateModalSubmit(interaction);
       }
     }

@@ -421,7 +421,7 @@ async function handleSetupRegistrationCommand(
 
 /**
  * Handle /capnhat command
- * Opens modal with current gear score and arena rank
+ * Step 1: Show weapon selection dropdowns pre-selected to current weapons
  */
 async function handleCapnhatCommand(
   interaction: CommandInteraction
@@ -447,9 +447,85 @@ async function handleCapnhatCommand(
     return;
   }
 
+  // Build weapon options with current weapons pre-selected
+  const language = getGuildLanguage(interaction.guildId);
+
+  const primaryOptions = Object.values(WEAPON_CONFIGS).map((weapon) => {
+    const builder = new StringSelectMenuOptionBuilder()
+      .setLabel(language === 'vi' ? weapon.displayNameVi : weapon.displayNameEn)
+      .setValue(weapon.name);
+
+    if (weapon.emoji) {
+      builder.setEmoji(weapon.emoji);
+    }
+    if (weapon.name === existingReg.primary_weapon) {
+      builder.setDefault(true);
+    }
+    return builder;
+  });
+
+  const secondaryOptions = Object.values(WEAPON_CONFIGS).map((weapon) => {
+    const builder = new StringSelectMenuOptionBuilder()
+      .setLabel(language === 'vi' ? weapon.displayNameVi : weapon.displayNameEn)
+      .setValue(weapon.name);
+
+    if (weapon.emoji) {
+      builder.setEmoji(weapon.emoji);
+    }
+    if (weapon.name === existingReg.secondary_weapon) {
+      builder.setDefault(true);
+    }
+    return builder;
+  });
+
+  const primaryWeaponSelect = new StringSelectMenuBuilder()
+    .setCustomId('capnhat_primary_weapon')
+    .setPlaceholder(t.registration.modalPrimaryWeapon)
+    .addOptions(primaryOptions);
+
+  const secondaryWeaponSelect = new StringSelectMenuBuilder()
+    .setCustomId('capnhat_secondary_weapon')
+    .setPlaceholder(t.registration.modalSecondaryWeapon)
+    .addOptions(secondaryOptions);
+
+  const row1 =
+    new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+      primaryWeaponSelect
+    );
+  const row2 =
+    new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+      secondaryWeaponSelect
+    );
+
+  await interaction.reply({
+    content: t.registration.selectWeapons || '🗡️ Please select your weapons:',
+    components: [row1, row2],
+    ephemeral: true,
+  });
+}
+
+/**
+ * Step 2: Show capnhat modal after weapon selection
+ * Exported for use by select menu handler
+ */
+export async function showCapnhatModalWithWeapons(
+  interaction: any,
+  primaryWeapon: WeaponName,
+  secondaryWeapon: WeaponName
+): Promise<void> {
+  if (!interaction.guildId) return;
+
+  const t = getGuildTranslations(interaction.guildId);
+  const existingReg = getPlayerRegistration(
+    interaction.guildId!,
+    interaction.user.id
+  );
+
+  if (!existingReg) return;
+
   // Create update modal with pre-filled values
   const modal = new ModalBuilder()
-    .setCustomId('capnhat_modal')
+    .setCustomId(`capnhat_modal|${primaryWeapon}|${secondaryWeapon}`)
     .setTitle(t.registration.updateModalTitle);
 
   // Format gear score for display (Goose format without emoji for input field)

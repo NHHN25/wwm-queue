@@ -1,6 +1,7 @@
 import { ModalSubmitInteraction } from 'discord.js';
-import { updatePlayerStats } from '../database/database.js';
+import { updatePlayerStats, updatePlayerStatsWithWeapons } from '../database/database.js';
 import { getGuildTranslations } from '../localization/index.js';
+import { isValidWeaponName } from '../utils/weaponConstants.js';
 
 /**
  * Handle stats update modal submission
@@ -17,6 +18,11 @@ export async function handleUpdateModalSubmit(
   }
 
   const t = getGuildTranslations(interaction.guildId);
+
+  // Parse weapons from custom ID (format: capnhat_modal|{primary}|{secondary} or legacy capnhat_modal)
+  const customIdParts = interaction.customId.split('|');
+  const primaryWeapon = customIdParts.length > 1 ? customIdParts[1] : null;
+  const secondaryWeapon = customIdParts.length > 2 ? customIdParts[2] : null;
 
   try {
     const gearScoreStr = interaction.fields
@@ -48,12 +54,25 @@ export async function handleUpdateModalSubmit(
       gearScore = Math.round(gearScoreFloat);
     }
 
-    const success = updatePlayerStats(
-      interaction.guildId,
-      interaction.user.id,
-      gearScore,
-      arenaRank
-    );
+    let success: boolean;
+
+    if (primaryWeapon && secondaryWeapon && isValidWeaponName(primaryWeapon) && isValidWeaponName(secondaryWeapon)) {
+      success = updatePlayerStatsWithWeapons(
+        interaction.guildId,
+        interaction.user.id,
+        gearScore,
+        arenaRank,
+        primaryWeapon,
+        secondaryWeapon
+      );
+    } else {
+      success = updatePlayerStats(
+        interaction.guildId,
+        interaction.user.id,
+        gearScore,
+        arenaRank
+      );
+    }
 
     if (!success) {
       await interaction.reply({

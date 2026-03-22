@@ -664,6 +664,29 @@ export function updatePlayerStats(
   return result.changes > 0;
 }
 
+/**
+ * Update gear score, arena rank, and weapons (quick update with weapons)
+ * Returns true if successful
+ */
+export function updatePlayerStatsWithWeapons(
+  guildId: string,
+  userId: string,
+  gearScore: number,
+  arenaRank: string,
+  primaryWeapon: string,
+  secondaryWeapon: string
+): boolean {
+  const db = getDatabase();
+  const stmt = db.prepare(`
+    UPDATE player_registrations
+    SET gear_score = ?, arena_rank = ?, primary_weapon = ?, secondary_weapon = ?, updated_at = CURRENT_TIMESTAMP
+    WHERE guild_id = ? AND user_id = ?
+  `);
+
+  const result = stmt.run(gearScore, arenaRank, primaryWeapon, secondaryWeapon, guildId, userId);
+  return result.changes > 0;
+}
+
 // ============================================================================
 // Registration Channel Operations
 // ============================================================================
