@@ -142,6 +142,12 @@ export async function handleButtonInteraction(
     return;
   }
 
+  // Check if it's the Guild War join button
+  if (interaction.customId === BUTTON_IDS.JOIN_GUILD_WAR) {
+    await handleJoinGuildWarButton(interaction);
+    return;
+  }
+
   // Existing queue button routing
   const parsed = parseButtonId(interaction.customId);
 
