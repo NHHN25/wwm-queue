@@ -470,6 +470,8 @@ export function getQueuePlayersWithStats(messageId: string): Array<QueuePlayerRo
   gear_score: number | null;
   arena_rank: string | null;
   ingame_name: string | null;
+  primary_weapon: import('../types/index.js').WeaponName | null;
+  secondary_weapon: import('../types/index.js').WeaponName | null;
 }> {
   const db = getDatabase();
   const stmt = db.prepare(`
@@ -483,7 +485,9 @@ export function getQueuePlayersWithStats(messageId: string): Array<QueuePlayerRo
       qp.joined_at,
       pr.gear_score,
       pr.arena_rank,
-      pr.ingame_name
+      pr.ingame_name,
+      pr.primary_weapon,
+      pr.secondary_weapon
     FROM queue_players qp
     LEFT JOIN player_registrations pr
       ON qp.user_id = pr.user_id
@@ -497,6 +501,8 @@ export function getQueuePlayersWithStats(messageId: string): Array<QueuePlayerRo
     gear_score: number | null;
     arena_rank: string | null;
     ingame_name: string | null;
+    primary_weapon: import('../types/index.js').WeaponName | null;
+    secondary_weapon: import('../types/index.js').WeaponName | null;
   }>;
 }
 

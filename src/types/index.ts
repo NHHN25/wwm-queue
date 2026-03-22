@@ -68,6 +68,8 @@ export interface QueuePlayerData {
   gearScore?: number | null;
   arenaRank?: string | null;
   ingameName?: string | null;
+  primaryWeapon?: WeaponName | null;
+  secondaryWeapon?: WeaponName | null;
 }
 
 /**

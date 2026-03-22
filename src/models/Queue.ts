@@ -223,6 +223,8 @@ export class Queue {
     gearScore: number | null;
     arenaRank: string | null;
     ingameName: string | null;
+    primaryWeapon: import('../types/index.js').WeaponName | null;
+    secondaryWeapon: import('../types/index.js').WeaponName | null;
   }> {
     const playerRows = db.getQueuePlayersWithStats(this.messageId);
 
@@ -235,6 +237,8 @@ export class Queue {
       gearScore: row.gear_score,
       arenaRank: row.arena_rank,
       ingameName: row.ingame_name,
+      primaryWeapon: row.primary_weapon,
+      secondaryWeapon: row.secondary_weapon,
     }));
   }
 
