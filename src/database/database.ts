@@ -492,7 +492,6 @@ export function getQueuePlayersWithStats(messageId: string): Array<QueuePlayerRo
     LEFT JOIN player_registrations pr
       ON qp.user_id = pr.user_id
       AND pr.guild_id = (SELECT guild_id FROM queues WHERE message_id = qp.message_id)
-      AND pr.approval_status = 'approved'
     WHERE qp.message_id = ?
     ORDER BY qp.joined_at ASC
   `);
