@@ -74,7 +74,7 @@ export function createQueueEmbed(
   }
 
   // Build description
-  const description = buildQueueDescription(state, t);
+  const description = buildQueueDescription(state, t) + '\n\n_made by RaZe, Phong Ảnh Sát Guild_';
   embed.setDescription(description);
 
   // Add progress bar field
@@ -309,7 +309,8 @@ export function createPanelEmbed(
     .setColor(config.color)
     .setDescription(
       t.panel.description(config.capacity) +
-      `\n\n${t.panel.roles}`
+      `\n\n${t.panel.roles}` +
+      '\n\n_made by RaZe, Phong Ảnh Sát Guild_'
     )
     .setFooter({ text: t.panel.footer })
     .setTimestamp(new Date());
@@ -327,7 +328,7 @@ export function createPanelEmbed(
 export function createErrorEmbed(message: string): EmbedBuilder {
   return new EmbedBuilder()
     .setTitle(`${EMOJIS.ERROR} Error`)
-    .setDescription(message)
+    .setDescription(message + '\n\n_made by RaZe, Phong Ảnh Sát Guild_')
     .setColor(0xed4245) // Red
     .setTimestamp(new Date());
 }
@@ -338,7 +339,7 @@ export function createErrorEmbed(message: string): EmbedBuilder {
 export function createSuccessEmbed(message: string): EmbedBuilder {
   return new EmbedBuilder()
     .setTitle(`${EMOJIS.SUCCESS} Success`)
-    .setDescription(message)
+    .setDescription(message + '\n\n_made by RaZe, Phong Ảnh Sát Guild_')
     .setColor(0x57f287) // Green
     .setTimestamp(new Date());
 }
@@ -349,7 +350,7 @@ export function createSuccessEmbed(message: string): EmbedBuilder {
 export function createInfoEmbed(title: string, message: string): EmbedBuilder {
   return new EmbedBuilder()
     .setTitle(`${EMOJIS.INFO} ${title}`)
-    .setDescription(message)
+    .setDescription(message + '\n\n_made by RaZe, Phong Ảnh Sát Guild_')
     .setColor(0x5865f2) // Blue
     .setTimestamp(new Date());
 }
@@ -365,7 +366,7 @@ export function createQueueFullEmbed(state: QueueState): EmbedBuilder {
   const embed = new EmbedBuilder()
     .setTitle(`${EMOJIS.PARTY} Queue Ready!`)
     .setDescription(
-      `The **${config.displayName}** queue is now full with ${players.length} players!\n\nGet ready to start!`
+      `The **${config.displayName}** queue is now full with ${players.length} players!\n\nGet ready to start!\n\n_made by RaZe, Phong Ảnh Sát Guild_`
     )
     .setColor(config.color)
     .setTimestamp(new Date())
@@ -386,7 +387,7 @@ export function createSetupEmbed(
   return new EmbedBuilder()
     .setTitle(`${EMOJIS.SUCCESS} Queue Created`)
     .setDescription(
-      `Successfully created **${config.displayName}** queue in ${channelMention}!\n\nPlayers can now join using the role buttons.`
+      `Successfully created **${config.displayName}** queue in ${channelMention}!\n\nPlayers can now join using the role buttons.\n\n_made by RaZe, Phong Ảnh Sát Guild_`
     )
     .setColor(config.color)
     .setTimestamp(new Date());
@@ -403,7 +404,7 @@ export function createResetEmbed(
   return new EmbedBuilder()
     .setTitle(`${EMOJIS.SUCCESS} Queue Reset`)
     .setDescription(
-      `The **${config.displayName}** queue has been cleared.\n\nAll players have been removed from the queue.`
+      `The **${config.displayName}** queue has been cleared.\n\nAll players have been removed from the queue.\n\n_made by RaZe, Phong Ảnh Sát Guild_`
     )
     .setColor(config.color)
     .setTimestamp(new Date());
@@ -420,7 +421,7 @@ export function createCloseEmbed(
   return new EmbedBuilder()
     .setTitle(`${EMOJIS.SUCCESS} Queue Closed`)
     .setDescription(
-      `The **${config.displayName}** queue has been closed and removed.`
+      `The **${config.displayName}** queue has been closed and removed.\n\n_made by RaZe, Phong Ảnh Sát Guild_`
     )
     .setColor(config.color)
     .setTimestamp(new Date());

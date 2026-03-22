@@ -31,6 +31,7 @@ export function createProfileEmbed(
 
   const embed = new EmbedBuilder()
     .setTitle(`${t.registration.profileTitle}`)
+    .setDescription('_made by RaZe, Phong Ảnh Sát Guild_')
     .setColor(0x5865f2)
     .setThumbnail(user.displayAvatarURL({ size: 256 }))
     .setTimestamp(new Date(registration.created_at));

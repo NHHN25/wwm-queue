@@ -32,6 +32,7 @@ export function createPendingRegistrationEmbed(
 
   const embed = new EmbedBuilder()
     .setTitle(t.verification.pendingCardTitle)
+    .setDescription('_made by RaZe, Phong Ảnh Sát Guild_')
     .setColor(0xffa500) // Orange
     .setThumbnail(user.displayAvatarURL({ size: 256 }))
     .setTimestamp(new Date(registration.created_at));
@@ -98,6 +99,7 @@ export function createApprovedRegistrationEmbed(
 
   const embed = new EmbedBuilder()
     .setTitle(t.verification.approvedCardTitle)
+    .setDescription('_made by RaZe, Phong Ảnh Sát Guild_')
     .setColor(0x00ff00) // Green
     .setThumbnail(user.displayAvatarURL({ size: 256 }))
     .setTimestamp(
@@ -166,6 +168,7 @@ export function createRejectedRegistrationEmbed(
 
   const embed = new EmbedBuilder()
     .setTitle(t.verification.rejectedCardTitle)
+    .setDescription('_made by RaZe, Phong Ảnh Sát Guild_')
     .setColor(0xff0000) // Red
     .setThumbnail(user.displayAvatarURL({ size: 256 }))
     .setTimestamp(
