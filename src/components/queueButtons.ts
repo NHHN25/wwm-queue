@@ -20,7 +20,7 @@ import { formatPlayerMentions } from '../models/QueuePlayer.js';
 import { getGuildTranslations } from '../localization/index.js';
 import { cancelQueueTimer, startQueueTimer } from '../utils/timerManager.js';
 import * as db from '../database/database.js';
-import { handleJoinGuildWarButton } from './teamSelectMenus.js';
+import { handleJoinGuildWarButton, handleGuildWarSubmitButton } from './teamSelectMenus.js';
 
 // Re-export formatPlayerMentions for use by timerManager
 export { formatPlayerMentions } from '../models/QueuePlayer.js';
@@ -146,6 +146,13 @@ export async function handleButtonInteraction(
   // Check if it's the Guild War join button
   if (interaction.customId === BUTTON_IDS.JOIN_GUILD_WAR) {
     await handleJoinGuildWarButton(interaction);
+    return;
+  }
+
+  // Check if it's the Guild War internal submit button
+  if (interaction.customId.startsWith('gw_submit_')) {
+    const messageId = interaction.customId.replace('gw_submit_', '');
+    await handleGuildWarSubmitButton(interaction, messageId);
     return;
   }
 

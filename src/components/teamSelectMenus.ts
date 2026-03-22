@@ -13,6 +13,10 @@ import { Queue } from '../models/Queue.js';
 import { createQueueEmbed, createDisabledButtons } from '../utils/embeds.js';
 import { createJoinButtons } from './queueButtons.js';
 import { cancelQueueTimer } from '../utils/timerManager.js';
+import { StringSelectMenuInteraction } from 'discord.js';
+
+// Cache to store user selections
+export const guildWarSelections = new Map<string, { team?: GuildWarTeam; role?: PlayerRole; timestamp: number }>();
 
 export async function handleJoinGuildWarButton(interaction: ButtonInteraction) {
   const guildId = interaction.guildId || '';
@@ -66,68 +70,59 @@ export async function handleJoinGuildWarButton(interaction: ButtonInteraction) {
   const row2 = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(roleSelect);
   const row3 = new ActionRowBuilder<ButtonBuilder>().addComponents(submitButton);
 
-  const response = await interaction.reply({
+  // Clear previous selections for the user
+  guildWarSelections.set(interaction.user.id, { timestamp: Date.now() });
+
+  await interaction.reply({
     components: [row1, row2, row3],
     ephemeral: true,
   });
+}
 
-  try {
-    const collector = response.createMessageComponentCollector({
-      filter: (i) => i.user.id === interaction.user.id,
-      time: 60000,
+export async function handleGuildWarSelectMenu(interaction: StringSelectMenuInteraction) {
+  let state = guildWarSelections.get(interaction.user.id);
+  // If no state exists (bot restarted or cache expired), just create a fresh one
+  if (!state) {
+    state = { timestamp: Date.now() };
+    guildWarSelections.set(interaction.user.id, state);
+  }
+
+  if (interaction.customId === 'gw_team_select') {
+    state.team = interaction.values[0] as GuildWarTeam;
+  } else if (interaction.customId === 'gw_role_select') {
+    state.role = interaction.values[0] as PlayerRole;
+  }
+
+  await interaction.deferUpdate();
+}
+
+export async function handleGuildWarSubmitButton(interaction: ButtonInteraction, messageId: string) {
+  const t = getGuildTranslations(interaction.guildId || '');
+  const state = guildWarSelections.get(interaction.user.id);
+
+  if (!state || !state.team || !state.role) {
+    await interaction.reply({
+      content: '❌ Phải chọn cả team và role / Please select both a team and a role!',
+      ephemeral: true,
     });
+    return;
+  }
 
-    let selectedTeam: GuildWarTeam | null = null;
-    let selectedRole: PlayerRole | null = null;
+  // Use the selections
+  const { team, role } = state;
+  
+  // Forward to submission
+  await handleGuildWarJoinSubmission(interaction, messageId, team, role);
 
-    collector.on('collect', async (i) => {
-      try {
-        if (i.isStringSelectMenu()) {
-          if (i.customId === 'gw_team_select') {
-            selectedTeam = i.values[0] as GuildWarTeam;
-            await i.deferUpdate();
-          } else if (i.customId === 'gw_role_select') {
-            selectedRole = i.values[0] as PlayerRole;
-            await i.deferUpdate();
-          }
-        } else if (i.isButton()) {
-          if (i.customId.startsWith('gw_submit')) {
-            if (!selectedTeam || !selectedRole) {
-              await i.reply({
-                content: '❌ Phải chọn cả team và role / Please select both a team and a role!',
-                ephemeral: true,
-              });
-              return;
-            }
-
-            // We have both, process join!
-            await handleGuildWarJoinSubmission(i, interaction.message.id, selectedTeam, selectedRole);
-            
-            // Clean up ephemeral message
-            await i.update({
-              content: t.success.joinedQueue(ROLE_CONFIGS[selectedRole].displayName),
-              components: [],
-            });
-            
-            collector.stop('submitted');
-          }
-        }
-      } catch (err) {
-        console.error('Collector error:', err);
-      }
+  // Clear selections
+  guildWarSelections.delete(interaction.user.id);
+  
+  // If the submission didn't reply directly (e.g. success), we clean up the dropdown UI
+  if (!interaction.replied && !interaction.deferred) {
+    await interaction.update({
+      content: t.success.joinedQueue(ROLE_CONFIGS[role].displayName),
+      components: [],
     });
-
-    collector.on('end', (_, reason) => {
-      if (reason === 'time') {
-        interaction.editReply({
-          content: '⏱️ Request timed out.',
-          components: [],
-        }).catch(err => console.error('Failed to cleanup timed out interaction:', err));
-      }
-    });
-
-  } catch (err) {
-    console.error('Failed to create collector:', err);
   }
 }
 

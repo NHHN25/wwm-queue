@@ -94,6 +94,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
     } else if (interaction.isStringSelectMenu()) {
       if (interaction.customId.startsWith('registration_')) {
         await handleWeaponSelectMenu(interaction);
+      } else if (interaction.customId === 'gw_team_select' || interaction.customId === 'gw_role_select') {
+        await handleGuildWarSelectMenu(interaction);
       }
     } else if (interaction.isModalSubmit()) {
       if (interaction.customId.startsWith('registration_modal')) {
