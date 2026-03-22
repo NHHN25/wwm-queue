@@ -189,13 +189,16 @@ async function showWeaponSelection(
   );
 
   // Build weapon options
-  const weaponOptions = Object.values(WEAPON_CONFIGS).map((weapon) =>
-    new StringSelectMenuOptionBuilder()
-      .setLabel(
-        `${weapon.emoji} ${language === 'vi' ? weapon.displayNameVi : weapon.displayNameEn}`
-      )
-      .setValue(weapon.name)
-  );
+  const weaponOptions = Object.values(WEAPON_CONFIGS).map((weapon) => {
+    const builder = new StringSelectMenuOptionBuilder()
+      .setLabel(language === 'vi' ? weapon.displayNameVi : weapon.displayNameEn)
+      .setValue(weapon.name);
+    
+    if (weapon.emoji) {
+      builder.setEmoji(weapon.emoji);
+    }
+    return builder;
+  });
 
   // Primary weapon select menu
   const primaryWeaponSelect = new StringSelectMenuBuilder()
@@ -205,7 +208,7 @@ async function showWeaponSelection(
 
   if (existingReg) {
     primaryWeaponSelect.setPlaceholder(
-      `${t.registration.modalPrimaryWeapon} (Current: ${WEAPON_CONFIGS[existingReg.primary_weapon].emoji} ${language === 'vi' ? WEAPON_CONFIGS[existingReg.primary_weapon].displayNameVi : WEAPON_CONFIGS[existingReg.primary_weapon].displayNameEn})`
+      `${t.registration.modalPrimaryWeapon} (Current: ${language === 'vi' ? WEAPON_CONFIGS[existingReg.primary_weapon].displayNameVi : WEAPON_CONFIGS[existingReg.primary_weapon].displayNameEn})`
     );
   }
 
@@ -217,7 +220,7 @@ async function showWeaponSelection(
 
   if (existingReg) {
     secondaryWeaponSelect.setPlaceholder(
-      `${t.registration.modalSecondaryWeapon} (Current: ${WEAPON_CONFIGS[existingReg.secondary_weapon].emoji} ${language === 'vi' ? WEAPON_CONFIGS[existingReg.secondary_weapon].displayNameVi : WEAPON_CONFIGS[existingReg.secondary_weapon].displayNameEn})`
+      `${t.registration.modalSecondaryWeapon} (Current: ${language === 'vi' ? WEAPON_CONFIGS[existingReg.secondary_weapon].displayNameVi : WEAPON_CONFIGS[existingReg.secondary_weapon].displayNameEn})`
     );
   }
 
