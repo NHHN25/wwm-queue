@@ -22,6 +22,7 @@ import {
   clearAllTimers,
 } from './utils/timerManager.js';
 import type { QueueType } from './types/index.js';
+import { handleGuildWarSelectMenu } from './components/teamSelectMenus.js';
 
 // Load environment variables
 config();
