@@ -21,7 +21,10 @@ console.log('Starting weapon icon downloads...');
 let completed = 0;
 
 weapons.forEach(weapon => {
-    const url = `https://wherewindsmeet.wiki.fextralife.com/file/Where-Winds-Meet/${weapon}-weapon-icon-where-winds-meet-wiki-guide.png`;
+    let urlSlug = weapon;
+    if (weapon === 'vernal-umbrella') urlSlug = 'ninefold-umbrella';
+
+    const url = `https://wherewindsmeet.wiki.fextralife.com/file/Where-Winds-Meet/${urlSlug}-weapon-icon-where-winds-meet-wiki-guide.png`;
     const dest = path.join(dir, `${weapon}.png`);
 
     https.get(url, {
