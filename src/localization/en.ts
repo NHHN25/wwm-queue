@@ -220,4 +220,14 @@ export const en: Translations = {
     panelDeleted: (queueType: string) =>
       `✅ **${queueType}** panel has been deleted.`,
   },
+
+  guildWar: {
+    joinButton: '🏆 Join Guild War',
+    selectTeamPlaceholder: 'Select your team...',
+    selectRolePlaceholder: 'Select your role...',
+    teamJungler: 'Jungler',
+    teamOffense: 'Offense',
+    teamDefense: 'Defense',
+    submitJoin: '✅ Confirm Join',
+  },
 };

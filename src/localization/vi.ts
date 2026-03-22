@@ -220,4 +220,14 @@ export const vi: Translations = {
     panelDeleted: (queueType: string) =>
       `✅ Bảng **${queueType}** đã được xóa.`,
   },
+
+  guildWar: {
+    joinButton: '🏆 Tham Gia Bang Chiến',
+    selectTeamPlaceholder: 'Chọn đội của bạn...',
+    selectRolePlaceholder: 'Chọn vai trò của bạn...',
+    teamJungler: 'Rừng',
+    teamOffense: 'Công',
+    teamDefense: 'Thủ',
+    submitJoin: '✅ Xác Nhận Tham Gia',
+  },
 };

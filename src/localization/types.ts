@@ -210,4 +210,15 @@ export interface Translations {
     noActiveQueue: string;
     panelDeleted: (queueType: string) => string;
   };
+
+  // Guild War specific
+  guildWar: {
+    joinButton: string;
+    selectTeamPlaceholder: string;
+    selectRolePlaceholder: string;
+    teamJungler: string;
+    teamOffense: string;
+    teamDefense: string;
+    submitJoin: string;
+  };
 }

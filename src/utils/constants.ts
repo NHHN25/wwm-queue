@@ -1,4 +1,4 @@
-import type { QueueType, QueueConfig, PlayerRole, RoleConfig } from '../types/index.js';
+import type { QueueType, QueueConfig, PlayerRole, RoleConfig, GuildWarTeam } from '../types/index.js';
 
 /**
  * Queue timer duration in milliseconds (30 minutes)
@@ -50,6 +50,30 @@ export const ROLE_CONFIGS: Record<PlayerRole, RoleConfig> = {
     emoji: '⚔️',
     displayName: 'DPS',
     color: 0xe74c3c, // Red
+  },
+};
+
+/**
+ * Guild War Team configurations
+ */
+export const TEAM_CONFIGS: Record<GuildWarTeam, { emoji: string; displayNameEn: string; displayNameVi: string; color: number }> = {
+  jungler: {
+    emoji: '🌲',
+    displayNameEn: 'Jungler',
+    displayNameVi: 'Rừng',
+    color: 0x2ecc71, // Green
+  },
+  offense: {
+    emoji: '⚔️',
+    displayNameEn: 'Offense',
+    displayNameVi: 'Công',
+    color: 0xe74c3c, // Red
+  },
+  defense: {
+    emoji: '🛡️',
+    displayNameEn: 'Defense',
+    displayNameVi: 'Thủ',
+    color: 0x3498db, // Blue
   },
 };
 
@@ -107,6 +131,7 @@ export const BUTTON_IDS = {
   PANEL_CREATE_SWORD_TRIAL: 'panel_create_sword_trial',
   PANEL_CREATE_HERO_REALM: 'panel_create_hero_realm',
   PANEL_CREATE_GUILD_WAR: 'panel_create_guild_war',
+  JOIN_GUILD_WAR: 'queue_join_guild_war',
 } as const;
 
 /**
