@@ -104,6 +104,21 @@ function runMigrations(): void {
       console.log('[Database] Migration: Added expires_at column to queues');
     }
 
+    // Migration: Add team column to queue_players table (if not exists)
+    const hasTeamColumn = db
+      .prepare(
+        `SELECT COUNT(*) as count FROM pragma_table_info('queue_players') WHERE name='team'`
+      )
+      .get() as { count: number };
+
+    if (hasTeamColumn.count === 0) {
+      db.exec(`
+        ALTER TABLE queue_players
+        ADD COLUMN team TEXT CHECK(team IN ('jungler', 'offense', 'defense') OR team IS NULL);
+      `);
+      console.log('[Database] Migration: Added team column to queue_players');
+    }
+
     // Migration: Update queue_type CHECK constraint to include 'guild_war'
     // Check if the constraint needs updating by attempting to insert a guild_war queue (rollback after)
     try {
@@ -288,6 +303,7 @@ export interface QueuePlayerRow {
   user_id: string;
   username: string;
   role: 'tank' | 'healer' | 'dps';
+  team: 'jungler' | 'offense' | 'defense' | null;
   joined_at: string;
 }
 
@@ -299,17 +315,18 @@ export function addPlayer(
   messageId: string,
   userId: string,
   username: string,
-  role: 'tank' | 'healer' | 'dps'
+  role: 'tank' | 'healer' | 'dps',
+  team: 'jungler' | 'offense' | 'defense' | null = null
 ): boolean {
   const db = getDatabase();
 
   try {
     const stmt = db.prepare(`
-      INSERT INTO queue_players (message_id, user_id, username, role)
-      VALUES (?, ?, ?, ?)
+      INSERT INTO queue_players (message_id, user_id, username, role, team)
+      VALUES (?, ?, ?, ?, ?)
     `);
 
-    stmt.run(messageId, userId, username, role);
+    stmt.run(messageId, userId, username, role, team);
     return true;
   } catch (error: any) {
     // UNIQUE constraint violation (user already in queue)
@@ -462,6 +479,7 @@ export function getQueuePlayersWithStats(messageId: string): Array<QueuePlayerRo
       qp.user_id,
       qp.username,
       qp.role,
+      qp.team,
       qp.joined_at,
       pr.gear_score,
       pr.arena_rank,

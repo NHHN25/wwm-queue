@@ -25,6 +25,8 @@ CREATE TABLE IF NOT EXISTS queue_players (
   username TEXT NOT NULL,            -- Display name (cached for performance)
   role TEXT NOT NULL                 -- Player role: 'tank', 'healer', or 'dps'
     CHECK(role IN ('tank', 'healer', 'dps')),
+  team TEXT                          -- Guild War team
+    CHECK(team IN ('jungler', 'offense', 'defense') OR team IS NULL),
   joined_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 
   -- Foreign key constraint with cascade delete

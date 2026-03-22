@@ -17,6 +17,11 @@ export type QueueType = 'sword_trial' | 'hero_realm' | 'guild_war';
 export type PlayerRole = 'tank' | 'healer' | 'dps';
 
 /**
+ * Guild War team types
+ */
+export type GuildWarTeam = 'jungler' | 'offense' | 'defense';
+
+/**
  * Queue status types
  */
 export type QueueStatus = 'open' | 'closed';
@@ -57,6 +62,7 @@ export interface QueuePlayerData {
   userId: string;
   username: string;
   role: PlayerRole;
+  team?: GuildWarTeam | null;
   joinedAt: Date;
   // Optional player stats from player_registrations table
   gearScore?: number | null;
