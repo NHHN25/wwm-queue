@@ -136,6 +136,7 @@ export function getWeaponWithEmoji(
   language: 'en' | 'vi'
 ): string {
   const config = WEAPON_CONFIGS[weaponName];
+  if (!config) return `❓ ${weaponName}`;
   const name = language === 'vi' ? config.displayNameVi : config.displayNameEn;
   return `${config.emoji} ${name}`;
 }

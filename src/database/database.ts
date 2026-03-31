@@ -167,6 +167,21 @@ function runMigrations(): void {
         console.log('[Database] Migration: Updated queue_type constraint for guild_war');
       }
     }
+    // Migration: Rename mo_dao to thundercry_blade in player_registrations
+    const moDao = db
+      .prepare(
+        `SELECT COUNT(*) as count FROM player_registrations WHERE primary_weapon = 'mo_dao' OR secondary_weapon = 'mo_dao'`
+      )
+      .get() as { count: number };
+
+    if (moDao.count > 0) {
+      db.exec(`
+        UPDATE player_registrations SET primary_weapon = 'thundercry_blade' WHERE primary_weapon = 'mo_dao';
+        UPDATE player_registrations SET secondary_weapon = 'thundercry_blade' WHERE secondary_weapon = 'mo_dao';
+      `);
+      console.log('[Database] Migration: Renamed mo_dao to thundercry_blade in player_registrations');
+    }
+
   } catch (error) {
     console.error('[Database] Migration error:', error);
   }
