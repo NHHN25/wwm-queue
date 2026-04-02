@@ -95,7 +95,7 @@ export const WEAPON_CONFIGS: Record<WeaponName, WeaponConfig> = {
   everspring_umbrella: {
     name: 'everspring_umbrella',
     type: 'umbrella',
-    emoji: '☂️',
+    emoji: '<:everspringumbrella:1489150298755960832>',
     displayNameEn: 'Everspring Umbrella',
     displayNameVi: 'Everspring Umbrella',
   },
@@ -111,9 +111,25 @@ export const WEAPON_CONFIGS: Record<WeaponName, WeaponConfig> = {
   unfettered_rope_dart: {
     name: 'unfettered_rope_dart',
     type: 'rope_dart',
-    emoji: '🪢',
+    emoji: '<:unfetteredropedart:1489150256951201823>',
     displayNameEn: 'Unfettered Rope Dart',
     displayNameVi: 'Unfettered Rope Dart',
+  },
+
+  // Blades
+  snowparting_blade: {
+    name: 'snowparting_blade',
+    type: 'sword',
+    emoji: '❄️',
+    displayNameEn: 'Snowparting Blade',
+    displayNameVi: 'Snowparting Blade',
+  },
+  phalanxbane_blade: {
+    name: 'phalanxbane_blade',
+    type: 'sword',
+    emoji: '🗡️',
+    displayNameEn: 'Phalanxbane Blade',
+    displayNameVi: 'Phalanxbane Blade',
   },
 };
 
@@ -145,22 +161,7 @@ export function getWeaponWithEmoji(
  * Validate weapon name
  */
 export function isValidWeaponName(name: string): name is WeaponName {
-  return [
-    'strategic_sword',
-    'nameless_sword',
-    'stormbreaker_spear',
-    'heavenquaker_spear',
-    'nameless_spear',
-    'infernal_twinblades',
-    'thundercry_blade',
-    'panacea_fan',
-    'inkwell_fan',
-    'soulshade_umbrella',
-    'vernal_umbrella',
-    'everspring_umbrella',
-    'mortal_rope_dart',
-    'unfettered_rope_dart',
-  ].includes(name);
+  return name in WEAPON_CONFIGS;
 }
 
 /**

@@ -225,7 +225,10 @@ export type WeaponName =
   | 'everspring_umbrella'
   // Rope Darts
   | 'mortal_rope_dart'
-  | 'unfettered_rope_dart';
+  | 'unfettered_rope_dart'
+  // Blades
+  | 'snowparting_blade'
+  | 'phalanxbane_blade';
 
 /**
  * Approval status for registrations
