@@ -120,14 +120,14 @@ export const WEAPON_CONFIGS: Record<WeaponName, WeaponConfig> = {
   snowparting_blade: {
     name: 'snowparting_blade',
     type: 'sword',
-    emoji: '❄️',
+    emoji: '<:snowpartingblade:1489268359978680420>',
     displayNameEn: 'Snowparting Blade',
     displayNameVi: 'Snowparting Blade',
   },
   phalanxbane_blade: {
     name: 'phalanxbane_blade',
     type: 'sword',
-    emoji: '🗡️',
+    emoji: '<:phalanxbaneblade:1489268358607278226>',
     displayNameEn: 'Phalanxbane Blade',
     displayNameVi: 'Phalanxbane Blade',
   },
