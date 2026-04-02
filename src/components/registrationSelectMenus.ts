@@ -4,6 +4,8 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
+  StringSelectMenuBuilder,
+  StringSelectMenuOptionBuilder,
 } from 'discord.js';
 import type { WeaponName } from '../types/index.js';
 import { WEAPON_CONFIGS } from '../utils/weaponConstants.js';
@@ -176,8 +178,9 @@ export async function handleCapnhatWeaponSelectMenu(
   capnhatWeaponSelections.set(key, selections);
 
   // Get translations
-  const { getGuildTranslations } = await import('../localization/index.js');
+  const { getGuildTranslations, getGuildLanguage } = await import('../localization/index.js');
   const t = getGuildTranslations(interaction.guildId);
+  const language = getGuildLanguage(interaction.guildId);
 
   // Build status message
   let statusMessage = t.registration.selectWeapons || '🗡️ Please select your weapons:';
@@ -185,7 +188,7 @@ export async function handleCapnhatWeaponSelectMenu(
 
   if (selections.primary) {
     const primaryConfig = WEAPON_CONFIGS[selections.primary];
-    const primaryName = primaryConfig.displayNameEn;
+    const primaryName = language === 'vi' ? primaryConfig.displayNameVi : primaryConfig.displayNameEn;
     statusMessage += `✅ **${t.registration.modalPrimaryWeapon}:** ${primaryConfig.emoji} ${primaryName}\n`;
   } else {
     statusMessage += `⬜ **${t.registration.modalPrimaryWeapon}:** Not selected\n`;
@@ -193,15 +196,46 @@ export async function handleCapnhatWeaponSelectMenu(
 
   if (selections.secondary) {
     const secondaryConfig = WEAPON_CONFIGS[selections.secondary];
-    const secondaryName = secondaryConfig.displayNameEn;
+    const secondaryName = language === 'vi' ? secondaryConfig.displayNameVi : secondaryConfig.displayNameEn;
     statusMessage += `✅ **${t.registration.modalSecondaryWeapon}:** ${secondaryConfig.emoji} ${secondaryName}`;
   } else {
     statusMessage += `⬜ **${t.registration.modalSecondaryWeapon}:** Not selected`;
   }
 
-  // Keep only the select menu components (first 2 rows), filter out old submit buttons
-  const selectMenuComponents = interaction.message.components.slice(0, 2);
-  const components: any[] = [...selectMenuComponents];
+  // Rebuild dropdowns with updated default selections so the dropdown displays the correct item
+  const primaryOptions = Object.values(WEAPON_CONFIGS).map((weapon) => {
+    const builder = new StringSelectMenuOptionBuilder()
+      .setLabel(language === 'vi' ? weapon.displayNameVi : weapon.displayNameEn)
+      .setValue(weapon.name);
+    if (weapon.emoji) builder.setEmoji(weapon.emoji);
+    if (weapon.name === selections.primary) builder.setDefault(true);
+    return builder;
+  });
+
+  const secondaryOptions = Object.values(WEAPON_CONFIGS).map((weapon) => {
+    const builder = new StringSelectMenuOptionBuilder()
+      .setLabel(language === 'vi' ? weapon.displayNameVi : weapon.displayNameEn)
+      .setValue(weapon.name);
+    if (weapon.emoji) builder.setEmoji(weapon.emoji);
+    if (weapon.name === selections.secondary) builder.setDefault(true);
+    return builder;
+  });
+
+  const primaryRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+    new StringSelectMenuBuilder()
+      .setCustomId('capnhat_primary_weapon')
+      .setPlaceholder(t.registration.modalPrimaryWeapon)
+      .addOptions(primaryOptions)
+  );
+
+  const secondaryRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+    new StringSelectMenuBuilder()
+      .setCustomId('capnhat_secondary_weapon')
+      .setPlaceholder(t.registration.modalSecondaryWeapon)
+      .addOptions(secondaryOptions)
+  );
+
+  const components: any[] = [primaryRow, secondaryRow];
 
   // Add submit button if both weapons are selected
   if (selections.primary && selections.secondary) {
