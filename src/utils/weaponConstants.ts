@@ -115,6 +115,13 @@ export const WEAPON_CONFIGS: Record<WeaponName, WeaponConfig> = {
     displayNameEn: 'Unfettered Rope Dart',
     displayNameVi: 'Unfettered Rope Dart',
   },
+  skygrasp_rope_dart: {
+    name: 'skygrasp_rope_dart',
+    type: 'rope_dart',
+    emoji: '🪢',
+    displayNameEn: 'Skygrasp Rope Dart',
+    displayNameVi: 'Skygrasp Rope Dart',
+  },
 
   // Blades
   snowparting_blade: {
@@ -130,6 +137,15 @@ export const WEAPON_CONFIGS: Record<WeaponName, WeaponConfig> = {
     emoji: '<:phalanxbaneblade:1489268358607278226>',
     displayNameEn: 'Phalanxbane Blade',
     displayNameVi: 'Phalanxbane Blade',
+  },
+
+  // Gauntlets
+  heavenwill_gauntlets: {
+    name: 'heavenwill_gauntlets',
+    type: 'gauntlets',
+    emoji: '🥊',
+    displayNameEn: 'Heavenwill Gauntlets',
+    displayNameVi: 'Heavenwill Gauntlets',
   },
 };
 
@@ -176,6 +192,7 @@ export function getWeaponsByType(): Record<WeaponType, WeaponConfig[]> {
     fans: [],
     umbrella: [],
     rope_dart: [],
+    gauntlets: [],
   };
 
   Object.values(WEAPON_CONFIGS).forEach((config) => {

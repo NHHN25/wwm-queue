@@ -43,11 +43,15 @@ https.get(LIST_URL, {
                 let rawName = altMatch[1].toLowerCase().replace(' icon', '').replace(/\s+/g, '-');
                 
                 // Ensure it's not a generic UI icon
-                if (['sword', 'spear', 'twinblades', 'mo-dao', 'fan', 'umbrella', 'rope-dart', 'blade'].some(w => rawName.includes(w))) {
+                if (['sword', 'spear', 'twinblades', 'mo-dao', 'fan', 'umbrella', 'rope-dart', 'blade', 'gauntlets'].some(w => rawName.includes(w))) {
+                    // Skip entries with pipe chars or very long names (ads/articles, not weapon icons)
+                    if (rawName.includes('|') || rawName.length > 40) continue;
                     let imgUrl = srcMatch[1];
                     if (imgUrl.includes('game8.co')) {
-                        if (!foundWeapons.find(w => w.name === rawName)) {
-                            foundWeapons.push({ name: rawName, url: imgUrl });
+                        // Sanitize filename for Windows
+                        let safeName = rawName.replace(/[<>:"/\\|?*]/g, '');
+                        if (!foundWeapons.find(w => w.name === safeName)) {
+                            foundWeapons.push({ name: safeName, url: imgUrl });
                         }
                     }
                 }

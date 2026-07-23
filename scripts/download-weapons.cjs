@@ -7,7 +7,9 @@ const weapons = [
   "heavenquaker-spear", "nameless-spear", "infernal-twinblades", 
   "mo-dao", "panacea-fan", "inkwell-fan", "soulshade-umbrella", 
   "vernal-umbrella", "everspring-umbrella", "mortal-rope-dart", 
-  "unfettered-rope-dart", "thundercry-blade"
+  "unfettered-rope-dart", "thundercry-blade",
+  "snowparting-blade", "phalanxbane-blade",
+  "heavenwill-gauntlets", "skygrasp-rope-dart"
 ];
 
 const dir = path.join(__dirname, '..', 'assets', 'weapons');

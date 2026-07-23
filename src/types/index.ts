@@ -199,7 +199,7 @@ export interface GuildConfig {
 /**
  * Weapon types available in Where Winds Meet
  */
-export type WeaponType = 'sword' | 'spear' | 'dual_blades' | 'thundercry_blade' | 'fans' | 'umbrella' | 'rope_dart';
+export type WeaponType = 'sword' | 'spear' | 'dual_blades' | 'thundercry_blade' | 'fans' | 'umbrella' | 'rope_dart' | 'gauntlets';
 
 /**
  * Specific weapon names in Where Winds Meet
@@ -226,9 +226,12 @@ export type WeaponName =
   // Rope Darts
   | 'mortal_rope_dart'
   | 'unfettered_rope_dart'
+  | 'skygrasp_rope_dart'
   // Blades
   | 'snowparting_blade'
-  | 'phalanxbane_blade';
+  | 'phalanxbane_blade'
+  // Gauntlets
+  | 'heavenwill_gauntlets';
 
 /**
  * Approval status for registrations
