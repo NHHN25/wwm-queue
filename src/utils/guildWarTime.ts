@@ -214,6 +214,37 @@ export function getNextWeekdayTime(
 }
 
 /**
+ * The UTC instants bounding a local calendar day.
+ *
+ * Used to decide whether a Guild War already exists for a given day, whatever
+ * time of day it was scheduled at.
+ */
+export function getLocalDayBounds(
+  date: Date,
+  timezone: string
+): { start: Date; end: Date } {
+  const parts = getZonedParts(date, timezone);
+  const start = zonedTimeToUtc(parts.year, parts.month, parts.day, 0, 0, timezone);
+
+  // Step the local calendar date, not the instant, so a DST day still covers
+  // exactly one local day
+  const nextDay = new Date(
+    Date.UTC(parts.year, parts.month - 1, parts.day) + MS_PER_DAY
+  );
+
+  const end = zonedTimeToUtc(
+    nextDay.getUTCFullYear(),
+    nextDay.getUTCMonth() + 1,
+    nextDay.getUTCDate(),
+    0,
+    0,
+    timezone
+  );
+
+  return { start, end };
+}
+
+/**
  * A scheduled Guild War occurrence, before it exists in the database
  */
 export interface PlannedGuildWarEvent {

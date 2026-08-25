@@ -1256,19 +1256,33 @@ export function getGuildWarEventByMessage(messageId: string): GuildWarEventRow |
 }
 
 /**
- * Get an event by guild and exact start time
- * Used to detect an already-created event before posting a duplicate
+ * Get an event already scheduled within a time window.
+ *
+ * Used to enforce one Guild War per day: the window is a whole local day, so
+ * an event counts as existing even if an admin scheduled it at a different
+ * hour than the current settings would pick.
+ *
+ * Finished events are ignored; cancelled ones are not, so the weekly
+ * auto-open never resurrects a war an admin called off.
  */
-export function getGuildWarEventAt(
+export function getGuildWarEventBetween(
   guildId: string,
-  eventAt: Date
+  from: Date,
+  to: Date
 ): GuildWarEventRow | null {
   const db = getDatabase();
   const stmt = db.prepare(`
     SELECT * FROM guild_war_events
-    WHERE guild_id = ? AND event_at = ?
+    WHERE guild_id = ?
+      AND event_at >= ?
+      AND event_at < ?
+      AND status != 'done'
+    ORDER BY event_at ASC
+    LIMIT 1
   `);
-  return (stmt.get(guildId, eventAt.toISOString()) as GuildWarEventRow) || null;
+  return (
+    (stmt.get(guildId, from.toISOString(), to.toISOString()) as GuildWarEventRow) || null
+  );
 }
 
 /**

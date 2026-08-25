@@ -13,7 +13,11 @@ import {
   createGuildWarButtons,
   createGuildWarEmbed,
 } from './guildWarEmbeds.js';
-import { planUpcomingGuildWarEvents, shouldAutoOpen } from './guildWarTime.js';
+import {
+  getLocalDayBounds,
+  planUpcomingGuildWarEvents,
+  shouldAutoOpen,
+} from './guildWarTime.js';
 import type { GuildWarDay, GuildWarSettingsRow } from '../types/index.js';
 
 /**
@@ -112,7 +116,11 @@ export async function openGuildWarEvents(
   const results: OpenedGuildWarEvent[] = [];
 
   for (const plan of planned) {
-    const existingRow = db.getGuildWarEventAt(guildId, plan.eventAt);
+    // One Guild War per day. Compare the whole local day, not the exact
+    // instant, so an event an admin already opened still counts even after the
+    // configured start time changes.
+    const bounds = getLocalDayBounds(plan.eventAt, settings.timezone);
+    const existingRow = db.getGuildWarEventBetween(guildId, bounds.start, bounds.end);
 
     if (existingRow) {
       results.push({ event: GuildWarEvent.fromRow(existingRow), posted: false });
