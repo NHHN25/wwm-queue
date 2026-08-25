@@ -115,7 +115,7 @@ export const vi: Translations = {
   queueTypes: {
     swordTrial: 'Sword Trial',
     heroRealm: 'Hero Realm',
-    guildWar: 'Guild War',
+    guildWar: 'Bang Chiến',
   },
 
   registration: {
@@ -229,5 +229,151 @@ export const vi: Translations = {
     teamOffense: 'Công',
     teamDefense: 'Thủ',
     submitJoin: '✅ Xác Nhận Tham Gia',
+  },
+
+  guildWarEvent: {
+    embedTitle: 'Bang Chiến',
+    dayNameSat: 'Thứ 7',
+    dayNameSun: 'Chủ Nhật',
+    statusOpen: '🟢 ĐANG MỞ ĐĂNG KÝ',
+    statusLocked: '🔒 ĐÃ KHÓA',
+    statusDone: '🏁 ĐÃ KẾT THÚC',
+    statusCancelled: '❌ ĐÃ HỦY',
+    fieldWhen: '📅 Thời gian',
+    fieldSignups: '👥 Đã đăng ký',
+    fieldReminder: '⏰ Nhắc nhở',
+    reminderValue: (notifyTimestamp, leadMinutes) =>
+      `${notifyTimestamp} (trước ${leadMinutes} phút)`,
+    signupCount: (count, capacity) => `**${count}** / ${capacity}`,
+    teamHeader: (emoji, teamName, count) => `**${emoji} ${teamName} (${count})**`,
+    noSignups: '_Chưa có ai đăng ký._',
+    footerOpen: 'Chọn đội và vai trò của bạn, rồi xác nhận.',
+    footerLocked: 'Đã khóa đăng ký. Hẹn gặp trên chiến trường!',
+
+    registerButton: '✅ Đăng Ký',
+    withdrawButton: '❌ Hủy Đăng Ký',
+    selectTeamPlaceholder: 'Chọn đội của bạn...',
+    selectRolePlaceholder: 'Chọn vai trò của bạn...',
+    submitButton: '✅ Xác Nhận',
+    registered: (teamName, roleName) =>
+      `✅ Đã đăng ký — ${teamName} · ${roleName}`,
+    registrationUpdated: (teamName, roleName) =>
+      `✅ Đã cập nhật — ${teamName} · ${roleName}`,
+    withdrawn: '✅ Bạn đã hủy đăng ký Bang Chiến này.',
+
+    pingHeader: (dayName, timestamp) =>
+      `⏰ **Bang Chiến — ${dayName}** bắt đầu ${timestamp}`,
+    pingTeamHeader: (emoji, teamName, count) => `${emoji} **${teamName}** (${count})`,
+    pingFooter: 'Bấm ✅ nếu bạn tham gia, ❌ nếu bạn bận.',
+    nudgeHeader: (minutes, timestamp) =>
+      `⚠️ **Còn ${minutes} phút** — Bang Chiến bắt đầu ${timestamp}. Vui lòng xác nhận:`,
+    nudgeFooter: 'Chỉ nhắc những người chưa phản hồi.',
+    attendanceConfirmed: '✅ Đã ghi nhận bạn tham gia. Hẹn gặp!',
+    attendanceDeclined: '❌ Đã ghi nhận bạn không tham gia. Suất của bạn đã được trả lại.',
+    attendanceSummary: (confirmed, declined, pending) =>
+      `✅ ${confirmed} · ❌ ${declined} · ⏳ ${pending}`,
+
+    organizerTitle: (dayName) => `📋 Sắp Xếp Đội — ${dayName}`,
+    organizerSelectPlayer: 'Chọn người chơi...',
+    organizerMoveTo: (teamName) => `→ ${teamName}`,
+    organizerNoPlayerSelected: '❌ Chọn người chơi trước đã.',
+    organizerNotSignedUp: '❌ Người chơi này chưa đăng ký Bang Chiến này.',
+    organizerMoved: (username, teamName) => `✅ Đã chuyển **${username}** sang ${teamName}.`,
+    organizerBalance: '⚖️ Tự Động Chia Đều',
+    organizerBalanced: '✅ Đã chia đều hai đội theo vai trò.',
+    organizerRefresh: '🔄 Làm Mới',
+    organizerRemove: '🗑️ Xóa Người Chơi',
+    organizerRemoved: (username) => `✅ Đã xóa **${username}** khỏi Bang Chiến này.`,
+    organizerSelectEvent: 'Chọn buổi Bang Chiến...',
+
+    rosterTitle: (dayName) => `📋 Danh Sách — ${dayName}`,
+
+    eventCreated: (dayName, timestamp, channelMention) =>
+      `✅ Đã mở đăng ký Bang Chiến ${dayName} (${timestamp}) tại ${channelMention}.`,
+    eventAlreadyExists: (dayName) =>
+      `ℹ️ Bang Chiến ${dayName} đã được mở rồi.`,
+    eventCancelled: (dayName) => `✅ Đã hủy Bang Chiến ${dayName}.`,
+    pingSent: (dayName) => `✅ Đã gửi nhắc nhở cho Bang Chiến ${dayName}.`,
+    settingsUpdated: '✅ Đã cập nhật cài đặt Bang Chiến.',
+    settingsSummary: (lines) => lines.join('\n'),
+    autoOpenOn: '✅ Đã bật tự động mở đăng ký hàng tuần.',
+    autoOpenOff: '✅ Đã tắt tự động mở đăng ký. Dùng `/guildwar open` thủ công.',
+
+    errorNoEvent: '❌ Hiện không có Bang Chiến nào đang mở.',
+    errorEventNotFound: '❌ Bang Chiến này không còn tồn tại.',
+    errorEventLocked: '🔒 Bang Chiến này đã khóa đăng ký.',
+    errorEventFull: (capacity) => `❌ Bang Chiến này đã đủ người (${capacity}/${capacity}).`,
+    errorNotSignedUp: '❌ Bạn chưa đăng ký Bang Chiến này.',
+    errorSelectBoth: '❌ Vui lòng chọn cả đội và vai trò.',
+    errorNoRegistrationChannel:
+      '❌ Chưa đặt kênh đăng ký. Dùng `/guildwar schedule` trước.',
+    errorNoAnnounceChannel:
+      '❌ Chưa đặt kênh thông báo. Dùng `/guildwar schedule` trước.',
+    errorInvalidTime: '❌ Giờ không hợp lệ. Dùng định dạng 24 giờ HH:MM, vd: 20:00.',
+    errorInvalidTimezone: '❌ Múi giờ không hợp lệ. Ví dụ: Asia/Ho_Chi_Minh',
+
+    retiredNotice:
+      'ℹ️ Bảng Bang Chiến này không còn dùng nữa. Bang Chiến giờ chạy theo lịch — nhờ admin dùng `/guildwar open`, rồi đăng ký ở bảng mới.',
+  },
+  help: {
+    title: '📖 Where Winds Meet — Hướng Dẫn Bot',
+    intro:
+      'Tất cả những gì bang hội cần cho co-op và Bang Chiến: đăng ký theo lịch, nhắc nhở tự động, tìm tổ đội, và hồ sơ người chơi kèm lực chiến. Cài một lần — bot lo phần còn lại mỗi tuần.',
+    quickStartTitle: '🚀 Bắt đầu nhanh (5 phút)',
+    quickStart: [
+      '**1.** `/language` — chọn English hoặc Tiếng Việt.',
+      '**2.** `/guildwar schedule registration-channel:#dang-ky announce-channel:#thong-bao` — đặt kênh đăng ký và kênh nhắc nhở.',
+      '**3.** `/guildwar open` — đăng bảng đăng ký cho cuối tuần này ngay.',
+      '**4.** `/setup sword-trial` — thêm bảng tìm tổ đội cho co-op hằng ngày.',
+      '',
+      'Xong. Từ đó bot tự mở đăng ký mỗi Thứ 5 và ping từng đội trước giờ đánh 1 tiếng.',
+    ].join('\n'),
+    guildWarTitle: '🏆 Bang Chiến — đăng ký theo lịch',
+    guildWarBody: [
+      'Thứ 7 và Chủ Nhật là hai buổi riêng, mỗi buổi có danh sách riêng.',
+      '',
+      '`/guildwar schedule` — giờ, múi giờ, kênh, tên đội, thời gian nhắc trước',
+      '`/guildwar open [day]` — đăng bảng đăng ký ngay',
+      '`/guildwar teams [day]` — chuyển người chơi giữa ⚔️ Công và 🛡️ Thủ, hoặc tự động chia đều theo vai trò',
+      '`/guildwar roster [day]` — danh sách dạng văn bản để copy vào chat game',
+      '`/guildwar ping [day]` — gửi nhắc nhở ngay lập tức',
+      '`/guildwar auto enabled:` — bật/tắt tự động mở đăng ký Thứ 5 hàng tuần',
+      '`/guildwar cancel day:` — hủy một buổi',
+      '`/guildwar settings` — xem cài đặt hiện tại',
+      '',
+      '**Người chơi không cần gõ lệnh** — chỉ bấm Đăng Ký trên bảng, chọn đội và vai trò, rồi trả lời ✅ hoặc ❌ khi bot nhắc.',
+    ].join('\n'),
+    queuesTitle: '⚔️ Tổ đội — Sword Trial & Hero Realm',
+    queuesBody: [
+      'Bảng cố định để thành viên bấm tạo tổ đội. Đủ người thì ping tất cả, tự hết hạn sau 30 phút.',
+      '',
+      '`/setup sword-trial [channel]` — tổ đội 5 người',
+      '`/setup hero-realm [channel]` — tổ đội 10 người',
+      '`/reset queue-type:` — xóa người chơi nhưng giữ tổ đội',
+      '`/close queue-type:` — xóa tổ đội đang mở',
+      '`/closepanel queue-type:` — gỡ bảng tạo tổ đội',
+    ].join('\n'),
+    profilesTitle: '📝 Hồ sơ người chơi',
+    profilesBody: [
+      'Danh sách ai chơi gì, để xếp đội cho cân.',
+      '',
+      '`/baodanh` (hoặc `/register`) — thành viên khai tên trong game, UID, lực chiến, hạng đấu trường và vũ khí',
+      '`/capnhat` — cập nhật lực chiến và hạng sau này',
+      '`/info [member]` — xem hồ sơ',
+      '`/setup-registration [channel]` — chỉ cho đăng ký trong một kênh',
+    ].join('\n'),
+    verificationTitle: '✅ Duyệt thành viên',
+    verificationBody: [
+      'Thành viên mới đăng ký, admin duyệt, bot tự đổi role cho họ.',
+      '',
+      '`/setupverification` — chọn kênh duyệt và role chờ/đã duyệt',
+      '`/disableverification` — tắt tính năng',
+    ].join('\n'),
+    settingsTitle: '🌐 Ngôn ngữ',
+    settingsBody:
+      '`/language` — đổi toàn bộ bot giữa English và Tiếng Việt. Mọi bảng cập nhật ngay, kể cả bảng đã đăng trước đó.',
+    adminNote:
+      'Tất cả lệnh trên cần quyền Administrator, trừ `/baodanh`, `/capnhat`, `/info` và `/help`.',
+    footer: 'Cần hỗ trợ? Nhắn cho admin của server.',
   },
 };

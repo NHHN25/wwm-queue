@@ -24,7 +24,18 @@ import {
   clearAllTimers,
 } from './utils/timerManager.js';
 import type { QueueType } from './types/index.js';
-import { handleGuildWarSelectMenu } from './components/teamSelectMenus.js';
+import {
+  handleGuildWarButton,
+  handleGuildWarSelect,
+} from './components/guildWarButtons.js';
+import {
+  handleOrganizerButton,
+  handleOrganizerSelect,
+} from './components/guildWarOrganizer.js';
+import {
+  startGuildWarScheduler,
+  stopGuildWarScheduler,
+} from './utils/guildWarScheduler.js';
 
 // Load environment variables
 config();
@@ -67,6 +78,9 @@ client.once(Events.ClientReady, async (c) => {
     await restoreQueueState(c);
     await restorePanelState(c);
 
+    // Guild War reminders and weekly auto-open
+    startGuildWarScheduler(c);
+
     console.log('┌─────────────────────────────────────────┐');
     console.log('│ 🚀 Bot is ready and operational!        │');
     console.log('└─────────────────────────────────────────┘');
@@ -90,6 +104,10 @@ client.on(Events.InteractionCreate, async (interaction) => {
       } else if (interaction.customId.startsWith('approval_')) {
         // Verification approval buttons
         await handleApprovalButtonInteraction(interaction);
+      } else if (await handleGuildWarButton(interaction)) {
+        // Scheduled Guild War: register, withdraw, confirm attendance
+      } else if (await handleOrganizerButton(interaction)) {
+        // Guild War team organizer
       } else {
         // Queue buttons
         await handleButtonInteraction(interaction);
@@ -101,9 +119,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
         await handleWeaponSelectMenu(interaction);
       } else if (interaction.customId.startsWith('capnhat_')) {
         await handleCapnhatWeaponSelectMenu(interaction);
-      } else if (interaction.customId === 'gw_team_select' || interaction.customId === 'gw_role_select') {
-        await handleGuildWarSelectMenu(interaction);
+      } else {
+        await handleGuildWarSelect(interaction);
       }
+    } else if (interaction.isUserSelectMenu()) {
+      await handleOrganizerSelect(interaction);
     } else if (interaction.isModalSubmit()) {
       if (interaction.customId.startsWith('registration_modal')) {
         await handleRegistrationModalSubmit(interaction);
@@ -315,6 +335,9 @@ async function shutdown(signal: string): Promise<void> {
   try {
     // Clear all queue timers
     clearAllTimers();
+
+    // Stop the Guild War scheduler
+    stopGuildWarScheduler();
 
     // Destroy Discord client
     client.destroy();

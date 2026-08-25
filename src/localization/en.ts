@@ -230,4 +230,150 @@ export const en: Translations = {
     teamDefense: 'Defense',
     submitJoin: '✅ Confirm Join',
   },
+
+  guildWarEvent: {
+    embedTitle: 'Guild War',
+    dayNameSat: 'Saturday',
+    dayNameSun: 'Sunday',
+    statusOpen: '🟢 REGISTRATION OPEN',
+    statusLocked: '🔒 LOCKED',
+    statusDone: '🏁 FINISHED',
+    statusCancelled: '❌ CANCELLED',
+    fieldWhen: '📅 When',
+    fieldSignups: '👥 Signed up',
+    fieldReminder: '⏰ Reminder',
+    reminderValue: (notifyTimestamp, leadMinutes) =>
+      `${notifyTimestamp} (${leadMinutes} min before start)`,
+    signupCount: (count, capacity) => `**${count}** / ${capacity}`,
+    teamHeader: (emoji, teamName, count) => `**${emoji} ${teamName} (${count})**`,
+    noSignups: '_No one has signed up yet._',
+    footerOpen: 'Pick your team and role, then confirm.',
+    footerLocked: 'Registration is closed. See you on the battlefield!',
+
+    registerButton: '✅ Register',
+    withdrawButton: '❌ Withdraw',
+    selectTeamPlaceholder: 'Select your team...',
+    selectRolePlaceholder: 'Select your role...',
+    submitButton: '✅ Confirm',
+    registered: (teamName, roleName) =>
+      `✅ You are registered — ${teamName} · ${roleName}`,
+    registrationUpdated: (teamName, roleName) =>
+      `✅ Updated — ${teamName} · ${roleName}`,
+    withdrawn: '✅ You have withdrawn from this Guild War.',
+
+    pingHeader: (dayName, timestamp) =>
+      `⏰ **Guild War — ${dayName}** starts ${timestamp}`,
+    pingTeamHeader: (emoji, teamName, count) => `${emoji} **${teamName}** (${count})`,
+    pingFooter: 'Tap ✅ if you are coming, ❌ if you cannot make it.',
+    nudgeHeader: (minutes, timestamp) =>
+      `⚠️ **${minutes} minutes left** — Guild War starts ${timestamp}. Please confirm:`,
+    nudgeFooter: 'Only players who have not answered yet are listed.',
+    attendanceConfirmed: '✅ Marked as attending. See you there!',
+    attendanceDeclined: '❌ Marked as not attending. Your slot has been freed.',
+    attendanceSummary: (confirmed, declined, pending) =>
+      `✅ ${confirmed} · ❌ ${declined} · ⏳ ${pending}`,
+
+    organizerTitle: (dayName) => `📋 Team Organizer — ${dayName}`,
+    organizerSelectPlayer: 'Select a player...',
+    organizerMoveTo: (teamName) => `→ ${teamName}`,
+    organizerNoPlayerSelected: '❌ Select a player first.',
+    organizerNotSignedUp: '❌ That player is not registered for this Guild War.',
+    organizerMoved: (username, teamName) => `✅ Moved **${username}** to ${teamName}.`,
+    organizerBalance: '⚖️ Auto-balance',
+    organizerBalanced: '✅ Teams balanced by role.',
+    organizerRefresh: '🔄 Refresh',
+    organizerRemove: '🗑️ Remove player',
+    organizerRemoved: (username) => `✅ Removed **${username}** from this Guild War.`,
+    organizerSelectEvent: 'Select an event...',
+
+    rosterTitle: (dayName) => `📋 Roster — ${dayName}`,
+
+    eventCreated: (dayName, timestamp, channelMention) =>
+      `✅ ${dayName} Guild War (${timestamp}) opened in ${channelMention}.`,
+    eventAlreadyExists: (dayName) =>
+      `ℹ️ A ${dayName} Guild War is already open.`,
+    eventCancelled: (dayName) => `✅ ${dayName} Guild War cancelled.`,
+    pingSent: (dayName) => `✅ Reminder sent for ${dayName} Guild War.`,
+    settingsUpdated: '✅ Guild War settings updated.',
+    settingsSummary: (lines) => lines.join('\n'),
+    autoOpenOn: '✅ Weekly auto-open enabled.',
+    autoOpenOff: '✅ Weekly auto-open disabled. Use `/guildwar open` manually.',
+
+    errorNoEvent: '❌ No Guild War is open right now.',
+    errorEventNotFound: '❌ This Guild War no longer exists.',
+    errorEventLocked: '🔒 Registration for this Guild War is closed.',
+    errorEventFull: (capacity) => `❌ This Guild War is full (${capacity}/${capacity}).`,
+    errorNotSignedUp: '❌ You are not registered for this Guild War.',
+    errorSelectBoth: '❌ Please select both a team and a role.',
+    errorNoRegistrationChannel:
+      '❌ No registration channel set. Use `/guildwar schedule` first.',
+    errorNoAnnounceChannel:
+      '❌ No announcement channel set. Use `/guildwar schedule` first.',
+    errorInvalidTime: '❌ Invalid time. Use 24-hour HH:MM format, e.g. 20:00.',
+    errorInvalidTimezone: '❌ Unknown timezone. Example: Asia/Ho_Chi_Minh',
+
+    retiredNotice:
+      'ℹ️ This Guild War panel is no longer used. Guild War now runs on a schedule — ask an admin to run `/guildwar open`, then register on the new embed.',
+  },
+  help: {
+    title: '📖 Where Winds Meet — Bot Guide',
+    intro:
+      'Everything your guild needs to run co-op and Guild War: scheduled sign-ups, automatic reminders, party queues, and a player roster with gear scores. Set it up once — the bot handles the weekly routine.',
+    quickStartTitle: '🚀 Quick start (5 minutes)',
+    quickStart: [
+      '**1.** `/language` — pick English or Tiếng Việt.',
+      '**2.** `/guildwar schedule registration-channel:#sign-up announce-channel:#general` — set where sign-ups and reminders go.',
+      '**3.** `/guildwar open` — post this weekend\'s sign-up right away.',
+      '**4.** `/setup sword-trial` — add a party finder for daily co-op.',
+      '',
+      'That is it. From then on the bot opens registration every Thursday and pings each team an hour before the war.',
+    ].join('\n'),
+    guildWarTitle: '🏆 Guild War — scheduled sign-ups',
+    guildWarBody: [
+      'Saturday and Sunday are separate events, each with its own roster.',
+      '',
+      '`/guildwar schedule` — times, timezone, channels, team names, reminder lead times',
+      '`/guildwar open [day]` — post the sign-up embed now',
+      '`/guildwar teams [day]` — drag players between ⚔️ Offense and 🛡️ Defense, or auto-balance by role',
+      '`/guildwar roster [day]` — plain-text list to copy into game chat',
+      '`/guildwar ping [day]` — send the reminder immediately',
+      '`/guildwar auto enabled:` — turn the weekly Thursday opening on or off',
+      '`/guildwar cancel day:` — call off one event',
+      '`/guildwar settings` — show the current configuration',
+      '',
+      '**Players never type a command** — they press Register on the embed, pick a team and a role, and answer ✅ or ❌ on the reminder.',
+    ].join('\n'),
+    queuesTitle: '⚔️ Party queues — Sword Trial & Hero Realm',
+    queuesBody: [
+      'A permanent panel members click to spin up a party. Fills up, pings everyone, expires on its own after 30 minutes.',
+      '',
+      '`/setup sword-trial [channel]` — 5-player party finder',
+      '`/setup hero-realm [channel]` — 10-player party finder',
+      '`/reset queue-type:` — clear a party without deleting it',
+      '`/close queue-type:` — delete an active party',
+      '`/closepanel queue-type:` — remove the panel itself',
+    ].join('\n'),
+    profilesTitle: '📝 Player profiles',
+    profilesBody: [
+      'A searchable roster of who plays what, so you can build balanced teams.',
+      '',
+      '`/baodanh` (or `/register`) — a member records their in-game name, UID, gear score, arena rank and weapons',
+      '`/capnhat` — update gear score and rank later',
+      '`/info [member]` — view a profile',
+      '`/setup-registration [channel]` — restrict registration to one channel',
+    ].join('\n'),
+    verificationTitle: '✅ Member verification',
+    verificationBody: [
+      'New members register, an admin approves, and the bot swaps their roles automatically.',
+      '',
+      '`/setupverification` — pick the review channel and the pending/approved roles',
+      '`/disableverification` — turn it off',
+    ].join('\n'),
+    settingsTitle: '🌐 Language',
+    settingsBody:
+      '`/language` — switch the whole bot between English and Tiếng Việt. Every embed updates instantly, including ones already posted.',
+    adminNote:
+      'Every command above needs the Administrator permission, except `/baodanh`, `/capnhat`, `/info` and `/help`.',
+    footer: 'Need a hand? Ping a server admin.',
+  },
 };

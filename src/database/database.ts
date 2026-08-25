@@ -3,6 +3,16 @@ import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { mkdirSync, existsSync } from 'fs';
+import type {
+  GuildWarAttendance,
+  GuildWarDay,
+  GuildWarEventRow,
+  GuildWarEventStatus,
+  GuildWarSettingsRow,
+  GuildWarSide,
+  GuildWarSignupRow,
+  PlayerRole,
+} from '../types/index.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -1018,4 +1028,493 @@ export function getGuildPanels(guildId: string): PanelRow[] {
   const db = getDatabase();
   const stmt = db.prepare('SELECT * FROM panels WHERE guild_id = ?');
   return stmt.all(guildId) as PanelRow[];
+}
+
+// ============================================================================
+// Guild War Settings Operations
+// ============================================================================
+
+/**
+ * Default Guild War configuration, used when a guild has no row yet.
+ * Mirrors the DEFAULT values in schema.sql.
+ */
+const DEFAULT_GUILD_WAR_SETTINGS = {
+  timezone: 'Asia/Ho_Chi_Minh',
+  sat_time: '20:00',
+  sun_time: '20:00',
+  open_weekday: 4, // Thursday
+  open_time: '12:00',
+  auto_open: 1,
+  notify_lead_min: 60,
+  nudge_lead_min: 15,
+  capacity: 30,
+} as const;
+
+/**
+ * Get Guild War settings for a guild
+ * Returns null if the guild has never been configured
+ */
+export function getGuildWarSettings(guildId: string): GuildWarSettingsRow | null {
+  const db = getDatabase();
+  const stmt = db.prepare('SELECT * FROM guild_war_settings WHERE guild_id = ?');
+  return (stmt.get(guildId) as GuildWarSettingsRow) || null;
+}
+
+/**
+ * Get Guild War settings, creating a default row if none exists
+ */
+export function getOrCreateGuildWarSettings(guildId: string): GuildWarSettingsRow {
+  const existing = getGuildWarSettings(guildId);
+
+  if (existing) {
+    return existing;
+  }
+
+  const db = getDatabase();
+  const stmt = db.prepare(`
+    INSERT INTO guild_war_settings (
+      guild_id, timezone, sat_time, sun_time, open_weekday, open_time,
+      auto_open, notify_lead_min, nudge_lead_min, capacity
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+
+  stmt.run(
+    guildId,
+    DEFAULT_GUILD_WAR_SETTINGS.timezone,
+    DEFAULT_GUILD_WAR_SETTINGS.sat_time,
+    DEFAULT_GUILD_WAR_SETTINGS.sun_time,
+    DEFAULT_GUILD_WAR_SETTINGS.open_weekday,
+    DEFAULT_GUILD_WAR_SETTINGS.open_time,
+    DEFAULT_GUILD_WAR_SETTINGS.auto_open,
+    DEFAULT_GUILD_WAR_SETTINGS.notify_lead_min,
+    DEFAULT_GUILD_WAR_SETTINGS.nudge_lead_min,
+    DEFAULT_GUILD_WAR_SETTINGS.capacity
+  );
+
+  return getGuildWarSettings(guildId) as GuildWarSettingsRow;
+}
+
+/**
+ * Update Guild War settings for a guild
+ * Only the provided fields are changed; everything else is left alone.
+ */
+export function updateGuildWarSettings(
+  guildId: string,
+  updates: Partial<{
+    registrationChannelId: string | null;
+    announceChannelId: string | null;
+    timezone: string;
+    satTime: string;
+    sunTime: string;
+    openWeekday: number;
+    openTime: string;
+    autoOpen: boolean;
+    notifyLeadMin: number;
+    nudgeLeadMin: number;
+    capacity: number;
+    teamOffenseName: string | null;
+    teamDefenseName: string | null;
+  }>
+): GuildWarSettingsRow {
+  // Ensure a row exists before updating
+  getOrCreateGuildWarSettings(guildId);
+
+  const columnMap: Record<string, string> = {
+    registrationChannelId: 'registration_channel_id',
+    announceChannelId: 'announce_channel_id',
+    timezone: 'timezone',
+    satTime: 'sat_time',
+    sunTime: 'sun_time',
+    openWeekday: 'open_weekday',
+    openTime: 'open_time',
+    autoOpen: 'auto_open',
+    notifyLeadMin: 'notify_lead_min',
+    nudgeLeadMin: 'nudge_lead_min',
+    capacity: 'capacity',
+    teamOffenseName: 'team_offense_name',
+    teamDefenseName: 'team_defense_name',
+  };
+
+  const assignments: string[] = [];
+  const values: Array<string | number | null> = [];
+
+  for (const [key, column] of Object.entries(columnMap)) {
+    if (!(key in updates)) {
+      continue;
+    }
+
+    const value = (updates as Record<string, unknown>)[key];
+    assignments.push(`${column} = ?`);
+    values.push(typeof value === 'boolean' ? (value ? 1 : 0) : (value as string | number | null));
+  }
+
+  if (assignments.length > 0) {
+    const db = getDatabase();
+    const stmt = db.prepare(`
+      UPDATE guild_war_settings
+      SET ${assignments.join(', ')}, updated_at = CURRENT_TIMESTAMP
+      WHERE guild_id = ?
+    `);
+    stmt.run(...values, guildId);
+  }
+
+  return getGuildWarSettings(guildId) as GuildWarSettingsRow;
+}
+
+/**
+ * Record that automatic weekly registration has run
+ * Guards against double-posting when the bot restarts
+ */
+export function markGuildWarAutoOpened(guildId: string, at: Date): void {
+  const db = getDatabase();
+  const stmt = db.prepare(`
+    UPDATE guild_war_settings
+    SET last_auto_open_at = ?, updated_at = CURRENT_TIMESTAMP
+    WHERE guild_id = ?
+  `);
+  stmt.run(at.toISOString(), guildId);
+}
+
+/**
+ * Get every guild that has auto-open enabled and a registration channel set
+ * Used by the weekly scheduler tick
+ */
+export function getAutoOpenGuildWarSettings(): GuildWarSettingsRow[] {
+  const db = getDatabase();
+  const stmt = db.prepare(`
+    SELECT * FROM guild_war_settings
+    WHERE auto_open = 1 AND registration_channel_id IS NOT NULL
+  `);
+  return stmt.all() as GuildWarSettingsRow[];
+}
+
+// ============================================================================
+// Guild War Event Operations
+// ============================================================================
+
+/**
+ * Create a Guild War event
+ * The registration message is posted afterwards, then linked via setGuildWarEventMessage
+ */
+export function createGuildWarEvent(
+  guildId: string,
+  channelId: string,
+  day: GuildWarDay,
+  eventAt: Date,
+  notifyAt: Date,
+  nudgeAt: Date,
+  capacity: number
+): number {
+  const db = getDatabase();
+  const stmt = db.prepare(`
+    INSERT INTO guild_war_events (
+      guild_id, channel_id, day, event_at, notify_at, nudge_at, capacity, status
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, 'open')
+  `);
+
+  const result = stmt.run(
+    guildId,
+    channelId,
+    day,
+    eventAt.toISOString(),
+    notifyAt.toISOString(),
+    nudgeAt.toISOString(),
+    capacity
+  );
+
+  return result.lastInsertRowid as number;
+}
+
+/**
+ * Link a registration message to an event
+ */
+export function setGuildWarEventMessage(eventId: number, messageId: string): void {
+  const db = getDatabase();
+  const stmt = db.prepare('UPDATE guild_war_events SET message_id = ? WHERE id = ?');
+  stmt.run(messageId, eventId);
+}
+
+/**
+ * Get an event by its database ID
+ */
+export function getGuildWarEvent(eventId: number): GuildWarEventRow | null {
+  const db = getDatabase();
+  const stmt = db.prepare('SELECT * FROM guild_war_events WHERE id = ?');
+  return (stmt.get(eventId) as GuildWarEventRow) || null;
+}
+
+/**
+ * Get an event by its registration message ID
+ * Used by button interactions, which only know the message they came from
+ */
+export function getGuildWarEventByMessage(messageId: string): GuildWarEventRow | null {
+  const db = getDatabase();
+  const stmt = db.prepare('SELECT * FROM guild_war_events WHERE message_id = ?');
+  return (stmt.get(messageId) as GuildWarEventRow) || null;
+}
+
+/**
+ * Get an event by guild and exact start time
+ * Used to detect an already-created event before posting a duplicate
+ */
+export function getGuildWarEventAt(
+  guildId: string,
+  eventAt: Date
+): GuildWarEventRow | null {
+  const db = getDatabase();
+  const stmt = db.prepare(`
+    SELECT * FROM guild_war_events
+    WHERE guild_id = ? AND event_at = ?
+  `);
+  return (stmt.get(guildId, eventAt.toISOString()) as GuildWarEventRow) || null;
+}
+
+/**
+ * Get upcoming (not yet finished) events for a guild, soonest first
+ */
+export function getUpcomingGuildWarEvents(guildId: string): GuildWarEventRow[] {
+  const db = getDatabase();
+  const stmt = db.prepare(`
+    SELECT * FROM guild_war_events
+    WHERE guild_id = ? AND status IN ('open', 'locked')
+    ORDER BY event_at ASC
+  `);
+  return stmt.all(guildId) as GuildWarEventRow[];
+}
+
+/**
+ * Get events whose main ping is due and has not been sent yet
+ * Scheduler hot path
+ */
+export function getGuildWarEventsDueForNotify(now: Date): GuildWarEventRow[] {
+  const db = getDatabase();
+  const stmt = db.prepare(`
+    SELECT * FROM guild_war_events
+    WHERE status = 'open'
+      AND notified_at IS NULL
+      AND notify_at <= ?
+    ORDER BY notify_at ASC
+  `);
+  return stmt.all(now.toISOString()) as GuildWarEventRow[];
+}
+
+/**
+ * Get events whose follow-up nudge is due
+ * Only events that already received the main ping qualify.
+ */
+export function getGuildWarEventsDueForNudge(
+  now: Date,
+  notifiedBefore: Date
+): GuildWarEventRow[] {
+  const db = getDatabase();
+  const stmt = db.prepare(`
+    SELECT * FROM guild_war_events
+    WHERE status = 'locked'
+      AND notified_at IS NOT NULL
+      AND notified_at <= ?
+      AND nudged_at IS NULL
+      AND nudge_at <= ?
+    ORDER BY nudge_at ASC
+  `);
+  return stmt.all(notifiedBefore.toISOString(), now.toISOString()) as GuildWarEventRow[];
+}
+
+/**
+ * Get events that have already started and can be marked finished
+ */
+export function getGuildWarEventsToFinish(now: Date): GuildWarEventRow[] {
+  const db = getDatabase();
+  const stmt = db.prepare(`
+    SELECT * FROM guild_war_events
+    WHERE status IN ('open', 'locked')
+      AND event_at <= ?
+    ORDER BY event_at ASC
+  `);
+  return stmt.all(now.toISOString()) as GuildWarEventRow[];
+}
+
+/**
+ * Mark the main ping as sent and freeze the roster
+ */
+export function markGuildWarNotified(eventId: number, at: Date): void {
+  const db = getDatabase();
+  const stmt = db.prepare(`
+    UPDATE guild_war_events
+    SET notified_at = ?, status = 'locked'
+    WHERE id = ? AND notified_at IS NULL
+  `);
+  stmt.run(at.toISOString(), eventId);
+}
+
+/**
+ * Mark the follow-up nudge as sent
+ */
+export function markGuildWarNudged(eventId: number, at: Date): void {
+  const db = getDatabase();
+  const stmt = db.prepare(`
+    UPDATE guild_war_events
+    SET nudged_at = ?
+    WHERE id = ? AND nudged_at IS NULL
+  `);
+  stmt.run(at.toISOString(), eventId);
+}
+
+/**
+ * Change an event's status
+ */
+export function setGuildWarEventStatus(
+  eventId: number,
+  status: GuildWarEventStatus
+): void {
+  const db = getDatabase();
+  const stmt = db.prepare('UPDATE guild_war_events SET status = ? WHERE id = ?');
+  stmt.run(status, eventId);
+}
+
+/**
+ * Delete an event and, by cascade, all of its signups
+ */
+export function deleteGuildWarEvent(eventId: number): void {
+  const db = getDatabase();
+  const stmt = db.prepare('DELETE FROM guild_war_events WHERE id = ?');
+  stmt.run(eventId);
+}
+
+// ============================================================================
+// Guild War Signup Operations
+// ============================================================================
+
+/**
+ * Add or update a signup
+ * Re-registering with a different team or role updates the existing row
+ * instead of failing on the UNIQUE constraint.
+ */
+export function upsertGuildWarSignup(
+  eventId: number,
+  userId: string,
+  username: string,
+  team: GuildWarSide,
+  role: PlayerRole,
+  assignedBy: string | null = null
+): void {
+  const db = getDatabase();
+  const stmt = db.prepare(`
+    INSERT INTO guild_war_signups (event_id, user_id, username, team, role, assigned_by)
+    VALUES (?, ?, ?, ?, ?, ?)
+    ON CONFLICT(event_id, user_id) DO UPDATE SET
+      username = excluded.username,
+      team = excluded.team,
+      role = excluded.role,
+      assigned_by = excluded.assigned_by,
+      updated_at = CURRENT_TIMESTAMP
+  `);
+  stmt.run(eventId, userId, username, team, role, assignedBy);
+}
+
+/**
+ * Move a player to a different team
+ * Admin action: records who did it, and leaves the player's role untouched.
+ */
+export function setGuildWarSignupTeam(
+  eventId: number,
+  userId: string,
+  team: GuildWarSide,
+  assignedBy: string
+): boolean {
+  const db = getDatabase();
+  const stmt = db.prepare(`
+    UPDATE guild_war_signups
+    SET team = ?, assigned_by = ?, updated_at = CURRENT_TIMESTAMP
+    WHERE event_id = ? AND user_id = ?
+  `);
+  const result = stmt.run(team, assignedBy, eventId, userId);
+  return result.changes > 0;
+}
+
+/**
+ * Record a player's response to the reminder ping
+ */
+export function setGuildWarAttendance(
+  eventId: number,
+  userId: string,
+  attendance: GuildWarAttendance
+): boolean {
+  const db = getDatabase();
+  const stmt = db.prepare(`
+    UPDATE guild_war_signups
+    SET attendance = ?, updated_at = CURRENT_TIMESTAMP
+    WHERE event_id = ? AND user_id = ?
+  `);
+  const result = stmt.run(attendance, eventId, userId);
+  return result.changes > 0;
+}
+
+/**
+ * Remove a signup (player withdrew, or an admin removed them)
+ */
+export function removeGuildWarSignup(eventId: number, userId: string): boolean {
+  const db = getDatabase();
+  const stmt = db.prepare(`
+    DELETE FROM guild_war_signups
+    WHERE event_id = ? AND user_id = ?
+  `);
+  const result = stmt.run(eventId, userId);
+  return result.changes > 0;
+}
+
+/**
+ * Get every signup for an event, in join order
+ */
+export function getGuildWarSignups(eventId: number): GuildWarSignupRow[] {
+  const db = getDatabase();
+  const stmt = db.prepare(`
+    SELECT * FROM guild_war_signups
+    WHERE event_id = ?
+    ORDER BY joined_at ASC
+  `);
+  return stmt.all(eventId) as GuildWarSignupRow[];
+}
+
+/**
+ * Get one player's signup for an event
+ */
+export function getGuildWarSignup(
+  eventId: number,
+  userId: string
+): GuildWarSignupRow | null {
+  const db = getDatabase();
+  const stmt = db.prepare(`
+    SELECT * FROM guild_war_signups
+    WHERE event_id = ? AND user_id = ?
+  `);
+  return (stmt.get(eventId, userId) as GuildWarSignupRow) || null;
+}
+
+/**
+ * Count signups for an event
+ * Capacity is shared across both teams, so this counts everyone.
+ */
+export function getGuildWarSignupCount(eventId: number): number {
+  const db = getDatabase();
+  const stmt = db.prepare(`
+    SELECT COUNT(*) as count FROM guild_war_signups WHERE event_id = ?
+  `);
+  const result = stmt.get(eventId) as { count: number };
+  return result.count;
+}
+
+/**
+ * Get signups that have not answered the reminder ping
+ * Used by the follow-up nudge.
+ */
+export function getUnconfirmedGuildWarSignups(eventId: number): GuildWarSignupRow[] {
+  const db = getDatabase();
+  const stmt = db.prepare(`
+    SELECT * FROM guild_war_signups
+    WHERE event_id = ? AND attendance = 'unknown'
+    ORDER BY joined_at ASC
+  `);
+  return stmt.all(eventId) as GuildWarSignupRow[];
 }

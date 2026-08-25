@@ -20,7 +20,6 @@ import { formatPlayerMentions } from '../models/QueuePlayer.js';
 import { getGuildTranslations } from '../localization/index.js';
 import { cancelQueueTimer, startQueueTimer } from '../utils/timerManager.js';
 import * as db from '../database/database.js';
-import { handleJoinGuildWarButton, handleGuildWarSubmitButton } from './teamSelectMenus.js';
 
 // Re-export formatPlayerMentions for use by timerManager
 export { formatPlayerMentions } from '../models/QueuePlayer.js';
@@ -136,23 +135,27 @@ export function createPanelButton(
 export async function handleButtonInteraction(
   interaction: ButtonInteraction
 ): Promise<void> {
+  // The old ad-hoc Guild War queue has been replaced by scheduled events.
+  // Leftover panels and embeds still exist in servers, so point them at /guildwar
+  // instead of failing silently.
+  if (
+    interaction.customId === BUTTON_IDS.PANEL_CREATE_GUILD_WAR ||
+    interaction.customId === BUTTON_IDS.JOIN_GUILD_WAR ||
+    interaction.customId.startsWith('gw_submit_')
+  ) {
+    const t = getGuildTranslations(interaction.guildId ?? '');
+
+    await interaction.reply({
+      content: t.guildWarEvent.retiredNotice,
+      ephemeral: true,
+    });
+    return;
+  }
+
   // Try panel button routing first
   const panelParsed = parsePanelButtonId(interaction.customId);
   if (panelParsed) {
     await handlePanelCreateButton(interaction, panelParsed.queueType);
-    return;
-  }
-
-  // Check if it's the Guild War join button
-  if (interaction.customId === BUTTON_IDS.JOIN_GUILD_WAR) {
-    await handleJoinGuildWarButton(interaction);
-    return;
-  }
-
-  // Check if it's the Guild War internal submit button
-  if (interaction.customId.startsWith('gw_submit_')) {
-    const messageId = interaction.customId.replace('gw_submit_', '');
-    await handleGuildWarSubmitButton(interaction, messageId);
     return;
   }
 

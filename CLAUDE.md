@@ -818,17 +818,76 @@ interface Translations {
 - [Handbook](https://www.typescriptlang.org/docs/handbook/intro.html)
 - [tsconfig Reference](https://www.typescriptlang.org/tsconfig)
 
+## Guild War (Bang Chiến) — Scheduled Events
+
+Guild War does **not** use the queue system. It has its own tables, model, scheduler and
+commands, because its lifecycle is days long rather than 30 minutes.
+
+**Files**
+- [src/commands/guildwar.ts](src/commands/guildwar.ts) — `/guildwar` subcommands
+- [src/commands/help.ts](src/commands/help.ts) — `/help` guide embed
+- [src/models/GuildWarEvent.ts](src/models/GuildWarEvent.ts) — event + roster model
+- [src/utils/guildWarScheduler.ts](src/utils/guildWarScheduler.ts) — 60s tick
+- [src/utils/guildWarTime.ts](src/utils/guildWarTime.ts) — timezone math (Intl, no dependency)
+- [src/utils/guildWarEmbeds.ts](src/utils/guildWarEmbeds.ts) — embeds, pings, roster text
+- [src/utils/guildWarConstants.ts](src/utils/guildWarConstants.ts) — sides, colors, custom ids
+- [src/components/guildWarButtons.ts](src/components/guildWarButtons.ts) — register / withdraw / attendance
+- [src/components/guildWarOrganizer.ts](src/components/guildWarOrganizer.ts) — admin team panel
+
+**Model**
+- Saturday and Sunday are **separate events**, each with its own embed and roster
+- Two sides only: `offense` / `defense` (Công / Thủ), renameable per guild
+- Capacity is **shared across both sides** (default 30); no per-side limit
+- Self-service registration blocks at capacity; admin moves always succeed
+
+**Scheduler**
+One `setInterval` re-reads the database every 60 seconds. There is deliberately no
+per-event `setTimeout`: all state lives in `notified_at` / `nudged_at`, so a restart
+never loses a reminder and never sends one twice. A reminder that came due during an
+outage fires on the next tick; an unreachable channel leaves the event unmarked so it
+retries. The nudge will not fire within `GUILD_WAR_MIN_NUDGE_GAP_MS` of the main ping.
+
+**Tables**: `guild_war_settings`, `guild_war_events`, `guild_war_signups` — see
+[schema.sql](src/database/schema.sql).
+
+**Retired**: the old ad-hoc Guild War queue (`/setup guild-war`, `panel_create_guild_war`,
+`queue_join_guild_war`, `gw_submit_*`) has been removed. Leftover buttons in existing
+servers reply with `t.guildWarEvent.retiredNotice`. `/close`, `/closepanel` and `/reset`
+still accept `guild_war` so admins can clean up old rows.
+
+## Testing
+
+`npm test` runs `node --import tsx --test tests/*.test.ts` — 106 tests, no Discord token
+required. Discord is faked in [tests/helpers/fakeDiscord.ts](tests/helpers/fakeDiscord.ts)
+(channels, message edits, button and select interactions); each test file gets a throwaway
+SQLite file via [tests/helpers/testDb.ts](tests/helpers/testDb.ts), which must be called
+**before** importing `database.js` because the connection is a singleton.
+
+Coverage: timezone/DST math, embed and message rendering against Discord's 1024/6000/2000
+character limits at full roster size, a full simulated Guild War week on a fake clock,
+interaction handlers, restart behaviour, translation parity between `en` and `vi`, and
+slash-command JSON validity.
+
 ## Support
 
 For issues, questions, or contributions, please refer to the project repository.
 
 ---
 
-**Last Updated**: 2025-12-15
-**Version**: 1.1.0
+**Last Updated**: 2026-08-24
+**Version**: 1.2.0
 **Status**: In Development
 
 **Recent Changes**:
+- ✅ **Scheduled Guild War (Bang Chiến)**
+  - Registration opens automatically every Thursday, or manually via `/guildwar open`
+  - Saturday and Sunday are separate events with separate rosters
+  - Two teams (Công / Thủ) with per-guild custom names and an admin team organizer
+  - Reminder pings 1 hour before start, split per team and grouped by role
+  - ✅ / ❌ attendance buttons, plus a 15-minute nudge to whoever has not answered
+  - Old ad-hoc Guild War queue retired
+- ✅ **`/help`** — full command guide embed, English and Vietnamese
+- ✅ **Test suite** — `npm test`, 106 tests, no Discord token needed
 - ✅ **Full localization system implemented**
   - `/language` command changes server language instantly
   - All queue embeds update in real-time when language changes

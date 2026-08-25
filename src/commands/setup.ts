@@ -1,6 +1,7 @@
 import {
   SlashCommandBuilder,
   CommandInteraction,
+  ChatInputCommandInteraction,
   PermissionFlagsBits,
   ChannelType,
   Client,
@@ -8,6 +9,11 @@ import {
   Routes,
   PermissionsBitField,
 } from 'discord.js';
+import {
+  buildGuildWarCommands,
+  handleGuildWarCommand,
+} from './guildwar.js';
+import { buildHelpCommand, handleHelpCommand } from './help.js';
 import type { QueueType } from '../types/index.js';
 import { Queue } from '../models/Queue.js';
 import { createQueueEmbed, createPanelEmbed } from '../utils/embeds.js';
@@ -77,24 +83,6 @@ export function buildCommands() {
         .setDescription('Create a Hero Realm queue (10 players)')
         .setDescriptionLocalizations({
           vi: 'Tạo tổ đội Hero Realm (10 người chơi)',
-        })
-        .addChannelOption((opt) =>
-          opt
-            .setName('channel')
-            .setDescription('Channel for the queue (default: current channel)')
-            .setDescriptionLocalizations({
-              vi: 'Kênh cho tổ đội (mặc định: kênh hiện tại)',
-            })
-            .addChannelTypes(ChannelType.GuildText)
-            .setRequired(false)
-        )
-    )
-    .addSubcommand((sub) =>
-      sub
-        .setName('guild-war')
-        .setDescription('Create a Guild War queue (30 players)')
-        .setDescriptionLocalizations({
-          vi: 'Tạo tổ đội Chiến Trường Bang Hội (30 người chơi)',
         })
         .addChannelOption((opt) =>
           opt
@@ -202,13 +190,21 @@ export function buildCommands() {
     .setDMPermission(false);
 
   const queueCommands = [setupCommand, resetCommand, closeCommand, closepanelCommand, languageCommand];
+  const guildWarCommands = buildGuildWarCommands();
+  const helpCommand = buildHelpCommand();
   const registrationCommands = buildRegistrationCommands();
   const verificationCommands = [
     setupVerificationCommand,
     disableVerificationCommand,
   ];
 
-  return [...queueCommands, ...registrationCommands, ...verificationCommands];
+  return [
+    helpCommand,
+    ...queueCommands,
+    ...guildWarCommands,
+    ...registrationCommands,
+    ...verificationCommands,
+  ];
 }
 
 // ============================================================================
@@ -263,6 +259,10 @@ export async function handleCommandInteraction(
       await handleCloseCommand(interaction);
     } else if (commandName === 'closepanel') {
       await handleClosePanelCommand(interaction);
+    } else if (commandName === 'help') {
+      await handleHelpCommand(interaction as ChatInputCommandInteraction);
+    } else if (commandName === 'guildwar') {
+      await handleGuildWarCommand(interaction as ChatInputCommandInteraction);
     } else if (commandName === 'language') {
       await handleLanguageCommand(interaction);
     } else if (

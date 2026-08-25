@@ -221,4 +221,106 @@ export interface Translations {
     teamDefense: string;
     submitJoin: string;
   };
+
+  // Scheduled Guild War events (registration, reminders, team organizing)
+  guildWarEvent: {
+    // Embed
+    embedTitle: string;
+    dayNameSat: string;
+    dayNameSun: string;
+    statusOpen: string;
+    statusLocked: string;
+    statusDone: string;
+    statusCancelled: string;
+    fieldWhen: string;
+    fieldSignups: string;
+    fieldReminder: string;
+    reminderValue: (notifyTimestamp: string, leadMinutes: number) => string;
+    signupCount: (count: number, capacity: number) => string;
+    teamHeader: (emoji: string, teamName: string, count: number) => string;
+    noSignups: string;
+    footerOpen: string;
+    footerLocked: string;
+
+    // Registration flow
+    registerButton: string;
+    withdrawButton: string;
+    selectTeamPlaceholder: string;
+    selectRolePlaceholder: string;
+    submitButton: string;
+    registered: (teamName: string, roleName: string) => string;
+    registrationUpdated: (teamName: string, roleName: string) => string;
+    withdrawn: string;
+
+    // Reminder pings
+    pingHeader: (dayName: string, timestamp: string) => string;
+    pingTeamHeader: (emoji: string, teamName: string, count: number) => string;
+    pingFooter: string;
+    nudgeHeader: (minutes: number, timestamp: string) => string;
+    nudgeFooter: string;
+    attendanceConfirmed: string;
+    attendanceDeclined: string;
+    attendanceSummary: (confirmed: number, declined: number, pending: number) => string;
+
+    // Team organizer
+    organizerTitle: (dayName: string) => string;
+    organizerSelectPlayer: string;
+    organizerMoveTo: (teamName: string) => string;
+    organizerNoPlayerSelected: string;
+    organizerNotSignedUp: string;
+    organizerMoved: (username: string, teamName: string) => string;
+    organizerBalance: string;
+    organizerBalanced: string;
+    organizerRefresh: string;
+    organizerRemove: string;
+    organizerRemoved: (username: string) => string;
+    organizerSelectEvent: string;
+
+    // Roster export
+    rosterTitle: (dayName: string) => string;
+
+    // Admin feedback
+    eventCreated: (dayName: string, timestamp: string, channelMention: string) => string;
+    eventAlreadyExists: (dayName: string) => string;
+    eventCancelled: (dayName: string) => string;
+    pingSent: (dayName: string) => string;
+    settingsUpdated: string;
+    settingsSummary: (lines: string[]) => string;
+    autoOpenOn: string;
+    autoOpenOff: string;
+
+    // Errors
+    errorNoEvent: string;
+    errorEventNotFound: string;
+    errorEventLocked: string;
+    errorEventFull: (capacity: number) => string;
+    errorNotSignedUp: string;
+    errorSelectBoth: string;
+    errorNoRegistrationChannel: string;
+    errorNoAnnounceChannel: string;
+    errorInvalidTime: string;
+    errorInvalidTimezone: string;
+
+    // Shown on leftover buttons from the retired ad-hoc Guild War queue
+    retiredNotice: string;
+  };
+  // /help — command guide
+  help: {
+    title: string;
+    intro: string;
+    quickStartTitle: string;
+    quickStart: string;
+    guildWarTitle: string;
+    guildWarBody: string;
+    queuesTitle: string;
+    queuesBody: string;
+    profilesTitle: string;
+    profilesBody: string;
+    verificationTitle: string;
+    verificationBody: string;
+    settingsTitle: string;
+    settingsBody: string;
+    adminNote: string;
+    footer: string;
+  };
 }

@@ -311,3 +311,156 @@ export interface PendingRegistrationRow {
   approved_at: string | null;
   created_at: string;
 }
+
+// ============================================================================
+// Guild War (Bang Chien) Scheduled Events
+// ============================================================================
+
+/**
+ * Teams available in a scheduled Guild War.
+ * Narrower than GuildWarTeam: scheduled wars use offense/defense only.
+ */
+export type GuildWarSide = 'offense' | 'defense';
+
+/**
+ * Which weekend day an event falls on
+ */
+export type GuildWarDay = 'sat' | 'sun';
+
+/**
+ * Event lifecycle:
+ * open      - accepting signups
+ * locked    - main ping sent, roster frozen
+ * done      - event finished
+ * cancelled - called off by an admin
+ */
+export type GuildWarEventStatus = 'open' | 'locked' | 'done' | 'cancelled';
+
+/**
+ * Player's response to the reminder ping
+ */
+export type GuildWarAttendance = 'unknown' | 'confirmed' | 'declined';
+
+/**
+ * Per-guild Guild War configuration
+ */
+export interface GuildWarSettings {
+  guildId: string;
+  registrationChannelId: string | null;
+  announceChannelId: string | null;
+  timezone: string;
+  satTime: string; // HH:MM, local to timezone
+  sunTime: string; // HH:MM, local to timezone
+  openWeekday: number; // ISO weekday, 4 = Thursday
+  openTime: string; // HH:MM, local to timezone
+  autoOpen: boolean;
+  notifyLeadMin: number;
+  nudgeLeadMin: number;
+  capacity: number;
+  teamOffenseName: string | null;
+  teamDefenseName: string | null;
+  lastAutoOpenAt: Date | null;
+}
+
+/**
+ * A single Guild War occurrence
+ */
+export interface GuildWarEvent {
+  id: number;
+  guildId: string;
+  channelId: string;
+  messageId: string | null;
+  day: GuildWarDay;
+  eventAt: Date;
+  notifyAt: Date;
+  nudgeAt: Date;
+  notifiedAt: Date | null;
+  nudgedAt: Date | null;
+  capacity: number;
+  status: GuildWarEventStatus;
+  createdAt: Date;
+}
+
+/**
+ * A player signed up for a Guild War event
+ */
+export interface GuildWarSignup {
+  id: number;
+  eventId: number;
+  userId: string;
+  username: string;
+  team: GuildWarSide;
+  role: PlayerRole;
+  attendance: GuildWarAttendance;
+  assignedBy: string | null; // Admin who moved this player, null if self-selected
+  joinedAt: Date;
+}
+
+/**
+ * Event plus its roster, for rendering embeds and pings
+ */
+export interface GuildWarEventState {
+  event: GuildWarEvent;
+  signups: GuildWarSignup[];
+}
+
+// ============================================================================
+// Guild War Database Rows
+// ============================================================================
+
+/**
+ * Database row for guild_war_settings table
+ */
+export interface GuildWarSettingsRow {
+  guild_id: string;
+  registration_channel_id: string | null;
+  announce_channel_id: string | null;
+  timezone: string;
+  sat_time: string;
+  sun_time: string;
+  open_weekday: number;
+  open_time: string;
+  auto_open: number; // SQLite boolean (0 or 1)
+  notify_lead_min: number;
+  nudge_lead_min: number;
+  capacity: number;
+  team_offense_name: string | null;
+  team_defense_name: string | null;
+  last_auto_open_at: string | null;
+  updated_at: string;
+}
+
+/**
+ * Database row for guild_war_events table
+ */
+export interface GuildWarEventRow {
+  id: number;
+  guild_id: string;
+  channel_id: string;
+  message_id: string | null;
+  day: GuildWarDay;
+  event_at: string;
+  notify_at: string;
+  nudge_at: string;
+  notified_at: string | null;
+  nudged_at: string | null;
+  capacity: number;
+  status: GuildWarEventStatus;
+  created_at: string;
+}
+
+/**
+ * Database row for guild_war_signups table
+ */
+export interface GuildWarSignupRow {
+  id: number;
+  event_id: number;
+  user_id: string;
+  username: string;
+  team: GuildWarSide;
+  role: PlayerRole;
+  attendance: GuildWarAttendance;
+  assigned_by: string | null;
+  joined_at: string;
+  updated_at: string;
+}
