@@ -1,0 +1,86 @@
+{
+  "source": "https://www.wherewindsmeetgame.com/pc/qt/20251203102905/data/kongfu/kongfu.txt",
+  "fetchedAt": "2026-08-25",
+  "weapons": [
+    {
+      "officialId": 10101,
+      "name": "Strategic Sword",
+      "iconUrl": "https://www.wherewindsmeetgame.com/pc/qt/20251203102905/data/kongfu/images/673361fa0d255bcd837870a3aMHIsXkT05.png"
+    },
+    {
+      "officialId": 10102,
+      "name": "Nameless Sword",
+      "iconUrl": "https://www.wherewindsmeetgame.com/pc/qt/20251203102905/data/kongfu/images/673361fa0b4118b829cb9897bxQP55Mx05.png"
+    },
+    {
+      "officialId": 10201,
+      "name": "Heavenquaker Spear",
+      "iconUrl": "https://www.wherewindsmeetgame.com/pc/qt/20251203102905/data/kongfu/images/673361f9411028bc4c807bfbFd4qfv0i05.png"
+    },
+    {
+      "officialId": 10202,
+      "name": "Nameless Spear",
+      "iconUrl": "https://www.wherewindsmeetgame.com/pc/qt/20251203102905/data/kongfu/images/673361fa50023072c09fddb3mYcX2v9x05.png"
+    },
+    {
+      "officialId": 10301,
+      "name": "Panacea Fan",
+      "iconUrl": "https://www.wherewindsmeetgame.com/pc/qt/20251203102905/data/kongfu/images/673361f90faf4af485d190ac43YHxPWh05.png"
+    },
+    {
+      "officialId": 10302,
+      "name": "Inkwell Fan",
+      "iconUrl": "https://www.wherewindsmeetgame.com/pc/qt/20251203102905/data/kongfu/images/673361fa97229b799b104e11dq8JNGxv05.png"
+    },
+    {
+      "officialId": 20103,
+      "name": "Stormbreaker Spear",
+      "iconUrl": "https://www.wherewindsmeetgame.com/pc/qt/20251203102905/data/kongfu/images/673361f9045985a8447c7924iziG1iSk05.png"
+    },
+    {
+      "officialId": 20401,
+      "name": "Thundercry Blade",
+      "iconUrl": "https://www.wherewindsmeetgame.com/pc/qt/20251203102905/data/kongfu/images/673361f99563b8facc30cf6ehklvbGJK05.png"
+    },
+    {
+      "officialId": 20402,
+      "name": "Phalanxbane Blade",
+      "iconUrl": "https://www.wherewindsmeetgame.com/pc/qt/20251203102905/data/kongfu/images/6889d622854eae874565b6e3Gcq3FafN06.png"
+    },
+    {
+      "officialId": 20501,
+      "name": "Infernal Twinblades",
+      "iconUrl": "https://www.wherewindsmeetgame.com/pc/qt/20251203102905/data/kongfu/images/673361fa56bd72932802d4ccyjpEwat505.png"
+    },
+    {
+      "officialId": 20601,
+      "name": "Vernal Umbrella",
+      "iconUrl": "https://www.wherewindsmeetgame.com/pc/qt/20251203102905/data/kongfu/images/673361f9bdd01237a679ed4cufrGeAwO05.png"
+    },
+    {
+      "officialId": 20602,
+      "name": "Soulshade Umbrella",
+      "iconUrl": "https://www.wherewindsmeetgame.com/pc/qt/20251203102905/data/kongfu/images/67f49ad895b56d4ae6020d07B0KGD9oW06.png"
+    },
+    {
+      "officialId": 20603,
+      "name": "Everspring Umbrella",
+      "iconUrl": "https://www.wherewindsmeetgame.com/pc/qt/20251203102905/data/kongfu/images/67eb622c8640a97e4d7d833dwizwhR4c06.png"
+    },
+    {
+      "officialId": 20701,
+      "name": "Mortal Rope Dart",
+      "iconUrl": "https://www.wherewindsmeetgame.com/pc/qt/20251203102905/data/kongfu/images/673361fa5e97ad80a09e42eeiOOc9Ofd05.png"
+    },
+    {
+      "officialId": 20702,
+      "name": "Unfettered Rope Dart",
+      "iconUrl": "https://www.wherewindsmeetgame.com/pc/qt/20251203102905/data/kongfu/images/688225667d068e9b796ac808u9vfrGDj06.png"
+    },
+    {
+      "officialId": 20801,
+      "name": "Snowparting Blade",
+      "iconUrl": "https://www.wherewindsmeetgame.com/pc/qt/20251203102905/data/kongfu/images/688225667d068e9b796ac808u9vfrGDj06.png"
+    }
+  ]
+}

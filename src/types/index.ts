@@ -277,6 +277,10 @@ export interface WeaponConfig {
   emoji: string;
   displayNameEn: string;
   displayNameVi: string;
+  // From the game's published weapon table; absent for weapons the official
+  // data tool has not caught up with yet
+  officialId?: number;
+  iconUrl?: string;
 }
 
 // ============================================================================
