@@ -13,10 +13,12 @@ import {
 } from '../src/utils/guildWarEmbeds.js';
 import type {
   GuildWarEvent,
+  GuildWarProfile,
   GuildWarSide,
   GuildWarSignup,
   PlayerRole,
 } from '../src/types/index.js';
+import { WEAPON_CONFIGS } from '../src/utils/weaponConstants.js';
 
 /**
  * Rendering checks, including the Discord limits that only bite at full size:
@@ -297,5 +299,122 @@ describe('roster export', () => {
 
     assert.match(roster, /NguoiChoiTenRatDai0 ✅/);
     assert.match(roster, /NguoiChoiTenRatDai1 ❌/);
+  });
+});
+
+/**
+ * Registrations as filled in through /baodanh, for the players who have one
+ */
+function makeProfiles(signups: GuildWarSignup[]): Map<string, GuildWarProfile> {
+  return new Map(
+    signups.map((signup, index) => [
+      signup.userId,
+      {
+        ingameName: `TieuLongNu${index}`,
+        primaryWeapon: 'strategic_sword' as const,
+        secondaryWeapon: 'panacea_fan' as const,
+      },
+    ])
+  );
+}
+
+describe('roster with player profiles', () => {
+  it('shows the in-game name and both weapons on a small roster', () => {
+    const signups = makeSignups(4);
+
+    const embed = createGuildWarEmbed(makeEvent(), signups, en, {
+      notifyLeadMin: 60,
+      profiles: makeProfiles(signups),
+    }).toJSON();
+
+    const rendered = JSON.stringify(embed);
+
+    assert.ok(rendered.includes('TieuLongNu0'), 'in-game name is missing');
+    assert.ok(
+      rendered.includes(WEAPON_CONFIGS.strategic_sword.emoji),
+      'primary weapon emoji is missing'
+    );
+    assert.ok(
+      rendered.includes(WEAPON_CONFIGS.panacea_fan.emoji),
+      'secondary weapon emoji is missing'
+    );
+
+    // The mention stays: it is what makes a name clickable
+    assert.ok(rendered.includes(`<@${signups[0].userId}>`));
+  });
+
+  it('falls back to a plain mention for players who never registered', () => {
+    const signups = makeSignups(4);
+    const profiles = makeProfiles(signups);
+    profiles.delete(signups[0].userId);
+
+    const embed = createGuildWarEmbed(makeEvent(), signups, en, {
+      notifyLeadMin: 60,
+      profiles,
+    }).toJSON();
+
+    const rendered = JSON.stringify(embed);
+
+    assert.ok(rendered.includes(`<@${signups[0].userId}>`));
+    assert.ok(!rendered.includes('TieuLongNu0'), 'deleted profile should not appear');
+    assert.ok(rendered.includes('TieuLongNu1'), 'other profiles still appear');
+  });
+
+  it('drops detail rather than overrunning the field limit at full size', () => {
+    const signups = makeSignups(30);
+    const profiles = makeProfiles(signups);
+
+    for (const t of [en, vi]) {
+      const embed = createGuildWarEmbed(makeEvent(), signups, t, {
+        guildName: 'Bang Hoi Rat Dai Ten',
+        notifyLeadMin: 60,
+        profiles,
+      }).toJSON();
+
+      for (const field of embed.fields ?? []) {
+        assert.ok(
+          field.value.length <= 1024,
+          `field "${field.name}" is ${field.value.length} chars`
+        );
+      }
+
+      assert.ok(JSON.stringify(embed).length <= 6000);
+
+      // Everyone is still listed, whatever detail level was chosen
+      for (const signup of signups) {
+        assert.ok(
+          JSON.stringify(embed).includes(`<@${signup.userId}>`),
+          'a player was dropped from the roster'
+        );
+      }
+    }
+  });
+
+  it('keeps attendance marks alongside the profile details', () => {
+    const signups = makeSignups(4);
+    signups[0].attendance = 'confirmed';
+
+    const embed = createGuildWarEmbed(
+      makeEvent({ notifiedAt: new Date(), status: 'locked' }),
+      signups,
+      en,
+      { notifyLeadMin: 60, profiles: makeProfiles(signups) }
+    ).toJSON();
+
+    const roster = (embed.fields ?? []).map((f) => f.value).join('\n');
+
+    assert.ok(/TieuLongNu0.*/.test(roster));
+    assert.ok(roster.includes('✅'), 'attendance mark is missing');
+  });
+
+  it('leads with the in-game name in the text roster', () => {
+    const signups = makeSignups(2);
+
+    const roster = buildGuildWarRosterText(makeEvent(), signups, en, {
+      profiles: makeProfiles(signups),
+    });
+
+    assert.ok(roster.includes('TieuLongNu0 (NguoiChoiTenRatDai0)'));
+    assert.ok(!roster.includes('<@'), 'the text roster must not ping anyone');
   });
 });

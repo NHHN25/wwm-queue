@@ -503,6 +503,7 @@ async function handleRoster(interaction: ChatInputCommandInteraction): Promise<v
       offense: settings.team_offense_name,
       defense: settings.team_defense_name,
     },
+    profiles: event.getProfiles(),
   });
 
   await interaction.reply({ content: roster, ephemeral: true });

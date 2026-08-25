@@ -276,6 +276,7 @@ async function refreshEventMessage(client: Client, event: GuildWarEvent): Promis
         defense: settings.team_defense_name,
       },
       notifyLeadMin: settings.notify_lead_min,
+      profiles: event.getProfiles(),
     });
 
     await message.edit({

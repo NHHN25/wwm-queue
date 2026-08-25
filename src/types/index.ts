@@ -397,6 +397,15 @@ export interface GuildWarSignup {
 }
 
 /**
+ * The parts of a player's registration shown on a Guild War roster
+ */
+export interface GuildWarProfile {
+  ingameName: string;
+  primaryWeapon: WeaponName;
+  secondaryWeapon: WeaponName;
+}
+
+/**
  * Event plus its roster, for rendering embeds and pings
  */
 export interface GuildWarEventState {

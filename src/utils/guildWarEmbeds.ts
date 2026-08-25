@@ -8,12 +8,14 @@ import {
 } from 'discord.js';
 import type {
   GuildWarEvent as GuildWarEventData,
+  GuildWarProfile,
   GuildWarSide,
   GuildWarSignup,
   PlayerRole,
 } from '../types/index.js';
 import type { Translations } from '../localization/types.js';
 import { ROLE_CONFIGS } from './constants.js';
+import { WEAPON_CONFIGS } from './weaponConstants.js';
 import {
   GUILD_WAR_COLORS,
   GUILD_WAR_SIDES,
@@ -51,13 +53,109 @@ function attendanceMark(signup: GuildWarSignup): string {
 }
 
 /**
- * One roster line: role emoji, mention, attendance marker
+ * Registrations keyed by Discord user id, as filled in through /baodanh
  */
-function formatSignupLine(signup: GuildWarSignup, showAttendance: boolean): string {
+export type ProfileMap = Map<string, GuildWarProfile>;
+
+/**
+ * How much of a player's profile fits on a roster line.
+ *
+ * Weapon emojis are custom Discord emojis, which cost around 40 characters
+ * each in the payload. At a full roster that overruns the 1024-character limit
+ * on an embed field, so the roster drops one detail at a time rather than
+ * letting Discord truncate it.
+ */
+type RosterDetail = 'full' | 'weapons' | 'name' | 'plain';
+
+const ROSTER_DETAIL_ORDER: RosterDetail[] = ['full', 'weapons', 'name', 'plain'];
+
+const EMBED_FIELD_LIMIT = 1024;
+
+/**
+ * Weapon emojis for a profile, primary then secondary
+ */
+function weaponEmojis(profile: GuildWarProfile): string {
+  const primary = WEAPON_CONFIGS[profile.primaryWeapon]?.emoji ?? '';
+  const secondary = WEAPON_CONFIGS[profile.secondaryWeapon]?.emoji ?? '';
+
+  return [primary, secondary].filter(Boolean).join('');
+}
+
+/**
+ * One roster line: role emoji, mention, and as much of the player's
+ * registration as the current detail level allows.
+ */
+function formatSignupLine(
+  signup: GuildWarSignup,
+  showAttendance: boolean,
+  profile?: GuildWarProfile,
+  detail: RosterDetail = 'full'
+): string {
   const role = ROLE_CONFIGS[signup.role];
   const mark = showAttendance ? attendanceMark(signup) : '';
+  const parts = [role.emoji, `<@${signup.userId}>`];
 
-  return `${role.emoji} <@${signup.userId}>${mark}`;
+  if (profile && detail !== 'plain') {
+    if ((detail === 'full' || detail === 'name') && profile.ingameName) {
+      parts.push(`· ${profile.ingameName}`);
+    }
+
+    if (detail === 'full' || detail === 'weapons') {
+      const emojis = weaponEmojis(profile);
+
+      if (emojis) {
+        parts.push(emojis);
+      }
+    }
+  }
+
+  return `${parts.join(' ')}${mark}`;
+}
+
+/**
+ * Render both sides at the richest detail level that fits every field
+ */
+function renderRosters(
+  grouped: Record<GuildWarSide, GuildWarSignup[]>,
+  showAttendance: boolean,
+  profiles: ProfileMap | undefined,
+  emptyText: string
+): Record<GuildWarSide, string> {
+  let rendered: Record<GuildWarSide, string> = { offense: emptyText, defense: emptyText };
+
+  for (const detail of ROSTER_DETAIL_ORDER) {
+    rendered = { offense: emptyText, defense: emptyText };
+
+    let fits = true;
+
+    for (const side of GUILD_WAR_SIDE_ORDER) {
+      const members = grouped[side];
+
+      if (members.length === 0) {
+        continue;
+      }
+
+      const text = members
+        .map((member) =>
+          formatSignupLine(member, showAttendance, profiles?.get(member.userId), detail)
+        )
+        .join('\n');
+
+      if (text.length > EMBED_FIELD_LIMIT) {
+        fits = false;
+        break;
+      }
+
+      rendered[side] = text;
+    }
+
+    // Both sides fit, so this is the richest level available
+    if (fits) {
+      return rendered;
+    }
+  }
+
+  return rendered;
 }
 
 /**
@@ -74,6 +172,7 @@ export function createGuildWarEmbed(
     guildName?: string;
     sideNames?: SideNames;
     notifyLeadMin: number;
+    profiles?: ProfileMap;
   }
 ): EmbedBuilder {
   const gw = t.guildWarEvent;
@@ -138,18 +237,15 @@ export function createGuildWarEmbed(
       grouped[signup.team].push(signup);
     }
 
+    const rendered = renderRosters(grouped, showAttendance, options.profiles, gw.noSignups);
+
     for (const side of GUILD_WAR_SIDE_ORDER) {
       const members = grouped[side];
       const sideName = getSideName(side, t, options.sideNames);
 
-      const lines =
-        members.length > 0
-          ? members.map((s) => formatSignupLine(s, showAttendance)).join('\n')
-          : gw.noSignups;
-
       embed.addFields({
         name: gw.teamHeader(GUILD_WAR_SIDES[side].emoji, sideName, members.length),
-        value: lines,
+        value: rendered[side],
         inline: true,
       });
     }
@@ -388,7 +484,7 @@ export function buildGuildWarRosterText(
   event: GuildWarEventData,
   signups: GuildWarSignup[],
   t: Translations,
-  options: { sideNames?: SideNames } = {}
+  options: { sideNames?: SideNames; profiles?: ProfileMap } = {}
 ): string {
   const gw = t.guildWarEvent;
   const dayName = getDayName(event.day, t);
@@ -411,7 +507,14 @@ export function buildGuildWarRosterText(
     } else {
       for (const member of members) {
         const mark = event.notifiedAt ? attendanceMark(member) : '';
-        lines.push(`${ROLE_CONFIGS[member.role].emoji} ${member.username}${mark}`);
+        const profile = options.profiles?.get(member.userId);
+
+        // The in-game name is what gets typed into game chat, so lead with it
+        const name = profile?.ingameName
+          ? `${profile.ingameName} (${member.username})`
+          : member.username;
+
+        lines.push(`${ROLE_CONFIGS[member.role].emoji} ${name}${mark}`);
       }
     }
 

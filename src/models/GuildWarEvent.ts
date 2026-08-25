@@ -1,6 +1,7 @@
 import * as db from '../database/database.js';
 import type {
   GuildWarAttendance,
+  GuildWarProfile,
   GuildWarDay,
   GuildWarEvent as GuildWarEventData,
   GuildWarEventRow,
@@ -206,6 +207,28 @@ export class GuildWarEvent {
     }
 
     return grouped;
+  }
+
+  /**
+   * Registration details for everyone on the roster, keyed by user id.
+   *
+   * Players who never ran /baodanh are simply absent, so the roster falls back
+   * to their Discord name.
+   */
+  getProfiles(): Map<string, GuildWarProfile> {
+    const userIds = this.getSignups().map((signup) => signup.userId);
+    const rows = db.getPlayerRegistrationsFor(this.data.guildId, userIds);
+
+    return new Map(
+      rows.map((row) => [
+        row.user_id,
+        {
+          ingameName: row.ingame_name,
+          primaryWeapon: row.primary_weapon,
+          secondaryWeapon: row.secondary_weapon,
+        },
+      ])
+    );
   }
 
   getState(): { event: GuildWarEventData; signups: GuildWarSignup[] } {

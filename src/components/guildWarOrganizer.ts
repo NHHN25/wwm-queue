@@ -11,6 +11,7 @@ import { GuildWarEvent } from '../models/GuildWarEvent.js';
 import * as db from '../database/database.js';
 import { getGuildTranslations } from '../localization/index.js';
 import { ROLE_CONFIGS } from '../utils/constants.js';
+import { WEAPON_CONFIGS } from '../utils/weaponConstants.js';
 import {
   GUILD_WAR_COLORS,
   GUILD_WAR_SIDES,
@@ -72,24 +73,45 @@ export function createOrganizerEmbed(
     .setColor(GUILD_WAR_COLORS.OPEN)
     .setDescription(gw.signupCount(event.getSignupCount(), event.getCapacity()));
 
+  const profiles = event.getProfiles();
+
+  // Weapon emojis are long custom emojis, so drop them if a side would overrun
+  // Discord's 1024-character field limit
+  const renderSide = (members: typeof grouped.offense, withWeapons: boolean): string => {
+    if (members.length === 0) {
+      return gw.noSignups;
+    }
+
+    return members
+      .map((member) => {
+        const marker = member.userId === selectedUserId ? '▸ ' : '';
+        const moved = member.assignedBy ? ' ·' : '';
+        const profile = profiles.get(member.userId);
+        const name = profile?.ingameName ?? member.username;
+
+        const weapons =
+          withWeapons && profile
+            ? ` ${WEAPON_CONFIGS[profile.primaryWeapon]?.emoji ?? ''}${
+                WEAPON_CONFIGS[profile.secondaryWeapon]?.emoji ?? ''
+              }`
+            : '';
+
+        return `${marker}${ROLE_CONFIGS[member.role].emoji} ${name}${weapons}${moved}`;
+      })
+      .join('\n');
+  };
+
+  const withWeapons = GUILD_WAR_SIDE_ORDER.every(
+    (side) => renderSide(grouped[side], true).length <= 1024
+  );
+
   for (const side of GUILD_WAR_SIDE_ORDER) {
     const members = grouped[side];
     const sideName = getSideName(side, t, sideNames);
 
-    const lines =
-      members.length > 0
-        ? members
-            .map((member) => {
-              const marker = member.userId === selectedUserId ? '▸ ' : '';
-              const moved = member.assignedBy ? ' ·' : '';
-              return `${marker}${ROLE_CONFIGS[member.role].emoji} ${member.username}${moved}`;
-            })
-            .join('\n')
-        : gw.noSignups;
-
     embed.addFields({
       name: gw.teamHeader(GUILD_WAR_SIDES[side].emoji, sideName, members.length),
-      value: lines,
+      value: renderSide(members, withWeapons),
       inline: true,
     });
   }

@@ -97,6 +97,7 @@ export async function refreshGuildWarMessage(
       guildName: guild?.name,
       sideNames: getSideNames(guildId),
       notifyLeadMin: settings.notify_lead_min,
+      profiles: event.getProfiles(),
     });
 
     await message.edit({

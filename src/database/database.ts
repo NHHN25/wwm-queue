@@ -640,6 +640,30 @@ export function getPlayerRegistration(
 /**
  * Check if player is registered
  */
+/**
+ * Get registrations for a set of users in one query
+ * Used to decorate a Guild War roster with in-game names and weapons
+ */
+export function getPlayerRegistrationsFor(
+  guildId: string,
+  userIds: string[]
+): Array<import('../types/index.js').PlayerRegistrationRow> {
+  if (userIds.length === 0) {
+    return [];
+  }
+
+  const db = getDatabase();
+  const placeholders = userIds.map(() => '?').join(', ');
+  const stmt = db.prepare(`
+    SELECT * FROM player_registrations
+    WHERE guild_id = ? AND user_id IN (${placeholders})
+  `);
+
+  return stmt.all(guildId, ...userIds) as Array<
+    import('../types/index.js').PlayerRegistrationRow
+  >;
+}
+
 export function isPlayerRegistered(guildId: string, userId: string): boolean {
   const db = getDatabase();
   const stmt = db.prepare(`
