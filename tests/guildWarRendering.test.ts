@@ -418,3 +418,86 @@ describe('roster with player profiles', () => {
     assert.ok(!roster.includes('<@'), 'the text roster must not ping anyone');
   });
 });
+
+describe('field layout', () => {
+  /**
+   * Discord packs inline fields three to a row. The two team columns must land
+   * on a row together, which only happens when everything before them fills
+   * whole rows.
+   */
+  const teamRowIsIntact = (embed: any) => {
+    const fields = embed.fields ?? [];
+    const offense = fields.findIndex((f: any) => f.name.includes('Offense'));
+    const defense = fields.findIndex((f: any) => f.name.includes('Defense'));
+
+    assert.ok(offense >= 0 && defense >= 0, 'both team fields must exist');
+    assert.equal(defense, offense + 1, 'team fields must be adjacent');
+    assert.equal(fields[offense].inline, true);
+    assert.equal(fields[defense].inline, true);
+
+    // Everything before them has to be a whole number of rows
+    const preceding = fields.slice(0, offense);
+    assert.ok(
+      preceding.every((f: any) => f.inline),
+      'a full-width field before the roster would break the row'
+    );
+    assert.equal(
+      preceding.length % 3,
+      0,
+      `${preceding.length} fields precede the roster, so the teams split across rows`
+    );
+  };
+
+  for (const status of ['open', 'locked', 'done', 'cancelled'] as const) {
+    it(`keeps both teams on one row when the event is ${status}`, () => {
+      const embed = createGuildWarEmbed(
+        makeEvent({ status, notifiedAt: status === 'open' ? null : new Date() }),
+        makeSignups(18),
+        en,
+        { notifyLeadMin: 60 }
+      ).toJSON();
+
+      teamRowIsIntact(embed);
+    });
+  }
+
+  it('pads the header row when the reminder line is hidden', () => {
+    const open = createGuildWarEmbed(makeEvent(), makeSignups(4), en, {
+      notifyLeadMin: 60,
+    }).toJSON();
+
+    const done = createGuildWarEmbed(
+      makeEvent({ status: 'done', notifiedAt: new Date() }),
+      makeSignups(4),
+      en,
+      { notifyLeadMin: 60 }
+    ).toJSON();
+
+    // Same number of header fields either way: a real one, or a blank spacer
+    const headerCount = (embed: any) =>
+      (embed.fields ?? []).findIndex((f: any) => f.name.includes('Offense'));
+
+    assert.equal(headerCount(open), 3);
+    assert.equal(headerCount(done), 3);
+  });
+
+  it('never emits an empty field name or value', () => {
+    const embed = createGuildWarEmbed(
+      makeEvent({ status: 'done', notifiedAt: new Date() }),
+      makeSignups(6),
+      en,
+      { notifyLeadMin: 60 }
+    ).toJSON();
+
+    for (const field of embed.fields ?? []) {
+      assert.ok(field.name.length > 0, 'Discord rejects an empty field name');
+      assert.ok(field.value.length > 0, 'Discord rejects an empty field value');
+    }
+  });
+
+  it('still renders an empty roster', () => {
+    const embed = createGuildWarEmbed(makeEvent(), [], en, { notifyLeadMin: 60 }).toJSON();
+
+    assert.ok((embed.fields ?? []).some((f: any) => f.value.includes('No one has signed up')));
+  });
+});

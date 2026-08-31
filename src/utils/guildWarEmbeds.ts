@@ -72,6 +72,14 @@ const ROSTER_DETAIL_ORDER: RosterDetail[] = ['full', 'weapons', 'name', 'plain']
 const EMBED_FIELD_LIMIT = 1024;
 
 /**
+ * Discord rejects an empty field name or value, so a blank column is a
+ * zero-width space. Used to pad a row out to three inline fields.
+ */
+const ZERO_WIDTH = '​';
+
+const SPACER_FIELD = { name: ZERO_WIDTH, value: ZERO_WIDTH, inline: true };
+
+/**
  * Weapon emojis for a profile, primary then secondary
  */
 function weaponEmojis(profile: GuildWarProfile): string {
@@ -216,20 +224,24 @@ export function createGuildWarEmbed(
     }
   );
 
-  // Reminder line is only useful while the ping is still ahead of us
+  // Discord lays inline fields out three to a row. The header must fill a whole
+  // row on its own, otherwise the first team column is pulled up into it and
+  // the second team drops onto a row by itself.
   if (event.status === 'open') {
     embed.addFields({
       name: gw.fieldReminder,
       value: gw.reminderValue(discordTimestamp(event.notifyAt, 't'), options.notifyLeadMin),
       inline: true,
     });
+  } else {
+    embed.addFields(SPACER_FIELD);
   }
 
   // Attendance only becomes meaningful once the reminder has been sent
   const showAttendance = event.notifiedAt !== null;
 
   if (signups.length === 0) {
-    embed.addFields({ name: '​', value: gw.noSignups });
+    embed.addFields({ name: ZERO_WIDTH, value: gw.noSignups });
   } else {
     const grouped: Record<GuildWarSide, GuildWarSignup[]> = { offense: [], defense: [] };
 
@@ -267,7 +279,7 @@ export function createGuildWarEmbed(
     );
 
     embed.addFields({
-      name: '​',
+      name: ZERO_WIDTH,
       value: gw.attendanceSummary(counts.confirmed, counts.declined, counts.pending),
     });
   }
