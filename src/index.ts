@@ -36,6 +36,7 @@ import {
   startGuildWarScheduler,
   stopGuildWarScheduler,
 } from './utils/guildWarScheduler.js';
+import { ensureWeaponEmojis } from './utils/weaponEmojiBootstrap.js';
 
 // Load environment variables
 config();
@@ -73,6 +74,11 @@ client.once(Events.ClientReady, async (c) => {
   try {
     // Register slash commands
     await registerCommands(c);
+
+    // Before anything renders, so restored embeds already show the real icons
+    await ensureWeaponEmojis(c.application.emojis).catch((error) =>
+      console.error('[Weapon Emojis] Sync failed, keeping placeholders:', error)
+    );
 
     // Restore state from database
     await restoreQueueState(c);

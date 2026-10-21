@@ -855,6 +855,15 @@ retries. The nudge will not fire within `GUILD_WAR_MIN_NUDGE_GAP_MS` of the main
 servers reply with `t.guildWarEvent.retiredNotice`. `/close`, `/closepanel` and `/reset`
 still accept `guild_war` so admins can clean up old rows.
 
+## Weapon Emojis
+
+A weapon can ship with a placeholder unicode emoji. Drop its icon at
+`assets/weapons/<weapon-name-with-dashes>.png` (≤256KB) and the bot uploads it on
+startup as an application emoji with its own token, reusing it on later starts —
+see [src/utils/weaponEmojiBootstrap.ts](src/utils/weaponEmojiBootstrap.ts). No
+token is needed at development time. The swap happens in memory, so the source
+keeps the placeholder; hard-code the logged `<:name:id>` tag later if wanted.
+
 ## Testing
 
 `npm test` runs `node --import tsx --test tests/*.test.ts` — 106 tests, no Discord token
