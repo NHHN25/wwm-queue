@@ -199,7 +199,7 @@ export interface GuildConfig {
 /**
  * Weapon types available in Where Winds Meet
  */
-export type WeaponType = 'sword' | 'spear' | 'dual_blades' | 'thundercry_blade' | 'fans' | 'umbrella' | 'rope_dart' | 'gauntlets';
+export type WeaponType = 'sword' | 'spear' | 'dual_blades' | 'thundercry_blade' | 'fans' | 'umbrella' | 'rope_dart' | 'gauntlets' | 'drum';
 
 /**
  * Specific weapon names in Where Winds Meet
@@ -219,6 +219,7 @@ export type WeaponName =
   // Fans
   | 'panacea_fan'
   | 'inkwell_fan'
+  | 'willowbend_fan'
   // Umbrellas
   | 'soulshade_umbrella'
   | 'vernal_umbrella'
@@ -231,7 +232,9 @@ export type WeaponName =
   | 'snowparting_blade'
   | 'phalanxbane_blade'
   // Gauntlets
-  | 'heavenwill_gauntlets';
+  | 'heavenwill_gauntlets'
+  // Drums
+  | 'museflow_waist_drum';
 
 /**
  * Approval status for registrations

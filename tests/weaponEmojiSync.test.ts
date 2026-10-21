@@ -1,4 +1,7 @@
 import { strict as assert } from 'node:assert';
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { describe, it } from 'node:test';
 import {
   addWeaponNameToUnion,
@@ -16,6 +19,8 @@ import {
  * The upload itself needs a token and is left to a manual run; everything that
  * decides what to upload and edits the source is pure and tested here.
  */
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 describe('naming', () => {
   it('builds Discord-legal emoji names', () => {
@@ -36,6 +41,7 @@ describe('naming', () => {
     assert.equal(guessWeaponType('Mortal Rope Dart'), 'rope_dart');
     assert.equal(guessWeaponType('Heavenwill Gauntlets'), 'gauntlets');
     assert.equal(guessWeaponType('Infernal Twinblades'), 'dual_blades');
+    assert.equal(guessWeaponType('Museflow Waist Drum'), 'drum');
     assert.equal(guessWeaponType('Snowparting Blade'), 'sword');
   });
 });
@@ -152,5 +158,13 @@ describe('source rewriting', () => {
     // Running the sync twice must not duplicate the member
     const twice = addWeaponNameToUnion(once, 'brand_new_blade', 'Brand New Blade');
     assert.equal(twice.match(/brand_new_blade/g)?.length, once.match(/brand_new_blade/g)?.length);
+  });
+
+  it('extends the real WeaponName union, whatever its last member is', () => {
+    const types = readFileSync(join(__dirname, '..', 'src', 'types', 'index.ts'), 'utf-8');
+    const updated = addWeaponNameToUnion(types, 'brand_new_blade', 'Brand New Blade');
+
+    const union = updated.match(/export type WeaponName =[\s\S]*?;/)?.[0] ?? '';
+    assert.ok(union.endsWith("| 'brand_new_blade';"), 'new member must close the WeaponName union');
   });
 });

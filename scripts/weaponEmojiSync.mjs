@@ -45,6 +45,7 @@ export function guessWeaponType(weaponName) {
   if (name.includes('umbrella')) return 'umbrella';
   if (name.includes('rope dart')) return 'rope_dart';
   if (name.includes('gauntlet')) return 'gauntlets';
+  if (name.includes('drum')) return 'drum';
   if (name.includes('thundercry')) return 'thundercry_blade';
 
   return 'sword';
@@ -106,16 +107,14 @@ export function addWeaponNameToUnion(source, weaponSlug, comment) {
     return source;
   }
 
-  const marker = "  | 'heavenwill_gauntlets';";
+  // The union's last member is whichever weapon was added most recently
+  const lastMember = /(export type WeaponName =[\s\S]*?\| '[a-z0-9_]+')(;)/;
 
-  if (!source.includes(marker)) {
+  if (!lastMember.test(source)) {
     throw new Error('could not find the end of the WeaponName union');
   }
 
-  return source.replace(
-    marker,
-    `  | 'heavenwill_gauntlets'\n  // ${comment}\n  | '${weaponSlug}';`
-  );
+  return source.replace(lastMember, `$1\n  // ${comment}\n  | '${weaponSlug}'$2`);
 }
 
 /**

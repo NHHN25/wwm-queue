@@ -103,6 +103,13 @@ export const WEAPON_CONFIGS: Record<WeaponName, WeaponConfig> = {
     iconUrl:
       'https://www.wherewindsmeetgame.com/pc/qt/20251203102905/data/kongfu/images/673361fa97229b799b104e11dq8JNGxv05.png',
   },
+  willowbend_fan: {
+    name: 'willowbend_fan',
+    type: 'fans',
+    emoji: '🪭',
+    displayNameEn: 'Willowbend Fan',
+    displayNameVi: 'Willowbend Fan',
+  },
 
   // Umbrellas
   soulshade_umbrella: {
@@ -195,6 +202,15 @@ export const WEAPON_CONFIGS: Record<WeaponName, WeaponConfig> = {
     displayNameEn: 'Heavenwill Gauntlets',
     displayNameVi: 'Heavenwill Gauntlets',
   },
+
+  // Drums
+  museflow_waist_drum: {
+    name: 'museflow_waist_drum',
+    type: 'drum',
+    emoji: '🥁',
+    displayNameEn: 'Museflow Waist Drum',
+    displayNameVi: 'Museflow Waist Drum',
+  },
 };
 
 /**
@@ -241,6 +257,7 @@ export function getWeaponsByType(): Record<WeaponType, WeaponConfig[]> {
     umbrella: [],
     rope_dart: [],
     gauntlets: [],
+    drum: [],
   };
 
   Object.values(WEAPON_CONFIGS).forEach((config) => {

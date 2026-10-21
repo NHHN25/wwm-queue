@@ -75,7 +75,12 @@ describe('official weapon table', () => {
   it('keeps the weapons the snapshot has not caught up with', () => {
     // The data tool lags the game; these were added by hand and must survive
     // a future refresh of the fixture
-    for (const name of ['skygrasp_rope_dart', 'heavenwill_gauntlets'] as const) {
+    for (const name of [
+      'skygrasp_rope_dart',
+      'heavenwill_gauntlets',
+      'willowbend_fan',
+      'museflow_waist_drum',
+    ] as const) {
       assert.ok(WEAPON_CONFIGS[name], `${name} disappeared from WEAPON_CONFIGS`);
     }
   });
