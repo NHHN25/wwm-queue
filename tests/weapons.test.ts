@@ -1,5 +1,5 @@
 import { strict as assert } from 'node:assert';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, it } from 'node:test';
@@ -80,6 +80,8 @@ describe('official weapon table', () => {
       'heavenwill_gauntlets',
       'willowbend_fan',
       'museflow_waist_drum',
+      'riven_twinblades',
+      'skystrike_gauntlets',
     ] as const) {
       assert.ok(WEAPON_CONFIGS[name], `${name} disappeared from WEAPON_CONFIGS`);
     }
@@ -107,6 +109,20 @@ describe('weapon config integrity', () => {
       .filter((emoji) => emoji.startsWith('<:'));
 
     assert.equal(new Set(custom).size, custom.length, 'duplicate custom emoji');
+  });
+
+  it('fits in one Discord select menu (25 options max)', () => {
+    assert.ok(configs.length <= 25, `${configs.length} weapons; the weapon dropdowns need splitting`);
+  });
+
+  it('ships an icon for every weapon still on a placeholder emoji', () => {
+    const iconDir = join(__dirname, '..', 'assets', 'weapons');
+    const missing = configs
+      .filter((config) => !config.emoji.startsWith('<'))
+      .filter((config) => !existsSync(join(iconDir, `${config.name.replace(/_/g, '-')}.png`)))
+      .map((config) => config.name);
+
+    assert.deepEqual(missing, [], 'add assets/weapons/<name>.png so the bot can upload it');
   });
 
   it('groups every weapon under a type', () => {

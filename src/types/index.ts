@@ -214,6 +214,7 @@ export type WeaponName =
   | 'nameless_spear'
   // Dual Blades / Twinblades
   | 'infernal_twinblades'
+  | 'riven_twinblades'
   // Thundercry Blade
   | 'thundercry_blade'
   // Fans
@@ -233,6 +234,7 @@ export type WeaponName =
   | 'phalanxbane_blade'
   // Gauntlets
   | 'heavenwill_gauntlets'
+  | 'skystrike_gauntlets'
   // Drums
   | 'museflow_waist_drum';
 

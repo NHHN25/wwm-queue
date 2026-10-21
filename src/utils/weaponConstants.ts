@@ -69,6 +69,13 @@ export const WEAPON_CONFIGS: Record<WeaponName, WeaponConfig> = {
     iconUrl:
       'https://www.wherewindsmeetgame.com/pc/qt/20251203102905/data/kongfu/images/673361fa56bd72932802d4ccyjpEwat505.png',
   },
+  riven_twinblades: {
+    name: 'riven_twinblades',
+    type: 'dual_blades',
+    emoji: '⚔️',
+    displayNameEn: 'Riven Twinblades',
+    displayNameVi: 'Riven Twinblades',
+  },
 
   // Thundercry Blade
   thundercry_blade: {
@@ -201,6 +208,13 @@ export const WEAPON_CONFIGS: Record<WeaponName, WeaponConfig> = {
     emoji: '🥊',
     displayNameEn: 'Heavenwill Gauntlets',
     displayNameVi: 'Heavenwill Gauntlets',
+  },
+  skystrike_gauntlets: {
+    name: 'skystrike_gauntlets',
+    type: 'gauntlets',
+    emoji: '🥊',
+    displayNameEn: 'Skystrike Gauntlets',
+    displayNameVi: 'Skystrike Gauntlets',
   },
 
   // Drums

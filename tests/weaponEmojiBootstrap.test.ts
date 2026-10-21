@@ -1,4 +1,7 @@
 import { strict as assert } from 'node:assert';
+import { mkdtempSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { afterEach, describe, it } from 'node:test';
 import { WEAPON_CONFIGS } from '../src/utils/weaponConstants.js';
 import { ensureWeaponEmojis, type AppEmojiManager } from '../src/utils/weaponEmojiBootstrap.js';
@@ -47,14 +50,21 @@ describe('weapon emoji bootstrap', () => {
     assert.match(WEAPON_CONFIGS.willowbend_fan.emoji, /^<:willowbendfan:\d+>$/);
   });
 
-  it('leaves custom emojis alone and skips weapons with no bundled icon', async () => {
+  it('leaves weapons that already have a custom emoji alone', async () => {
     const { manager, created } = fakeEmojis();
 
     await ensureWeaponEmojis(manager);
 
     assert.equal(WEAPON_CONFIGS.strategic_sword.emoji, original.strategic_sword);
     assert.ok(!created.includes('strategicsword'));
-    // Skygrasp has no icon in assets/weapons yet
+  });
+
+  it('skips weapons with no bundled icon', async () => {
+    const { manager, created } = fakeEmojis();
+    const emptyDir = mkdtempSync(join(tmpdir(), 'no-icons-'));
+
+    assert.deepEqual(await ensureWeaponEmojis(manager, emptyDir), []);
+    assert.deepEqual(created, []);
     assert.equal(WEAPON_CONFIGS.skygrasp_rope_dart.emoji, original.skygrasp_rope_dart);
   });
 
@@ -83,7 +93,8 @@ describe('weapon emoji bootstrap', () => {
 
     const second = await ensureWeaponEmojis(manager);
 
+    const placeholders = Object.values(original).filter((emoji) => !emoji.startsWith('<'));
     assert.deepEqual(second, []);
-    assert.equal(created.length, 2);
+    assert.equal(created.length, placeholders.length);
   });
 });
